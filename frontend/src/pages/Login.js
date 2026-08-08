@@ -23,7 +23,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const routeFor = (role) => (role === "parent" ? "/app" : "/dashboard");
+  const routeFor = (role) => (role === "parent" ? "/app" : role === "lender" ? "/credit" : "/dashboard");
 
   const submit = async (e) => {
     e.preventDefault();

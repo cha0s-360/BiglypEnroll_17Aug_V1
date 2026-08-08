@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/Logo";
 import {
-  LayoutDashboard, Wallet, GraduationCap, Users, Settings, LogOut, School, UserCog,
+  LayoutDashboard, Wallet, GraduationCap, Users, Settings, LogOut, School, UserCog, Landmark,
 } from "lucide-react";
 
 const ADMIN_NAV = [
@@ -10,6 +10,7 @@ const ADMIN_NAV = [
   { to: "/dashboard/fees", label: "Fee Structure", icon: Wallet, testid: "nav-fees" },
   { to: "/dashboard/students", label: "Students", icon: Users, testid: "nav-students" },
   { to: "/dashboard/team", label: "Team", icon: UserCog, testid: "nav-team" },
+  { to: "/credit", label: "Fee Financing", icon: Landmark, testid: "nav-credit" },
   { to: "/dashboard/onboarding", label: "School Setup", icon: School, testid: "nav-onboarding" },
 ];
 

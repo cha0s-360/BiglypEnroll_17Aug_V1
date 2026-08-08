@@ -13,7 +13,8 @@ export function ProtectedRoute({ children, roles }) {
   }
   if (!user) return <Navigate to="/login" replace />;
   if (roles && !roles.includes(user.role)) {
-    return <Navigate to={user.role === "parent" ? "/app" : "/dashboard"} replace />;
+    const home = user.role === "parent" ? "/app" : user.role === "lender" ? "/credit" : "/dashboard";
+    return <Navigate to={home} replace />;
   }
   return children;
 }

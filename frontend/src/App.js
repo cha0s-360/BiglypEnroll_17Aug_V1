@@ -14,8 +14,15 @@ import Team from "@/pages/admin/Team";
 import Onboarding from "@/pages/admin/Onboarding";
 import ParentDashboard from "@/pages/parent/ParentDashboard";
 import PaymentHistory from "@/pages/parent/PaymentHistory";
+import CreditDashboard from "@/pages/credit/CreditDashboard";
+import Applications from "@/pages/credit/Applications";
+import NewApplication from "@/pages/credit/NewApplication";
+import ApplicationDetail from "@/pages/credit/ApplicationDetail";
+import Policies from "@/pages/credit/Policies";
 
-const STAFF = ["super_admin", "school_admin", "finance", "counsellor", "manager", "admission", "legal"];
+const STAFF = ["super_admin", "school_admin", "finance", "counsellor", "manager", "admission", "legal", "credit_ops"];
+const CREDIT_STAFF = ["super_admin", "credit_ops", "school_admin", "finance", "manager", "counsellor"];
+const CREDIT_VIEW = [...CREDIT_STAFF, "lender"];
 
 function App() {
   return (
@@ -37,6 +44,13 @@ function App() {
             {/* Parent app */}
             <Route path="/app" element={<ProtectedRoute roles={["parent"]}><ParentDashboard /></ProtectedRoute>} />
             <Route path="/app/history" element={<ProtectedRoute roles={["parent"]}><PaymentHistory /></ProtectedRoute>} />
+
+            {/* Credit / Loan Origination */}
+            <Route path="/credit" element={<ProtectedRoute roles={CREDIT_VIEW}><CreditDashboard /></ProtectedRoute>} />
+            <Route path="/credit/applications" element={<ProtectedRoute roles={CREDIT_VIEW}><Applications /></ProtectedRoute>} />
+            <Route path="/credit/new" element={<ProtectedRoute roles={CREDIT_STAFF}><NewApplication /></ProtectedRoute>} />
+            <Route path="/credit/app/:id" element={<ProtectedRoute roles={CREDIT_VIEW}><ApplicationDetail /></ProtectedRoute>} />
+            <Route path="/credit/policies" element={<ProtectedRoute roles={["super_admin", "credit_ops"]}><Policies /></ProtectedRoute>} />
           </Routes>
         </BrowserRouter>
         <Toaster position="top-right" richColors />

@@ -21,6 +21,7 @@ from pydantic import BaseModel, Field, EmailStr, BeforeValidator, ConfigDict
 from bson import ObjectId
 
 from fee_parser import parse_fee_file
+from credit import credit_router, ensure_seed as ensure_credit_seed
 
 # ---------------------------------------------------------------- DB ----------
 mongo_url = os.environ["MONGO_URL"]
@@ -40,12 +41,12 @@ api = APIRouter(prefix="/api")
 PyObjectId = Annotated[str, BeforeValidator(lambda v: str(v))]
 
 ROLES = ["super_admin", "school_admin", "counsellor", "finance", "parent",
-         "manager", "admission", "legal"]
+         "manager", "admission", "legal", "credit_ops", "lender"]
 # Roles that belong to a school staff team (can be added via Team management)
 TEAM_ROLES = ["school_admin", "manager", "finance", "counsellor", "admission", "legal"]
 # Roles allowed into the staff dashboard
 STAFF_ROLES = ["super_admin", "school_admin", "manager", "finance",
-               "counsellor", "admission", "legal"]
+               "counsellor", "admission", "legal", "credit_ops"]
 
 # ------------------------------------------------------------ helpers ---------
 def hash_password(password: str) -> str:
@@ -858,6 +859,7 @@ async def seed():
 @app.on_event("startup")
 async def on_start():
     await seed()
+    await ensure_credit_seed()
 
 
 @app.on_event("shutdown")
@@ -866,6 +868,7 @@ async def on_stop():
 
 
 app.include_router(api)
+app.include_router(credit_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
