@@ -493,9 +493,20 @@ async def _get_app(app_id):
     return a
 
 
+def _assert_can_view(a: dict, user: dict):
+    role = user["role"]
+    if role in ("school_admin", "finance", "counsellor", "manager") and user.get("school_id"):
+        if a.get("school_id") != user["school_id"]:
+            raise HTTPException(status_code=403, detail="Application belongs to another institute")
+    elif role == "lender":
+        if a.get("workflow", {}).get("submitted_lender") != user.get("lender_id"):
+            raise HTTPException(status_code=403, detail="Not submitted to your institution")
+
+
 @credit_router.get("/applications/{app_id}")
 async def get_application(app_id: str, user: dict = Depends(require_roles(*STAFF, "lender"))):
     a = await _get_app(app_id)
+    _assert_can_view(a, user)
     return _public_app(a, user["role"])
 
 
@@ -646,7 +657,12 @@ async def _run_engines(a: dict) -> dict:
     full_emi = emi(loan_amount, rec_rate, tenure)
     total_payable = full_emi * tenure
     total_interest = round(total_payable - loan_amount)
-    processing_fee = round(loan_amount * (recommended and [l for l in lenders if l["id"] == recommended["lender_id"]][0]["policy"]["processing_fee_pct"] or 1.5) / 100)
+    pf_pct = 1.5
+    if recommended:
+        rec_l = next((l for l in lenders if l["id"] == recommended["lender_id"]), None)
+        if rec_l:
+            pf_pct = rec_l["policy"].get("processing_fee_pct", 1.5)
+    processing_fee = round(loan_amount * pf_pct / 100)
     subvention_cost = round(total_interest * school_share)
     parent_interest = total_interest - subvention_cost
     parent_emi = round((loan_amount + parent_interest) / tenure) if tenure else 0

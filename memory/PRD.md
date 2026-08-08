@@ -37,6 +37,23 @@ Backend 21/21 pytest pass. Frontend flows verified via testing agent. Tests at
 `/app/backend/tests/backend_test.py`.
 
 ## Backlog / Remaining (P1/P2 from scoping doc)
+
+## Credit Assessment & Loan Origination module (2026-06-08)
+GrayQuest-inspired school fee-financing credit platform at `/credit` (staff + credit_ops) and lender portal (auto-routes lenders). Built on React+FastAPI+MongoDB; external bureaus/KYC/AA are realistically SIMULATED (deterministic from PAN); AI (Emergent LLM/Gemini) powers bank-statement + document OCR with graceful fallback.
+- Loan application wizard (student/school, parent applicant, co-applicant, loan+subvention, consent)
+- Digital KYC (PAN/Aadhaar/CKYC/DigiLocker/liveness/e-sign) — simulated verify
+- Credit bureau pull (TransUnion CIBIL + CRIF/Experian/Equifax) with full report (score, DPD, enquiries, written-off, utilization, credit mix, repayment history, trade lines)
+- Bank statement analyzer (AI PDF/CSV + manual), Income Assessment engine, FOIR calculator
+- Biglyp Internal Credit Score 0–1000 with admin-configurable weightages
+- Rule-based Credit Policy engine per lender (admin-editable, no code), Eligibility Decision (Approved/Conditional/Refer/Reject + reasons), Best-Lender recommendation (approval probability)
+- Fee-financing subvention models (100% school / 100% parent / shared) + Loan Pricing engine (EMI, IIR, processing fee, spread, school payout, parent contribution, lender yield, Biglyp revenue)
+- Document management + OCR, Fraud & Risk engine (duplicate PAN/mobile, velocity, tampering, statement anomalies)
+- Maker-checker workflow, deficiency tracking, lender submission + lender status
+- Dashboards (admin/school/lender), audit trail, consent gating, PII masking, RBAC
+- 4 preconfigured lenders (Axis/HDFC/ICICI/Aditya Birla NBFC). Backend router: credit.py. Tests: /app/backend/tests/test_credit.py (19/19 pass).
+- New logins: creditops@biglyp.com/creditops123 (checker), lender@biglyp.com/lender123 (HDFC portal).
+
+### Earlier P1/P2 backlog
 - P1: Admission CRM (lead → enrollment, AI lead scoring, counsellor assignment, offer letters)
 - P1: Real payment gateway (Razorpay), settlement auto-reconciliation, collection & recovery queue
 - P2: Communication engine (Email/SMS/WhatsApp templates), Student Info System, multi-campus selector, financial-year switcher, Biglyp Ops Hub, financing partner API
