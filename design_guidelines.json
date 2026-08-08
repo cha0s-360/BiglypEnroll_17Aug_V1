@@ -1,0 +1,89 @@
+{
+  "theme": "Light mode prioritized. Clean, sharp, and modern. High-contrast Swiss-inspired layout with stark white backgrounds and precise blue structural accents.",
+  "typography": {
+    "heading_font": "Outfit",
+    "body_font": "Figtree",
+    "rules": [
+      "Use 'Outfit' for all headings. DO NOT use Inter for headings.",
+      "Use 'Figtree' for body text to maintain a clean, readable UI.",
+      "H1 should not exceed text-5xl to text-6xl. Use tracking-tight for all headings.",
+      "Overlines and small labels must be uppercase, text-xs, with wide spacing (tracking-[0.2em]).",
+      "Maintain a strict hierarchy; subheading size should be 1-2 Tailwind steps below the heading."
+    ]
+  },
+  "colors": {
+    "primary": "#2540E8",
+    "secondary": "#1E2A78",
+    "background": "#FFFFFF",
+    "surface": "#F8FAFC",
+    "border": "#E2E8F0",
+    "text_primary": "#0A0F2C",
+    "text_secondary": "#475569",
+    "rules": [
+      "No full-screen gradients. Use pure white or tinted off-white for backgrounds.",
+      "Color is function: use Electric Blue (#2540E8) for primary CTAs and active states.",
+      "Use Dark Navy (#1E2A78) for massive headings, borders, and heavy structural elements.",
+      "Never use pure black or grey. Always tint with the Navy blue hue."
+    ]
+  },
+  "visual_enhancers": {
+    "borders": "Sharp edges. Use `rounded-none` or `rounded-sm` maximum to keep the design 'sharp'.",
+    "shadows": "Use crisp, solid drop shadows (e.g., `shadow-[4px_4px_0px_#1E2A78]`) for interactive elements to appeal to GenZ, or sharp 1px borders (`border-border`) for data-heavy dashboard tables.",
+    "surfaces": "Use the 'Grid Borders' look for the School Admin Dashboard. Use 'Crystal Glassmorphism' (`backdrop-blur-xl bg-white/70 border-b border-white/20`) for the marketing header."
+  },
+  "grids_and_layouts": {
+    "marketing_page": "MODE A: TETRIS GRID. Asymmetrical layouts with generous padding (`p-12` to `p-24`). Use large hero spanning multiple columns.",
+    "dashboard_saas": "MODE B: HIGH DENSITY GRID. Tight gaps (`gap-4`). Use `col-span-1` for KPI cards and `col-span-2` or `col-span-3` for analytics charts.",
+    "spacing": "Generous Spacing Philosophy. Use 2x standard padding for containers. Make sure grid items are direct children of the grid."
+  },
+  "component_instructions": {
+    "general": "Use pure HTML/Tailwind for marketing sections. Use customized Shadcn components for Dashboard and Wizards.",
+    "wizards": "For the School Onboarding Wizard, use action-driven checklists and sequence low-friction steps first. Max 3-5 fields per step.",
+    "cards": "For SaaS, go cardless or use flat rectangular styles with a 1px subtle border. No soft shadows.",
+    "tables_and_data": "Implement frozen headers and clear status chips for Fee Management.",
+    "charts": "Use Shadcn charts or Recharts for revenue analytics, fee collection KPIs, and admission funnels. Calibrate data density for Finance/Admin roles.",
+    "toasts": "Use `sonner` for all success/error feedback."
+  },
+  "icons_and_assets": {
+    "library": "lucide-react (installed by default) or @phosphor-icons/react.",
+    "style": "Use sharp, consistent stroke widths. Never use emojis as icons."
+  },
+  "image_urls": [
+    {
+      "url": "https://customer-assets-7cd3h4nn.emergentagent.net/job_23527a80-73ab-45d1-b929-e06ee4f59fc4",
+      "category": "Brand Logo",
+      "description": "Biglyp logo. Place in the sticky navigation bar and footer."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1577985043696-8bd54d9f093f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwyfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwc3R1ZGVudHN8ZW58MHx8fHwxNzg2MjE5NDkzfDA&ixlib=rb-4.1.0&q=85",
+      "category": "Hero Background / Marketing",
+      "description": "Group of university students. Use in the marketing hero section. Ensure overlay is max `bg-white/40` or `bg-black/30`."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1513906029980-32d13afe6d8c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzl8MHwxfHNlYXJjaHwxfHxwYXJlbnQlMjBhbmQlMjB0ZWVuJTIwc21pbGluZ3xlbnwwfHx8fDE3ODYyMTk0OTN8MA&ixlib=rb-4.1.0&q=85",
+      "category": "Testimonials / Student App Showcase",
+      "description": "Parent and teen smiling. Use in the feature section targeting the Parent/Student persona."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1584750153892-38414eb8e76a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjd8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBzY2hvb2wlMjBidWlsZGluZ3xlbnwwfHx8fDE3ODYyMTk0OTJ8MA&ixlib=rb-4.1.0&q=85",
+      "category": "School Admin Feature",
+      "description": "Modern school building. Use in the campus/school onboarding wizard or admin landing section."
+    }
+  ],
+  "accessibility": [
+    "Ensure contrast ratios meet APCA or WCAG AA standards (4.5:1 for normal text, 3:1 for large text).",
+    "Explicitly set text color on hover states (e.g., `hover:bg-blue-600 hover:text-white`).",
+    "All interactive elements MUST include a `data-testid` attribute (e.g., `data-testid=\"login-submit-btn\"`).",
+    "Do NOT use complete transparent backgrounds for dropdowns, overlays, or floating headers."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Write React components using `.js` extensions and JavaScript syntax, not `.tsx`.",
+    "Do not use generic centered layouts or simplistic gradients. Create depth through layered design elements.",
+    "Do NOT apply `transition: all`. Apply transitions to specific properties (e.g., `transition-transform transition-colors`).",
+    "Do NOT globally center align the app container in CSS.",
+    "Use modern sharp or pill-shaped buttons with interaction micro-animations.",
+    "Never use AI assistant Emoji characters (🤖🧠💡) for icons.",
+    "Use generous spacing (2-3x more than standard `p-4`).",
+    "Prioritize existing Shadcn components in `src/components/ui`. Customize them to fit the sharp, GenZ-friendly aesthetic."
+  ]
+}
