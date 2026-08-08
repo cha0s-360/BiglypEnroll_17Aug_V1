@@ -1,89 +1,723 @@
-from fastapi import FastAPI, APIRouter
 from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
-import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
-
+import os
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / ".env")
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+import uuid
+import math
+import random
+import logging
+import bcrypt
+import jwt
+from datetime import datetime, timezone, timedelta
+from typing import List, Optional, Annotated
+
+from fastapi import FastAPI, APIRouter, Request, HTTPException, Depends, UploadFile, File
+from starlette.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel, Field, EmailStr, BeforeValidator, ConfigDict
+from bson import ObjectId
+
+from fee_parser import parse_fee_file
+
+# ---------------------------------------------------------------- DB ----------
+mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ["DB_NAME"]]
 
-# Create the main app without a prefix
-app = FastAPI()
+JWT_SECRET = os.environ["JWT_SECRET"]
+JWT_ALGORITHM = "HS256"
+ACADEMIC_YEAR = "2025-26"
 
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("biglyp")
+
+app = FastAPI(title="BiglypEnroll API")
+api = APIRouter(prefix="/api")
+
+PyObjectId = Annotated[str, BeforeValidator(lambda v: str(v))]
+
+ROLES = ["super_admin", "school_admin", "counsellor", "finance", "parent"]
+
+# ------------------------------------------------------------ helpers ---------
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
+def verify_password(plain: str, hashed: str) -> bool:
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    except ValueError:
+        return False
+
+
+def create_access_token(user_id: str, email: str, role: str) -> str:
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "role": role,
+        "exp": datetime.now(timezone.utc) + timedelta(days=7),
+        "type": "access",
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+async def get_current_user(request: Request) -> dict:
+    token = request.cookies.get("access_token")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user = await db.users.find_one({"_id": ObjectId(payload["sub"])})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        user["id"] = str(user["_id"])
+        user.pop("_id", None)
+        user.pop("password_hash", None)
+        return user
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+def require_roles(*roles):
+    async def checker(user: dict = Depends(get_current_user)):
+        if user.get("role") not in roles:
+            raise HTTPException(status_code=403, detail="Insufficient permissions")
+        return user
+    return checker
+
+
+def public_user(u: dict) -> dict:
+    return {
+        "id": u["id"],
+        "name": u.get("name"),
+        "email": u.get("email"),
+        "role": u.get("role"),
+        "school_id": u.get("school_id"),
+    }
+
+
+# ------------------------------------------------------------ models ----------
+class RegisterIn(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    role: str = "parent"
+
+
+class LoginIn(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class SchoolIn(BaseModel):
+    name: str
+    type: str = "School"
+    spoc_name: str = ""
+    spoc_email: str = ""
+    phone: str = ""
+    address: str = ""
+
+
+class OnboardingIn(BaseModel):
+    campuses: List[dict] = []
+    courses: List[dict] = []
+    team: List[dict] = []
+    multi_account_enabled: bool = False
+    settlement_accounts: List[dict] = []
+    complete: bool = False
+
+
+class FeeHead(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    name: str
+    amount: float
+    frequency: str = "Yearly"
+    grades: List[str] = []
+    account_id: Optional[str] = None
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
+class Scholarship(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    type: str = "percentage"  # percentage | fixed
+    value: float = 0
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+class FeeStructureIn(BaseModel):
+    fee_heads: List[FeeHead] = []
+    scholarships: List[Scholarship] = []
+    early_bird_discount: float = 0
+    late_fee: float = 0
+    published: bool = False
 
-# Include the router in the main app
-app.include_router(api_router)
 
+class StudentIn(BaseModel):
+    name: str
+    grade: str
+    program: str = ""
+    parent_email: str = ""
+    roll_no: str = ""
+
+
+class PayIn(BaseModel):
+    student_id: str
+    fee_head_ids: List[str]
+    mode: str = "UPI"
+
+
+class FinancingPreviewIn(BaseModel):
+    amount: float
+    down_payment: float = 0
+    tenure: int = 6
+
+
+# ------------------------------------------------------------ auth ------------
+@api.post("/auth/register")
+async def register(body: RegisterIn):
+    email = body.email.lower()
+    if await db.users.find_one({"email": email}):
+        raise HTTPException(status_code=400, detail="Email already registered")
+    role = body.role if body.role in ROLES else "parent"
+    doc = {
+        "name": body.name,
+        "email": email,
+        "password_hash": hash_password(body.password),
+        "role": role,
+        "school_id": None,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    res = await db.users.insert_one(doc)
+    uid = str(res.inserted_id)
+    token = create_access_token(uid, email, role)
+    return {"token": token, "user": {"id": uid, "name": body.name, "email": email, "role": role, "school_id": None}}
+
+
+@api.post("/auth/login")
+async def login(body: LoginIn):
+    email = body.email.lower()
+    user = await db.users.find_one({"email": email})
+    if not user or not verify_password(body.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    uid = str(user["_id"])
+    token = create_access_token(uid, email, user["role"])
+    return {"token": token, "user": {"id": uid, "name": user["name"], "email": email,
+                                     "role": user["role"], "school_id": user.get("school_id")}}
+
+
+@api.get("/auth/me")
+async def me(user: dict = Depends(get_current_user)):
+    return public_user(user)
+
+
+@api.post("/auth/logout")
+async def logout():
+    return {"ok": True}
+
+
+# ------------------------------------------------------------ school ----------
+async def get_user_school_id(user: dict) -> str:
+    sid = user.get("school_id")
+    if not sid:
+        raise HTTPException(status_code=400, detail="No school linked to this account")
+    return sid
+
+
+@api.get("/school")
+async def get_school(user: dict = Depends(get_current_user)):
+    sid = user.get("school_id")
+    if not sid:
+        return None
+    school = await db.schools.find_one({"_id": ObjectId(sid)})
+    if not school:
+        return None
+    school["id"] = str(school.pop("_id"))
+    return school
+
+
+@api.get("/school/list")
+async def list_schools(user: dict = Depends(require_roles("super_admin"))):
+    out = []
+    async for s in db.schools.find():
+        s["id"] = str(s.pop("_id"))
+        out.append(s)
+    return out
+
+
+@api.post("/school")
+async def upsert_school(body: SchoolIn, user: dict = Depends(require_roles("super_admin", "school_admin"))):
+    sid = user.get("school_id")
+    data = body.model_dump()
+    if sid:
+        await db.schools.update_one({"_id": ObjectId(sid)}, {"$set": data})
+        school = await db.schools.find_one({"_id": ObjectId(sid)})
+    else:
+        data.update({
+            "campuses": [], "courses": [], "team": [],
+            "multi_account_enabled": False, "settlement_accounts": [],
+            "onboarding_complete": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        res = await db.schools.insert_one(data)
+        sid = str(res.inserted_id)
+        await db.users.update_one({"_id": ObjectId(user["id"])}, {"$set": {"school_id": sid}})
+        school = await db.schools.find_one({"_id": ObjectId(sid)})
+    school["id"] = str(school.pop("_id"))
+    return school
+
+
+@api.post("/school/onboarding")
+async def save_onboarding(body: OnboardingIn, user: dict = Depends(require_roles("super_admin", "school_admin"))):
+    sid = await get_user_school_id(user)
+    upd = body.model_dump()
+    upd["onboarding_complete"] = body.complete
+    upd.pop("complete", None)
+    await db.schools.update_one({"_id": ObjectId(sid)}, {"$set": upd})
+    school = await db.schools.find_one({"_id": ObjectId(sid)})
+    school["id"] = str(school.pop("_id"))
+    return school
+
+
+# --------------------------------------------------------- fee structure ------
+@api.get("/fees/structure")
+async def get_fee_structure(user: dict = Depends(get_current_user)):
+    sid = await get_user_school_id(user)
+    fs = await db.fee_structures.find_one({"school_id": sid})
+    if not fs:
+        return {"school_id": sid, "fee_heads": [], "scholarships": [],
+                "early_bird_discount": 0, "late_fee": 0, "published": False}
+    fs["id"] = str(fs.pop("_id"))
+    return fs
+
+
+@api.post("/fees/structure")
+async def save_fee_structure(body: FeeStructureIn, user: dict = Depends(require_roles("super_admin", "school_admin", "finance"))):
+    sid = await get_user_school_id(user)
+    data = body.model_dump()
+    data["school_id"] = sid
+    await db.fee_structures.update_one({"school_id": sid}, {"$set": data}, upsert=True)
+    fs = await db.fee_structures.find_one({"school_id": sid})
+    fs["id"] = str(fs.pop("_id"))
+    return fs
+
+
+@api.post("/fees/parse-excel")
+async def parse_excel(file: UploadFile = File(...),
+                      user: dict = Depends(require_roles("super_admin", "school_admin", "finance"))):
+    content = await file.read()
+    try:
+        heads = await parse_fee_file(content, file.filename)
+    except Exception as e:
+        logger.exception("fee parse failed")
+        raise HTTPException(status_code=400, detail=f"Could not parse file: {e}")
+    for h in heads:
+        h["id"] = str(uuid.uuid4())
+        h["account_id"] = None
+    return {"fee_heads": heads}
+
+
+# ------------------------------------------------------------ students --------
+@api.get("/students")
+async def list_students(user: dict = Depends(require_roles("super_admin", "school_admin", "counsellor", "finance"))):
+    sid = await get_user_school_id(user)
+    out = []
+    async for s in db.students.find({"school_id": sid}):
+        s["id"] = str(s.pop("_id"))
+        out.append(s)
+    return out
+
+
+@api.post("/students")
+async def add_student(body: StudentIn, user: dict = Depends(require_roles("super_admin", "school_admin", "counsellor"))):
+    sid = await get_user_school_id(user)
+    parent_id = None
+    if body.parent_email:
+        parent = await db.users.find_one({"email": body.parent_email.lower()})
+        if parent:
+            parent_id = str(parent["_id"])
+            await db.users.update_one({"_id": parent["_id"]}, {"$set": {"school_id": sid}})
+    doc = body.model_dump()
+    doc.update({"school_id": sid, "parent_id": parent_id,
+                "created_at": datetime.now(timezone.utc).isoformat()})
+    res = await db.students.insert_one(doc)
+    doc["id"] = str(res.inserted_id)
+    doc.pop("_id", None)
+    return doc
+
+
+# --------------------------------------------------- parent fee journey -------
+def frequency_months(freq: str) -> int:
+    return {"Yearly": 12, "Half-Yearly": 6, "Quarterly": 3, "Monthly": 1, "One-Time": 0}.get(freq, 12)
+
+
+async def compute_pending(sid: str, student: dict):
+    fs = await db.fee_structures.find_one({"school_id": sid})
+    if not fs or not fs.get("published"):
+        return []
+    grade = student.get("grade", "")
+    paid_ids = set()
+    async for p in db.payments.find({"student_id": student["id"], "academic_year": ACADEMIC_YEAR, "status": "success"}):
+        for item in p.get("items", []):
+            paid_ids.add(item["fee_head_id"])
+    items = []
+    for h in fs.get("fee_heads", []):
+        grades = h.get("grades", [])
+        if grades and grade not in grades:
+            continue
+        items.append({
+            "fee_head_id": h["id"],
+            "name": h["name"],
+            "amount": h["amount"],
+            "frequency": h["frequency"],
+            "paid": h["id"] in paid_ids,
+        })
+    return items
+
+
+@api.get("/parent/children")
+async def parent_children(user: dict = Depends(get_current_user)):
+    out = []
+    async for s in db.students.find({"parent_id": user["id"]}):
+        s["id"] = str(s.pop("_id"))
+        out.append(s)
+    return out
+
+
+async def _resolve_student(student_id: str, user: dict) -> dict:
+    student = await db.students.find_one({"_id": ObjectId(student_id)})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    student["id"] = str(student.pop("_id"))
+    if user["role"] == "parent" and student.get("parent_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Not your child")
+    return student
+
+
+@api.get("/parent/fees/{student_id}")
+async def parent_fees(student_id: str, user: dict = Depends(get_current_user)):
+    student = await _resolve_student(student_id, user)
+    pending = await compute_pending(student["school_id"], student)
+    fs = await db.fee_structures.find_one({"school_id": student["school_id"]})
+    scholarships = fs.get("scholarships", []) if fs else []
+    return {"student": student, "items": pending, "academic_year": ACADEMIC_YEAR,
+            "scholarships": scholarships}
+
+
+@api.post("/parent/pay")
+async def parent_pay(body: PayIn, user: dict = Depends(get_current_user)):
+    student = await _resolve_student(body.student_id, user)
+    pending = await compute_pending(student["school_id"], student)
+    selected = [i for i in pending if i["fee_head_id"] in body.fee_head_ids and not i["paid"]]
+    if not selected:
+        raise HTTPException(status_code=400, detail="No payable items selected")
+    total = sum(i["amount"] for i in selected)
+    receipt_no = "BLP-" + datetime.now().strftime("%y%m%d") + "-" + uuid.uuid4().hex[:6].upper()
+    doc = {
+        "student_id": student["id"],
+        "student_name": student["name"],
+        "school_id": student["school_id"],
+        "items": selected,
+        "amount": total,
+        "gst": round(total * 0.18, 2),
+        "mode": body.mode,
+        "status": "success",
+        "financing": False,
+        "receipt_no": receipt_no,
+        "academic_year": ACADEMIC_YEAR,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    res = await db.payments.insert_one(doc)
+    doc["id"] = str(res.inserted_id)
+    doc.pop("_id", None)
+    return doc
+
+
+@api.post("/parent/financing/preview")
+async def financing_preview(body: FinancingPreviewIn, user: dict = Depends(get_current_user)):
+    tenure = max(6, min(12, body.tenure))
+    financed = max(0.0, body.amount - body.down_payment)
+    emi = math.ceil(financed / tenure) if tenure else 0
+    schedule = []
+    base = datetime.now(timezone.utc)
+    for i in range(tenure):
+        due = base + timedelta(days=30 * (i + 1))
+        schedule.append({"month": i + 1, "due_date": due.strftime("%d %b %Y"),
+                         "amount": emi, "status": "upcoming"})
+    return {"financed_amount": financed, "down_payment": body.down_payment,
+            "tenure": tenure, "emi": emi, "interest": "0%", "schedule": schedule}
+
+
+@api.post("/parent/pay-financing")
+async def pay_financing(body: PayIn, user: dict = Depends(get_current_user)):
+    student = await _resolve_student(body.student_id, user)
+    pending = await compute_pending(student["school_id"], student)
+    selected = [i for i in pending if i["fee_head_id"] in body.fee_head_ids and not i["paid"]]
+    if not selected:
+        raise HTTPException(status_code=400, detail="No payable items selected")
+    total = sum(i["amount"] for i in selected)
+    receipt_no = "BLP-FIN-" + uuid.uuid4().hex[:6].upper()
+    doc = {
+        "student_id": student["id"], "student_name": student["name"],
+        "school_id": student["school_id"], "items": selected, "amount": total,
+        "gst": round(total * 0.18, 2), "mode": "Financing (EMI)", "status": "success",
+        "financing": True, "receipt_no": receipt_no, "academic_year": ACADEMIC_YEAR,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    res = await db.payments.insert_one(doc)
+    doc["id"] = str(res.inserted_id)
+    doc.pop("_id", None)
+    return doc
+
+
+@api.get("/parent/payments/{student_id}")
+async def parent_payments(student_id: str, user: dict = Depends(get_current_user)):
+    student = await _resolve_student(student_id, user)
+    out = []
+    async for p in db.payments.find({"student_id": student["id"]}).sort("created_at", -1):
+        p["id"] = str(p.pop("_id"))
+        out.append(p)
+    return out
+
+
+# ------------------------------------------------------------ analytics -------
+@api.get("/analytics/overview")
+async def analytics(user: dict = Depends(require_roles("super_admin", "school_admin", "finance", "counsellor"))):
+    sid = await get_user_school_id(user)
+    payments = []
+    async for p in db.payments.find({"school_id": sid, "status": "success"}):
+        payments.append(p)
+
+    total_collected = sum(p["amount"] for p in payments)
+    financed = sum(p["amount"] for p in payments if p.get("financing"))
+
+    # Outstanding across all students
+    students = []
+    async for s in db.students.find({"school_id": sid}):
+        s["id"] = str(s["_id"])
+        students.append(s)
+    outstanding = 0.0
+    overdue_count = 0
+    for s in students:
+        pending = await compute_pending(sid, s)
+        due = sum(i["amount"] for i in pending if not i["paid"])
+        outstanding += due
+        if due > 0:
+            overdue_count += 1
+
+    # mode split
+    mode_map = {}
+    for p in payments:
+        mode_map[p["mode"]] = mode_map.get(p["mode"], 0) + p["amount"]
+    mode_split = [{"name": k, "value": round(v)} for k, v in mode_map.items()]
+
+    # monthly trend (last 6 months)
+    months = []
+    now = datetime.now(timezone.utc)
+    for i in range(5, -1, -1):
+        m = (now.replace(day=1) - timedelta(days=30 * i))
+        key = m.strftime("%Y-%m")
+        label = m.strftime("%b")
+        amt = 0.0
+        for p in payments:
+            try:
+                pd_dt = datetime.fromisoformat(p["created_at"])
+                if pd_dt.strftime("%Y-%m") == key:
+                    amt += p["amount"]
+            except Exception:
+                pass
+        months.append({"month": label, "collected": round(amt)})
+
+    # aging buckets (simplified against outstanding)
+    aging = [
+        {"bucket": "0-30 days", "amount": round(outstanding * 0.5)},
+        {"bucket": "31-60 days", "amount": round(outstanding * 0.3)},
+        {"bucket": "61-90 days", "amount": round(outstanding * 0.15)},
+        {"bucket": "90+ days", "amount": round(outstanding * 0.05)},
+    ]
+
+    # admission funnel
+    total_students = len(students)
+    funnel = [
+        {"stage": "Inquiries", "count": max(total_students * 4, 12)},
+        {"stage": "Applications", "count": max(total_students * 3, 9)},
+        {"stage": "Interviews", "count": max(total_students * 2, 6)},
+        {"stage": "Offers", "count": max(int(total_students * 1.4), 4)},
+        {"stage": "Enrolled", "count": total_students},
+    ]
+
+    return {
+        "kpis": {
+            "total_collected": round(total_collected),
+            "financed_disbursals": round(financed),
+            "outstanding": round(outstanding),
+            "overdue_count": overdue_count,
+            "total_students": total_students,
+            "transactions": len(payments),
+        },
+        "mode_split": mode_split,
+        "monthly_trend": months,
+        "aging": aging,
+        "funnel": funnel,
+    }
+
+
+# ------------------------------------------------------------ seed ------------
+async def seed():
+    await db.users.create_index("email", unique=True)
+
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@biglyp.com")
+    admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
+    if not await db.users.find_one({"email": admin_email}):
+        await db.users.insert_one({
+            "name": "Biglyp Ops", "email": admin_email,
+            "password_hash": hash_password(admin_password),
+            "role": "super_admin", "school_id": None,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+
+    # demo school
+    school = await db.schools.find_one({"name": "Horizon International School"})
+    if not school:
+        res = await db.schools.insert_one({
+            "name": "Horizon International School", "type": "School",
+            "spoc_name": "Meera Iyer", "spoc_email": "meera@horizon.edu",
+            "phone": "+91 98765 43210", "address": "Bandra West, Mumbai",
+            "campuses": [{"id": str(uuid.uuid4()), "name": "Main Campus", "city": "Mumbai"}],
+            "courses": [
+                {"id": str(uuid.uuid4()), "name": "Grade 9", "duration": "1 yr"},
+                {"id": str(uuid.uuid4()), "name": "Grade 10", "duration": "1 yr"},
+                {"id": str(uuid.uuid4()), "name": "Grade 11", "duration": "1 yr"},
+                {"id": str(uuid.uuid4()), "name": "Grade 12", "duration": "1 yr"},
+            ],
+            "team": [], "multi_account_enabled": False, "settlement_accounts": [],
+            "onboarding_complete": True,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        school_id = str(res.inserted_id)
+    else:
+        school_id = str(school["_id"])
+
+    # school admin
+    if not await db.users.find_one({"email": "school@biglyp.com"}):
+        await db.users.insert_one({
+            "name": "Meera Iyer", "email": "school@biglyp.com",
+            "password_hash": hash_password("school123"),
+            "role": "school_admin", "school_id": school_id,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+    else:
+        await db.users.update_one({"email": "school@biglyp.com"}, {"$set": {"school_id": school_id}})
+
+    # finance user
+    if not await db.users.find_one({"email": "finance@biglyp.com"}):
+        await db.users.insert_one({
+            "name": "Rohan Desai", "email": "finance@biglyp.com",
+            "password_hash": hash_password("finance123"),
+            "role": "finance", "school_id": school_id,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+
+    # parent user
+    parent = await db.users.find_one({"email": "parent@biglyp.com"})
+    if not parent:
+        pres = await db.users.insert_one({
+            "name": "Anjali Sharma", "email": "parent@biglyp.com",
+            "password_hash": hash_password("parent123"),
+            "role": "parent", "school_id": school_id,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        parent_id = str(pres.inserted_id)
+    else:
+        parent_id = str(parent["_id"])
+        await db.users.update_one({"_id": ObjectId(parent_id)}, {"$set": {"school_id": school_id}})
+
+    # fee structure
+    if not await db.fee_structures.find_one({"school_id": school_id}):
+        grades = ["Grade 9", "Grade 10", "Grade 11", "Grade 12"]
+        await db.fee_structures.insert_one({
+            "school_id": school_id,
+            "fee_heads": [
+                {"id": str(uuid.uuid4()), "name": "Tuition Fee", "amount": 120000, "frequency": "Yearly", "grades": grades, "account_id": None},
+                {"id": str(uuid.uuid4()), "name": "Admission Fee", "amount": 25000, "frequency": "One-Time", "grades": grades, "account_id": None},
+                {"id": str(uuid.uuid4()), "name": "Lab & Technology Fee", "amount": 12000, "frequency": "Yearly", "grades": grades, "account_id": None},
+                {"id": str(uuid.uuid4()), "name": "Transport Fee", "amount": 24000, "frequency": "Quarterly", "grades": grades, "account_id": None},
+                {"id": str(uuid.uuid4()), "name": "Examination Fee", "amount": 6000, "frequency": "Half-Yearly", "grades": grades, "account_id": None},
+            ],
+            "scholarships": [
+                {"id": str(uuid.uuid4()), "name": "Merit Scholarship", "type": "percentage", "value": 15},
+                {"id": str(uuid.uuid4()), "name": "Sibling Discount", "type": "fixed", "value": 10000},
+            ],
+            "early_bird_discount": 5, "late_fee": 500, "published": True,
+        })
+
+    # students
+    if await db.students.count_documents({"school_id": school_id}) == 0:
+        sample = [
+            {"name": "Aarav Sharma", "grade": "Grade 10", "roll_no": "H-1001", "parent_id": parent_id},
+            {"name": "Diya Mehta", "grade": "Grade 9", "roll_no": "H-1002", "parent_id": None},
+            {"name": "Kabir Nair", "grade": "Grade 11", "roll_no": "H-1003", "parent_id": None},
+            {"name": "Ishita Rao", "grade": "Grade 12", "roll_no": "H-1004", "parent_id": None},
+            {"name": "Vivaan Gupta", "grade": "Grade 10", "roll_no": "H-1005", "parent_id": None},
+            {"name": "Ananya Singh", "grade": "Grade 9", "roll_no": "H-1006", "parent_id": None},
+        ]
+        for s in sample:
+            s.update({"school_id": school_id, "program": "",
+                      "created_at": datetime.now(timezone.utc).isoformat()})
+            await db.students.insert_one(s)
+
+        # historical payments for analytics
+        fs = await db.fee_structures.find_one({"school_id": school_id})
+        heads = fs["fee_heads"]
+        modes = ["UPI", "Cards", "Net Banking", "AutoPay", "Financing (EMI)"]
+        now = datetime.now(timezone.utc)
+        students_docs = []
+        async for s in db.students.find({"school_id": school_id}):
+            s["id"] = str(s["_id"])
+            students_docs.append(s)
+        for si, s in enumerate(students_docs):
+            npays = random.randint(1, 3)
+            for j in range(npays):
+                head = random.choice(heads)
+                created = now - timedelta(days=random.randint(0, 150))
+                fin = head["frequency"] == "Yearly" and random.random() < 0.4
+                await db.payments.insert_one({
+                    "student_id": s["id"], "student_name": s["name"], "school_id": school_id,
+                    "items": [{"fee_head_id": head["id"], "name": head["name"],
+                               "amount": head["amount"], "frequency": head["frequency"], "paid": True}],
+                    "amount": head["amount"], "gst": round(head["amount"] * 0.18, 2),
+                    "mode": "Financing (EMI)" if fin else random.choice(modes[:-1]),
+                    "status": "success", "financing": fin,
+                    "receipt_no": "BLP-" + uuid.uuid4().hex[:6].upper(),
+                    "academic_year": ACADEMIC_YEAR,
+                    "created_at": created.isoformat(),
+                })
+
+    logger.info("Seed complete")
+
+
+@app.on_event("startup")
+async def on_start():
+    await seed()
+
+
+@app.on_event("shutdown")
+async def on_stop():
+    client.close()
+
+
+app.include_router(api)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
