@@ -274,6 +274,7 @@ export default function ParentDashboard() {
       {/* Receipt dialog */}
       <Dialog open={!!receipt} onOpenChange={() => setReceipt(null)}>
         <DialogContent className="rounded-sm">
+          <DialogHeader className="sr-only"><DialogTitle>Payment receipt</DialogTitle></DialogHeader>
           <div className="text-center py-4">
             <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center mx-auto">
               <CheckCircle2 className="h-8 w-8 text-green-600" />
