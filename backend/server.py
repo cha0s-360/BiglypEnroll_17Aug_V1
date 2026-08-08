@@ -335,6 +335,8 @@ async def add_team_member(body: TeamMemberIn, user: dict = Depends(require_roles
     email = body.email.lower()
     existing = await db.users.find_one({"email": email})
     if existing:
+        if existing.get("school_id") and existing["school_id"] != sid:
+            raise HTTPException(status_code=400, detail="This email already belongs to another institute")
         await db.users.update_one(
             {"_id": existing["_id"]},
             {"$set": {"school_id": sid, "role": role, "name": body.name, "campus": body.campus}},
@@ -458,9 +460,10 @@ async def edit_student(student_id: str, body: StudentUpdateIn, user: dict = Depe
             upd["parent_id"] = None
         else:
             parent = await db.users.find_one({"email": body.parent_email.lower()})
-            if parent:
-                upd["parent_id"] = str(parent["_id"])
-                await db.users.update_one({"_id": parent["_id"]}, {"$set": {"school_id": sid}})
+            if not parent:
+                raise HTTPException(status_code=400, detail="No account found for that parent email")
+            upd["parent_id"] = str(parent["_id"])
+            await db.users.update_one({"_id": parent["_id"]}, {"$set": {"school_id": sid}})
     if upd:
         await db.students.update_one({"_id": ObjectId(student_id)}, {"$set": upd})
     s = await db.students.find_one({"_id": ObjectId(student_id)})
