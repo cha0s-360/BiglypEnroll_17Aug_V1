@@ -39,7 +39,13 @@ api = APIRouter(prefix="/api")
 
 PyObjectId = Annotated[str, BeforeValidator(lambda v: str(v))]
 
-ROLES = ["super_admin", "school_admin", "counsellor", "finance", "parent"]
+ROLES = ["super_admin", "school_admin", "counsellor", "finance", "parent",
+         "manager", "admission", "legal"]
+# Roles that belong to a school staff team (can be added via Team management)
+TEAM_ROLES = ["school_admin", "manager", "finance", "counsellor", "admission", "legal"]
+# Roles allowed into the staff dashboard
+STAFF_ROLES = ["super_admin", "school_admin", "manager", "finance",
+               "counsellor", "admission", "legal"]
 
 # ------------------------------------------------------------ helpers ---------
 def hash_password(password: str) -> str:
@@ -168,6 +174,28 @@ class StudentIn(BaseModel):
     roll_no: str = ""
 
 
+class StudentUpdateIn(BaseModel):
+    name: Optional[str] = None
+    grade: Optional[str] = None
+    program: Optional[str] = None
+    parent_email: Optional[str] = None
+    roll_no: Optional[str] = None
+
+
+class TeamMemberIn(BaseModel):
+    name: str
+    email: EmailStr
+    role: str = "counsellor"
+    password: str = "biglyp123"
+    campus: str = ""
+
+
+class TeamUpdateIn(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    campus: Optional[str] = None
+
+
 class PayIn(BaseModel):
     student_id: str
     fee_head_ids: List[str]
@@ -286,6 +314,71 @@ async def save_onboarding(body: OnboardingIn, user: dict = Depends(require_roles
     return school
 
 
+# --------------------------------------------------------- team management ----
+@api.get("/school/team")
+async def list_team(user: dict = Depends(require_roles(*STAFF_ROLES))):
+    sid = await get_user_school_id(user)
+    out = []
+    async for u in db.users.find({"school_id": sid, "role": {"$in": TEAM_ROLES}}):
+        out.append({
+            "id": str(u["_id"]), "name": u.get("name"), "email": u.get("email"),
+            "role": u.get("role"), "campus": u.get("campus", ""),
+            "is_self": str(u["_id"]) == user["id"],
+        })
+    return out
+
+
+@api.post("/school/team")
+async def add_team_member(body: TeamMemberIn, user: dict = Depends(require_roles("super_admin", "school_admin", "manager"))):
+    sid = await get_user_school_id(user)
+    role = body.role if body.role in TEAM_ROLES else "counsellor"
+    email = body.email.lower()
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        await db.users.update_one(
+            {"_id": existing["_id"]},
+            {"$set": {"school_id": sid, "role": role, "name": body.name, "campus": body.campus}},
+        )
+        uid = str(existing["_id"])
+    else:
+        res = await db.users.insert_one({
+            "name": body.name, "email": email,
+            "password_hash": hash_password(body.password),
+            "role": role, "school_id": sid, "campus": body.campus,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        uid = str(res.inserted_id)
+    return {"id": uid, "name": body.name, "email": email, "role": role, "campus": body.campus, "is_self": False}
+
+
+@api.put("/school/team/{member_id}")
+async def update_team_member(member_id: str, body: TeamUpdateIn, user: dict = Depends(require_roles("super_admin", "school_admin", "manager"))):
+    sid = await get_user_school_id(user)
+    member = await db.users.find_one({"_id": ObjectId(member_id), "school_id": sid})
+    if not member:
+        raise HTTPException(status_code=404, detail="Team member not found")
+    upd = {k: v for k, v in body.model_dump().items() if v is not None}
+    if "role" in upd and upd["role"] not in TEAM_ROLES:
+        upd.pop("role")
+    if upd:
+        await db.users.update_one({"_id": ObjectId(member_id)}, {"$set": upd})
+    m = await db.users.find_one({"_id": ObjectId(member_id)})
+    return {"id": member_id, "name": m.get("name"), "email": m.get("email"),
+            "role": m.get("role"), "campus": m.get("campus", "")}
+
+
+@api.delete("/school/team/{member_id}")
+async def remove_team_member(member_id: str, user: dict = Depends(require_roles("super_admin", "school_admin", "manager"))):
+    sid = await get_user_school_id(user)
+    if member_id == user["id"]:
+        raise HTTPException(status_code=400, detail="You cannot remove yourself")
+    member = await db.users.find_one({"_id": ObjectId(member_id), "school_id": sid})
+    if not member:
+        raise HTTPException(status_code=404, detail="Team member not found")
+    await db.users.delete_one({"_id": ObjectId(member_id)})
+    return {"ok": True}
+
+
 # --------------------------------------------------------- fee structure ------
 @api.get("/fees/structure")
 async def get_fee_structure(user: dict = Depends(get_current_user)):
@@ -326,7 +419,7 @@ async def parse_excel(file: UploadFile = File(...),
 
 # ------------------------------------------------------------ students --------
 @api.get("/students")
-async def list_students(user: dict = Depends(require_roles("super_admin", "school_admin", "counsellor", "finance"))):
+async def list_students(user: dict = Depends(require_roles(*STAFF_ROLES))):
     sid = await get_user_school_id(user)
     out = []
     async for s in db.students.find({"school_id": sid}):
@@ -336,7 +429,7 @@ async def list_students(user: dict = Depends(require_roles("super_admin", "schoo
 
 
 @api.post("/students")
-async def add_student(body: StudentIn, user: dict = Depends(require_roles("super_admin", "school_admin", "counsellor"))):
+async def add_student(body: StudentIn, user: dict = Depends(require_roles("super_admin", "school_admin", "counsellor", "admission", "manager"))):
     sid = await get_user_school_id(user)
     parent_id = None
     if body.parent_email:
@@ -351,6 +444,39 @@ async def add_student(body: StudentIn, user: dict = Depends(require_roles("super
     doc["id"] = str(res.inserted_id)
     doc.pop("_id", None)
     return doc
+
+
+@api.put("/students/{student_id}")
+async def edit_student(student_id: str, body: StudentUpdateIn, user: dict = Depends(require_roles("super_admin", "school_admin", "counsellor", "admission", "manager"))):
+    sid = await get_user_school_id(user)
+    student = await db.students.find_one({"_id": ObjectId(student_id), "school_id": sid})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    upd = {k: v for k, v in body.model_dump().items() if v is not None and k != "parent_email"}
+    if body.parent_email is not None:
+        if body.parent_email == "":
+            upd["parent_id"] = None
+        else:
+            parent = await db.users.find_one({"email": body.parent_email.lower()})
+            if parent:
+                upd["parent_id"] = str(parent["_id"])
+                await db.users.update_one({"_id": parent["_id"]}, {"$set": {"school_id": sid}})
+    if upd:
+        await db.students.update_one({"_id": ObjectId(student_id)}, {"$set": upd})
+    s = await db.students.find_one({"_id": ObjectId(student_id)})
+    s["id"] = str(s.pop("_id"))
+    return s
+
+
+@api.delete("/students/{student_id}")
+async def delete_student(student_id: str, user: dict = Depends(require_roles("super_admin", "school_admin", "manager"))):
+    sid = await get_user_school_id(user)
+    student = await db.students.find_one({"_id": ObjectId(student_id), "school_id": sid})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    await db.students.delete_one({"_id": ObjectId(student_id)})
+    await db.payments.delete_many({"student_id": student_id})
+    return {"ok": True}
 
 
 # --------------------------------------------------- parent fee journey -------
@@ -489,7 +615,7 @@ async def parent_payments(student_id: str, user: dict = Depends(get_current_user
 
 # ------------------------------------------------------------ analytics -------
 @api.get("/analytics/overview")
-async def analytics(user: dict = Depends(require_roles("super_admin", "school_admin", "finance", "counsellor"))):
+async def analytics(user: dict = Depends(require_roles(*STAFF_ROLES))):
     sid = await get_user_school_id(user)
     payments = []
     async for p in db.payments.find({"school_id": sid, "status": "success"}):
@@ -699,6 +825,29 @@ async def seed():
                     "academic_year": ACADEMIC_YEAR,
                     "created_at": created.isoformat(),
                 })
+
+    # Demo team members (idempotent) — so Team page isn't empty
+    demo_team = [
+        {"name": "Priya Menon", "email": "counsellor@biglyp.com", "role": "counsellor", "pw": "counsellor123"},
+        {"name": "Arjun Kapoor", "email": "manager@biglyp.com", "role": "manager", "pw": "manager123"},
+        {"name": "Neha Verma", "email": "admission@biglyp.com", "role": "admission", "pw": "admission123"},
+    ]
+    for t in demo_team:
+        if not await db.users.find_one({"email": t["email"]}):
+            await db.users.insert_one({
+                "name": t["name"], "email": t["email"],
+                "password_hash": hash_password(t["pw"]),
+                "role": t["role"], "school_id": school_id, "campus": "Main Campus",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+
+    # Fresh unpaid student linked to the parent (idempotent) — for testing payment options
+    if not await db.students.find_one({"school_id": school_id, "name": "Sara Sharma"}):
+        await db.students.insert_one({
+            "name": "Sara Sharma", "grade": "Grade 9", "roll_no": "H-2001",
+            "program": "", "parent_id": parent_id, "school_id": school_id,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
 
     logger.info("Seed complete")
 

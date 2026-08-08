@@ -11,29 +11,61 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, UserPlus } from "lucide-react";
+import { Plus, UserPlus, Pencil, Trash2 } from "lucide-react";
 
 const GRADES = ["Grade 9", "Grade 10", "Grade 11", "Grade 12"];
+const EMPTY = { name: "", grade: "Grade 9", roll_no: "", parent_email: "" };
 
 export default function Students() {
   const [students, setStudents] = useState([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", grade: "Grade 9", roll_no: "", parent_email: "" });
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState(EMPTY);
+  const [toDelete, setToDelete] = useState(null);
 
   const load = () => api.get("/students").then(({ data }) => setStudents(data)).catch(() => {});
   useEffect(() => { load(); }, []);
 
-  const add = async () => {
+  const openAdd = () => { setEditing(null); setForm(EMPTY); setOpen(true); };
+  const openEdit = (s) => {
+    setEditing(s);
+    setForm({ name: s.name, grade: s.grade, roll_no: s.roll_no || "", parent_email: "" });
+    setOpen(true);
+  };
+
+  const save = async () => {
     if (!form.name) return toast.error("Name is required");
     try {
-      await api.post("/students", form);
-      toast.success("Student added");
+      if (editing) {
+        const payload = { name: form.name, grade: form.grade, roll_no: form.roll_no };
+        if (form.parent_email) payload.parent_email = form.parent_email;
+        await api.put(`/students/${editing.id}`, payload);
+        toast.success("Student updated");
+      } else {
+        await api.post("/students", form);
+        toast.success("Student added");
+      }
       setOpen(false);
-      setForm({ name: "", grade: "Grade 9", roll_no: "", parent_email: "" });
+      setForm(EMPTY);
       load();
-    } catch {
-      toast.error("Could not add student");
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Could not save student");
+    }
+  };
+
+  const remove = async () => {
+    try {
+      await api.delete(`/students/${toDelete.id}`);
+      toast.success("Student removed");
+      setToDelete(null);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Could not remove student");
     }
   };
 
@@ -43,13 +75,13 @@ export default function Students() {
         <p className="text-sm text-muted-foreground">{students.length} enrolled students</p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="rounded-sm bg-brand-blue hover:bg-brand-navy" data-testid="add-student-btn">
+            <Button onClick={openAdd} className="rounded-sm bg-brand-blue hover:bg-brand-navy" data-testid="add-student-btn">
               <Plus className="h-4 w-4 mr-2" /> Add student
             </Button>
           </DialogTrigger>
           <DialogContent className="rounded-sm">
             <DialogHeader>
-              <DialogTitle className="font-head flex items-center gap-2"><UserPlus className="h-5 w-5" /> Add student</DialogTitle>
+              <DialogTitle className="font-head flex items-center gap-2"><UserPlus className="h-5 w-5" /> {editing ? "Edit student" : "Add student"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2">
               <div>
@@ -70,13 +102,13 @@ export default function Students() {
                 </div>
               </div>
               <div>
-                <Label>Parent email (optional)</Label>
+                <Label>Parent email {editing && <span className="text-xs text-muted-foreground">(leave blank to keep current)</span>}</Label>
                 <Input value={form.parent_email} onChange={(e) => setForm({ ...form, parent_email: e.target.value })}
                   placeholder="Links fees to their account" className="rounded-sm mt-1.5" data-testid="student-parent" />
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={add} className="rounded-sm bg-brand-blue hover:bg-brand-navy" data-testid="save-student-btn">Add student</Button>
+              <Button onClick={save} className="rounded-sm bg-brand-blue hover:bg-brand-navy" data-testid="save-student-btn">{editing ? "Save changes" : "Add student"}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -90,6 +122,7 @@ export default function Students() {
               <th className="p-4 font-medium">Grade</th>
               <th className="p-4 font-medium">Roll no.</th>
               <th className="p-4 font-medium">Parent linked</th>
+              <th className="p-4 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -109,14 +142,41 @@ export default function Students() {
                   {s.parent_id ? <Badge className="bg-green-100 text-green-700 hover:bg-green-100 rounded-sm">Linked</Badge>
                     : <span className="text-muted-foreground text-xs">Not linked</span>}
                 </td>
+                <td className="p-4">
+                  <div className="flex items-center justify-end gap-2">
+                    <button onClick={() => openEdit(s)} className="text-muted-foreground hover:text-brand-blue" data-testid={`edit-student-${s.id}`}>
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => setToDelete(s)} className="text-muted-foreground hover:text-destructive" data-testid={`del-student-${s.id}`}>
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
             {students.length === 0 && (
-              <tr><td colSpan={4} className="p-10 text-center text-muted-foreground">No students yet.</td></tr>
+              <tr><td colSpan={5} className="p-10 text-center text-muted-foreground">No students yet.</td></tr>
             )}
           </tbody>
         </table>
       </div>
+
+      <AlertDialog open={!!toDelete} onOpenChange={() => setToDelete(null)}>
+        <AlertDialogContent className="rounded-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {toDelete?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This deletes the student record and all associated fee payments. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-sm">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={remove} className="rounded-sm bg-destructive hover:bg-destructive/90" data-testid="confirm-del-student">
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }
