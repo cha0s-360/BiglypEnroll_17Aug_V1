@@ -7,7 +7,7 @@ import requests
 import math
 
 # Use the production URL from frontend/.env
-BASE_URL = "https://10db0f4d-d2bd-460a-9c67-4584cd88920f.preview.emergentagent.com"
+BASE_URL = "https://fee-finance-cibil.preview.emergentagent.com"
 API = f"{BASE_URL}/api"
 
 # Test credentials from test_credentials.md

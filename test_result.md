@@ -102,9 +102,24 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Modify the EMI duration option in fee financing from 6-12 months to 3-12 months (Student/Parent login), and rebuild the Student Fee Payment screen per provided design spec."
+user_problem_statement: "Add CIBIL check in the parent's fee financing journey — in Step 2 (Eligibility)."
 
 backend:
+  - task: "CIBIL soft-pull eligibility check (POST /api/parent/cibil-check)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "New POST /api/parent/cibil-check {pan, consent, dob?} for parent-authenticated users. Validates PAN with regex ^[A-Z]{5}[0-9]{4}[A-Z]$, requires consent=true. Returns a deterministic simulated CIBIL result derived from md5(pan): score in 690..830 (approved band), band Excellent/Good/Fair/Poor, band_color, approved boolean (>=670), max_eligible tiers (250k/150k/75k/0), pan_masked, bureau, pull_type, factors array (4 items), decision text, checked_at. Special demo hooks: PAN starting with 'ZZZZZ' -> score 540..579 (Poor, not approved); PAN starting with 'AAAAA' -> score 800..850 (Excellent, approved). Returns HTTP 400 on invalid PAN or consent=false."
+        -working: true
+        -agent: "testing"
+        -comment: "Comprehensive testing completed. All 7 test cases passed: (1) Valid PAN 'ABCDE1234F' with consent=true returns HTTP 200 with all required fields - score=801 (int, 300-900 range), band='Excellent', band_color='emerald', approved=true (bool), max_eligible=250000 (int), pan_masked='ABCXXX4F' (str), bureau='CIBIL (TransUnion)' (str), pull_type='Soft — no impact on credit score' (str), factors array with 4 items each containing label and status, decision (str), checked_at (ISO timestamp str); (2) Deterministic check: same PAN 'ABCDE1234F' returns identical score 801 on multiple calls; (3) Excellent hook: PAN 'AAAAA1234A' with consent=true returns score=831 (>= 800), band='Excellent', approved=true, max_eligible=250000; (4) Poor hook: PAN 'ZZZZZ9999Z' with consent=true returns score=568 (in 540-579 range), band='Poor', approved=false, max_eligible=0; (5) Consent=false with valid PAN correctly returns HTTP 400 with detail 'Consent is required for the eligibility check'; (6) Invalid PAN '123' correctly returns HTTP 400 with detail 'Enter a valid PAN (e.g. ABCDE1234F)'; (7) No Authorization header correctly returns HTTP 401 with detail 'Not authenticated'. All response fields validated with correct types and values. CIBIL endpoint working correctly with proper validation and error handling."
+
   - task: "verify-account (simulated penny-drop) + grade migration to LKG..Class 12"
     implemented: true
     working: true
@@ -182,8 +197,8 @@ backend:
 
 metadata:
   created_by: "main_agent"
-  version: "1.5"
-  test_sequence: 5
+  version: "1.6"
+  test_sequence: 6
   run_ui: false
 
 test_plan:
@@ -194,7 +209,7 @@ test_plan:
 
 agent_communication:
     -agent: "main"
-    -message: "New round: test POST /api/parent/mandate and the updated /api/parent/pay-financing. Auth parent@biglyp.com/parent123. Use child 'Sara Sharma' (has unpaid fees) — GET /api/parent/children then /api/parent/fees/{id}. For mandate: send {student_id, fee_head_ids:[<unpaid academic head>], frequency:'quarterly'|'semi', rail:'UPI AutoPay', bank_name, account_holder, account_number, ifsc}. Verify quarterly -> installments=4, schedule len 4 (index0 status 'paid', rest 'upcoming'), upfront+3*per == total, account_masked shows last4; semi -> installments=2. Confirm GET /api/parent/payments/{id} returns the AutoDebit payment WITH schedule and plan_type. For pay-financing: send tenure=3 and tenure=12 with down_payment, verify response/stored doc has plan_type='EMI', tenure, emi, and schedule of length==tenure."
+    -message: "New endpoint POST /api/parent/cibil-check added. Auth: parent@biglyp.com/parent123. Tests to run: (1) Valid PAN 'ABCDE1234F' with consent=true → HTTP 200; response contains score (int 300-900), band (str), band_color, approved (bool), max_eligible (int), pan_masked, bureau, pull_type, factors (list len 4), decision (str), checked_at. (2) Deterministic: same PAN returns same score twice. (3) Excellent hook: PAN 'AAAAA1234A' with consent=true → score >= 800, band='Excellent', approved=true, max_eligible=250000. (4) Poor hook: PAN 'ZZZZZ9999Z' with consent=true → score < 670, band='Poor', approved=false, max_eligible=0. (5) Consent=false → HTTP 400 with detail mentioning consent. (6) Invalid PAN '123' → HTTP 400. (7) Unauthenticated request (no Authorization header) → HTTP 401 or 403."
     -agent: "testing"
     -message: "Testing completed successfully. All 6 test cases passed including edge cases and smoke tests. The EMI tenure range change from 6-12 to 3-12 months is working correctly. Tenure clamping works as expected (2->3, 13->12). EMI calculations are accurate using ceil(financed_amount/tenure). Parent flow endpoints (children, fees, pay-financing) are all functioning properly. No issues found."
     -agent: "testing"
@@ -203,3 +218,5 @@ agent_communication:
     -message: "Round 4 testing completed successfully. Active financing endpoints fully tested and verified: (1) GET /api/parent/children successfully retrieves children including Aarav Sharma with active EMI plan; (2) GET /api/parent/financing/active/{student_id} correctly returns EMI plans with proper structure (plan_type, emi, tenure, financed_amount, schedule array with correct statuses and rails); (3) POST /api/parent/financing/pay-emi successfully processes manual EMI payment for month 3, updates status to 'paid' with receipt and 'Manual' rail, correctly re-derives remaining installment statuses (exactly 1 'scheduled', rest 'upcoming'); (4) Negative tests passed: attempting to pay already paid installment returns HTTP 400, bogus payment_id returns HTTP 404; (5) POST /api/parent/pay-financing with tenure=6 creates correct EMI plan structure. All 6 test cases passed. All endpoints working correctly with proper validation and error handling. No issues found."
     -agent: "testing"
     -message: "Round 5 testing completed successfully. BiglypEnroll backend changes fully tested and verified: (A) POST /api/school/verify-account (simulated penny-drop) - valid account returns HTTP 200 with account_name (non-empty string), bank, verified=true; deterministic (same input returns same account_name); invalid account (<6 char) returns HTTP 400. (B) Grade migration integrity - GET /api/parent/children returns children with 'Class N' format (NOT 'Grade N'); GET /api/parent/fees/{sara_id} returns 5 fee items (compute_pending works with migrated grades); GET /api/school returns 14 courses (LKG, UKG, Class 1..12). (C) Settlement persistence - POST /api/school/onboarding with settlement_accounts persists correctly; GET /api/school confirms settlement_accounts with fee_head_id and account_name. All 10 test cases passed. All endpoints working correctly with proper validation. No issues found."
+    -agent: "testing"
+    -message: "Round 6 testing completed successfully. CIBIL soft-pull endpoint (POST /api/parent/cibil-check) fully tested and verified. All 7 test cases passed: (1) Valid PAN 'ABCDE1234F' with consent=true returns HTTP 200 with all required fields (score=801, band=Excellent, approved=true, max_eligible=250000, pan_masked, bureau, pull_type, factors array with 4 items, decision, checked_at); (2) Deterministic check: same PAN returns identical score 801 on multiple calls; (3) Excellent hook: PAN 'AAAAA1234A' returns score=831 (>= 800), band=Excellent, approved=true, max_eligible=250000; (4) Poor hook: PAN 'ZZZZZ9999Z' returns score=568 (in 540-579 range), band=Poor, approved=false, max_eligible=0; (5) Consent=false correctly returns HTTP 400 with error mentioning 'consent'; (6) Invalid PAN '123' correctly returns HTTP 400 with error mentioning 'PAN'; (7) No Authorization header correctly returns HTTP 401. All response fields validated with correct types and values. CIBIL endpoint is production-ready. No issues found."

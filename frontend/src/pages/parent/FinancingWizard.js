@@ -17,6 +17,7 @@ import {
   ShieldCheck, Check, ArrowRight, ArrowLeft, Fingerprint, ScanFace,
   Camera, Landmark, Smartphone, CreditCard, Lock, BadgeCheck, Zap,
   CheckCircle2, Loader2, Calendar, FileSignature, ShieldQuestion,
+  Gauge, TrendingUp, XCircle, RefreshCw,
 } from "lucide-react";
 
 const STEPS = [
@@ -52,8 +53,12 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
   const [tenure, setTenure] = useState(12);
   const [preview, setPreview] = useState(null);
 
-  // Step 2 — eligibility
+  // Step 2 — eligibility + CIBIL check
   const [eligConsent, setEligConsent] = useState(false);
+  const [cibilPan, setCibilPan] = useState("");
+  const [cibilChecking, setCibilChecking] = useState(false);
+  const [cibilResult, setCibilResult] = useState(null); // {score, band, band_color, approved, max_eligible, factors, decision, pan_masked}
+  const [scoreAnim, setScoreAnim] = useState(0);
 
   // Step 3 — KYC
   const [pan, setPan] = useState("");
@@ -87,6 +92,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
     if (open) {
       setStep(1); setDown(0); setTenure(12); setPreview(null);
       setEligConsent(false);
+      setCibilPan(""); setCibilChecking(false); setCibilResult(null); setScoreAnim(0);
       setPan(""); setDob(""); setIncome(""); setEmployment("Salaried");
       setOtpSent(false); setOtp(""); setAadhaarVerified(false); setLiveness("idle");
       setRail("UPI AutoPay"); setBankName(""); setHolder(""); setAccount(""); setIfsc("");
@@ -134,15 +140,53 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
   };
   const sendEsign = () => { setEsignSent(true); toast.success("e-Sign OTP sent (simulated)"); };
 
+  // CIBIL check (Step 2)
+  const runCibilCheck = async () => {
+    if (!PAN_RE.test(cibilPan)) { toast.error("Enter a valid PAN (e.g. ABCDE1234F)"); return; }
+    if (!eligConsent) { toast.error("Please provide consent for the soft credit check"); return; }
+    setCibilChecking(true);
+    setCibilResult(null);
+    setScoreAnim(0);
+    try {
+      // small delay so user sees the check happening
+      const [{ data }] = await Promise.all([
+        api.post("/parent/cibil-check", { pan: cibilPan.toUpperCase(), consent: true }),
+        new Promise((r) => setTimeout(r, 1400)),
+      ]);
+      setCibilResult(data);
+      // If PAN is same as step 3 pan field, pre-fill for convenience
+      if (!pan) setPan(cibilPan.toUpperCase());
+      toast.success(data.approved ? "Pre-approved for 0% EMI" : "Eligibility check completed");
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Could not run the eligibility check");
+    } finally {
+      setCibilChecking(false);
+    }
+  };
+
+  // animate the CIBIL score meter from 0 -> score whenever a new result arrives
+  useEffect(() => {
+    if (!cibilResult) { setScoreAnim(0); return; }
+    const target = cibilResult.score;
+    let start = 0;
+    const step = Math.max(4, Math.round(target / 40));
+    const id = setInterval(() => {
+      start = Math.min(target, start + step);
+      setScoreAnim(start);
+      if (start >= target) clearInterval(id);
+    }, 20);
+    return () => clearInterval(id);
+  }, [cibilResult]);
+
   // per-step validity
   const canContinue = useMemo(() => {
     if (step === 1) return !!preview;
-    if (step === 2) return eligConsent;
+    if (step === 2) return eligConsent && cibilResult && cibilResult.approved;
     if (step === 3) return PAN_RE.test(pan) && dob && Number(income) > 0 && employment && aadhaarVerified && liveness === "done";
     if (step === 4) return bankName && holder.trim() && account.trim().length >= 6 && ifsc.trim().length >= 6;
     if (step === 5) return agree && esignSent && esignOtp.trim().length >= 4;
     return false;
-  }, [step, preview, eligConsent, pan, dob, income, employment, aadhaarVerified, liveness, bankName, holder, account, ifsc, agree, esignSent, esignOtp]);
+  }, [step, preview, eligConsent, cibilResult, pan, dob, income, employment, aadhaarVerified, liveness, bankName, holder, account, ifsc, agree, esignSent, esignOtp]);
 
   const next = () => {
     if (!canContinue) { toast.error("Please complete this step to continue."); return; }
@@ -230,27 +274,142 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
             </div>
           )}
 
-          {/* ---------- Step 2: Eligibility ---------- */}
+          {/* ---------- Step 2: Eligibility (with CIBIL check) ---------- */}
           {step === 2 && (
             <div className="space-y-5" data-testid="step-eligibility">
               <div className="rounded-xl bg-[#EFF6FF] border border-[#2563EB]/15 p-4 flex items-start gap-3">
                 <div className="h-9 w-9 rounded-lg bg-[#2563EB] text-white flex items-center justify-center shrink-0"><Zap className="h-4 w-4" /></div>
                 <div>
-                  <p className="font-semibold text-brand-navy text-sm">You are pre-qualified for 0% EMI</p>
-                  <p className="text-xs text-slate-500 mt-0.5">A soft eligibility check with no impact on your credit score.</p>
+                  <p className="font-semibold text-brand-navy text-sm">Instant CIBIL Eligibility Pre-Check</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Soft credit pull via CIBIL (TransUnion) — no impact on your credit score.</p>
                 </div>
               </div>
-              <ul className="space-y-2.5">
-                {["Zero interest, zero hidden charges", "No impact on credit score for eligibility check", "Instant digital approval — no paperwork", "Powered by RBI-regulated NBFC lending partners"].map((t) => (
-                  <li key={t} className="flex items-center gap-2.5 text-sm text-slate-600">
+
+              {/* PAN input for CIBIL pull */}
+              <div className="rounded-xl border border-border p-4">
+                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2">
+                  <Fingerprint className="h-4 w-4 text-[#2563EB]" /> Verify your CIBIL Score
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Enter the PAN of the primary applicant. We fetch your CIBIL score securely from the bureau.
+                </p>
+                <div className="mt-4 grid sm:grid-cols-[1fr_auto] gap-3 items-end">
+                  <div>
+                    <Label className="text-sm text-brand-navy">PAN Card Number</Label>
+                    <Input
+                      value={cibilPan}
+                      onChange={(e) => { setCibilPan(e.target.value.toUpperCase().slice(0, 10)); setCibilResult(null); }}
+                      placeholder="ABCDE1234F"
+                      className="rounded-lg mt-1.5 uppercase tracking-wider"
+                      data-testid="cibil-pan"
+                      disabled={cibilChecking || (cibilResult && cibilResult.approved)}
+                    />
+                    {cibilPan && !PAN_RE.test(cibilPan) && (
+                      <p className="text-[11px] text-red-500 mt-1">Format: ABCDE1234F</p>
+                    )}
+                  </div>
+                  <Button
+                    onClick={runCibilCheck}
+                    disabled={!PAN_RE.test(cibilPan) || !eligConsent || cibilChecking || (cibilResult && cibilResult.approved)}
+                    data-testid="cibil-check-btn"
+                    className="h-10 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] font-semibold px-4"
+                  >
+                    {cibilChecking ? (
+                      <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Checking...</>
+                    ) : cibilResult ? (
+                      <><RefreshCw className="h-4 w-4 mr-1.5" /> Re-check</>
+                    ) : (
+                      <><Gauge className="h-4 w-4 mr-1.5" /> Check CIBIL Score</>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Consent (must be checked before running) */}
+                <label className="flex items-start gap-3 cursor-pointer mt-4" data-testid="elig-consent-label">
+                  <Checkbox
+                    checked={eligConsent}
+                    onCheckedChange={(v) => setEligConsent(!!v)}
+                    className="mt-0.5"
+                    data-testid="elig-consent"
+                    disabled={cibilChecking}
+                  />
+                  <span className="text-sm text-slate-600 leading-relaxed">
+                    I authorize Biglyp &amp; its NBFC lending partner to fetch my CIBIL score via a <b>soft pull</b> for eligibility.
+                    This will <b>not</b> impact my credit score.
+                  </span>
+                </label>
+              </div>
+
+              {/* CIBIL Result */}
+              {cibilChecking && !cibilResult && (
+                <div className="rounded-xl border border-dashed border-[#2563EB]/40 p-6 flex items-center gap-4" data-testid="cibil-checking">
+                  <Loader2 className="h-8 w-8 text-[#2563EB] animate-spin" />
+                  <div>
+                    <p className="font-head font-bold text-brand-navy text-sm">Fetching your CIBIL score…</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Securely connecting to CIBIL (TransUnion) via RBI-regulated NBFC rails.</p>
+                  </div>
+                </div>
+              )}
+
+              {cibilResult && (
+                <div
+                  className={`rounded-xl border p-5 space-y-4 ${cibilResult.approved ? "border-emerald-200 bg-emerald-50/40" : "border-red-200 bg-red-50/40"}`}
+                  data-testid="cibil-result"
+                >
+                  <div className="flex flex-col sm:flex-row gap-5 items-center">
+                    {/* Score gauge */}
+                    <CibilGauge score={scoreAnim} target={cibilResult.score} band={cibilResult.band} color={cibilResult.band_color} />
+                    <div className="flex-1 min-w-0 text-center sm:text-left">
+                      <div className="flex items-center gap-2 justify-center sm:justify-start">
+                        {cibilResult.approved
+                          ? <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                          : <XCircle className="h-5 w-5 text-red-500" />}
+                        <p className={`font-head font-bold text-base ${cibilResult.approved ? "text-emerald-700" : "text-red-600"}`}>
+                          {cibilResult.approved ? "Pre-approved for 0% EMI" : "Not eligible right now"}
+                        </p>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">{cibilResult.decision}</p>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                        <div className="rounded-lg bg-white border border-border px-2.5 py-2">
+                          <p className="text-slate-400">PAN</p>
+                          <p className="font-mono font-semibold text-brand-navy tracking-wider">{cibilResult.pan_masked}</p>
+                        </div>
+                        <div className="rounded-lg bg-white border border-border px-2.5 py-2">
+                          <p className="text-slate-400">Max eligible</p>
+                          <p className="font-head font-bold text-brand-navy">
+                            {cibilResult.max_eligible > 0 ? inr(cibilResult.max_eligible) : "—"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Score factors */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {cibilResult.factors.map((f) => (
+                      <div key={f.label} className="flex items-center gap-2 rounded-lg bg-white border border-border px-2.5 py-2">
+                        {f.status === "positive"
+                          ? <TrendingUp className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                          : <Gauge className="h-3.5 w-3.5 text-slate-400 shrink-0" />}
+                        <span className="text-[11px] text-slate-600 truncate">{f.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500 border-t border-border/60 pt-3">
+                    <span className="flex items-center gap-1"><BadgeCheck className="h-3.5 w-3.5 text-[#2563EB]" /> {cibilResult.bureau}</span>
+                    <span className="flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5 text-[#2563EB]" /> {cibilResult.pull_type}</span>
+                  </div>
+                </div>
+              )}
+
+              <ul className="space-y-2 pt-1">
+                {["Zero interest, zero hidden charges", "Powered by RBI-regulated NBFC lending partners", "Instant digital approval — no paperwork"].map((t) => (
+                  <li key={t} className="flex items-center gap-2.5 text-xs text-slate-600">
                     <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" /> {t}
                   </li>
                 ))}
               </ul>
-              <label className="flex items-start gap-3 cursor-pointer" data-testid="elig-consent-label">
-                <Checkbox checked={eligConsent} onCheckedChange={(v) => setEligConsent(!!v)} className="mt-0.5" data-testid="elig-consent" />
-                <span className="text-sm text-slate-600 leading-relaxed">I consent to a soft eligibility check and to sharing my details with the Biglyp NBFC lending partner.</span>
-              </label>
             </div>
           )}
 
@@ -458,5 +617,51 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+
+/* -------- CIBIL Score Gauge (SVG semi-circle meter) -------- */
+function CibilGauge({ score, target, band, color = "blue" }) {
+  // Score band 300..900 -> 0..1
+  const min = 300, max = 900;
+  const clamped = Math.max(min, Math.min(max, score));
+  const pct = (clamped - min) / (max - min);
+  // Semi-circle from angle 180deg -> 0deg
+  const angle = Math.PI * (1 - pct);
+  const cx = 90, cy = 90, r = 72;
+  const x = cx + r * Math.cos(angle);
+  const y = cy - r * Math.sin(angle);
+  const stroke = {
+    emerald: "#10B981",
+    blue: "#2563EB",
+    amber: "#F59E0B",
+    red: "#EF4444",
+  }[color] || "#2563EB";
+  // Arc path
+  const startX = cx - r, startY = cy;
+  const large = 0; // always small arc for semi-circle segment
+  const sweep = 1;
+  const arcPath = `M ${startX} ${startY} A ${r} ${r} 0 ${large} ${sweep} ${x} ${y}`;
+  const bgPath = `M ${startX} ${startY} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
+  return (
+    <div className="flex flex-col items-center shrink-0" data-testid="cibil-gauge">
+      <svg width="180" height="110" viewBox="0 0 180 110">
+        <path d={bgPath} stroke="#E5E7EB" strokeWidth="12" fill="none" strokeLinecap="round" />
+        <path d={arcPath} stroke={stroke} strokeWidth="12" fill="none" strokeLinecap="round" />
+        <text x={cx} y={cy - 4} textAnchor="middle" className="font-head" fontSize="26" fontWeight="800" fill="#0B1F44">
+          {Math.round(score)}
+        </text>
+        <text x={cx} y={cy + 14} textAnchor="middle" fontSize="10" fill="#64748B" letterSpacing="1">
+          / 900
+        </text>
+      </svg>
+      <span
+        className="mt-1 text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full"
+        style={{ color: stroke, backgroundColor: stroke + "1A" }}
+      >
+        {band}
+      </span>
+    </div>
   );
 }

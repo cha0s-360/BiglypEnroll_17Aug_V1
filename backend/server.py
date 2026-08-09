@@ -8,6 +8,7 @@ load_dotenv(ROOT_DIR / ".env")
 import uuid
 import math
 import random
+import re
 import logging
 import bcrypt
 import jwt
@@ -704,6 +705,73 @@ async def verify_account(body: VerifyAccountIn, user: dict = Depends(get_current
              "Oakridge School Collections", "Silver Oak Education Trust"]
     h = int(hashlib.md5((acc + ifsc).encode()).hexdigest(), 16)
     return {"account_name": names[h % len(names)], "bank": ifsc[:4] + " Bank", "verified": True}
+
+
+PAN_RE = re.compile(r"^[A-Z]{5}[0-9]{4}[A-Z]$")
+
+
+class CibilCheckIn(BaseModel):
+    pan: str
+    dob: Optional[str] = None
+    consent: bool = False
+
+
+@api.post("/parent/cibil-check")
+async def cibil_check(body: CibilCheckIn, user: dict = Depends(get_current_user)):
+    """SIMULATED soft CIBIL pull: deterministic score from PAN (no bureau hit)."""
+    pan = (body.pan or "").strip().upper()
+    if not PAN_RE.match(pan):
+        raise HTTPException(status_code=400, detail="Enter a valid PAN (e.g. ABCDE1234F)")
+    if not body.consent:
+        raise HTTPException(status_code=400, detail="Consent is required for the eligibility check")
+
+    import hashlib
+    h = int(hashlib.md5(pan.encode()).hexdigest(), 16)
+    # Deterministic score in 690..830 (soft-pull safe demo band — most PANs are approved)
+    score = 690 + (h % 141)
+
+    # Special demo hooks: PAN starting with "ZZZZZ" simulates low score; "AAAAA" simulates excellent
+    if pan.startswith("ZZZZZ"):
+        score = 540 + (h % 40)
+    elif pan.startswith("AAAAA"):
+        score = 800 + (h % 51)
+
+    if score >= 780:
+        band, band_color = "Excellent", "emerald"
+    elif score >= 720:
+        band, band_color = "Good", "blue"
+    elif score >= 670:
+        band, band_color = "Fair", "amber"
+    else:
+        band, band_color = "Poor", "red"
+
+    approved = score >= 670
+    max_eligible = 250000 if score >= 780 else 150000 if score >= 720 else 75000 if score >= 670 else 0
+    # Reason bullets for the UI
+    factors = [
+        {"label": "Payment history", "status": "positive" if score >= 720 else "neutral"},
+        {"label": "Credit utilization", "status": "positive" if score >= 700 else "neutral"},
+        {"label": "Credit mix & age", "status": "positive" if score >= 750 else "neutral"},
+        {"label": "Recent enquiries (soft pull)", "status": "neutral"},
+    ]
+    decision = (
+        "Congratulations! You are pre-approved for 0% EMI financing."
+        if approved
+        else "Your current score needs a boost. We recommend improving credit health and retrying later."
+    )
+    return {
+        "pan_masked": pan[:3] + "XXX" + pan[-2:],
+        "score": score,
+        "band": band,
+        "band_color": band_color,
+        "approved": approved,
+        "max_eligible": max_eligible,
+        "bureau": "CIBIL (TransUnion)",
+        "pull_type": "Soft — no impact on credit score",
+        "factors": factors,
+        "decision": decision,
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 @api.post("/parent/mandate")
