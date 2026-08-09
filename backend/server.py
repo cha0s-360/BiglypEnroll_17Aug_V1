@@ -686,6 +686,26 @@ async def pay_emi(body: EmiPayIn, user: dict = Depends(get_current_user)):
     return p
 
 
+class VerifyAccountIn(BaseModel):
+    account_number: str
+    ifsc: str
+
+
+@api.post("/school/verify-account")
+async def verify_account(body: VerifyAccountIn, user: dict = Depends(get_current_user)):
+    """SIMULATED penny-drop: resolves the account holder name from account no + IFSC."""
+    acc = body.account_number.strip()
+    ifsc = body.ifsc.strip().upper()
+    if len(acc) < 6 or len(ifsc) < 6:
+        raise HTTPException(status_code=400, detail="Enter a valid account number and IFSC")
+    import hashlib
+    names = ["Horizon International School Trust", "Sunrise Education Society",
+             "Green Valley Academy A/C", "St. Xavier Institute Fund",
+             "Oakridge School Collections", "Silver Oak Education Trust"]
+    h = int(hashlib.md5((acc + ifsc).encode()).hexdigest(), 16)
+    return {"account_name": names[h % len(names)], "bank": ifsc[:4] + " Bank", "verified": True}
+
+
 @api.post("/parent/mandate")
 async def setup_mandate(body: MandateIn, user: dict = Depends(get_current_user)):
     student = await _resolve_student(body.student_id, user)
@@ -860,12 +880,8 @@ async def seed():
             "spoc_name": "Meera Iyer", "spoc_email": "meera@horizon.edu",
             "phone": "+91 98765 43210", "address": "Bandra West, Mumbai",
             "campuses": [{"id": str(uuid.uuid4()), "name": "Main Campus", "city": "Mumbai"}],
-            "courses": [
-                {"id": str(uuid.uuid4()), "name": "Grade 9", "duration": "1 yr"},
-                {"id": str(uuid.uuid4()), "name": "Grade 10", "duration": "1 yr"},
-                {"id": str(uuid.uuid4()), "name": "Grade 11", "duration": "1 yr"},
-                {"id": str(uuid.uuid4()), "name": "Grade 12", "duration": "1 yr"},
-            ],
+            "courses": [{"id": str(uuid.uuid4()), "name": g, "duration": "1 yr"}
+                        for g in (["LKG", "UKG"] + [f"Class {i}" for i in range(1, 13)])],
             "team": [], "multi_account_enabled": False, "settlement_accounts": [],
             "onboarding_complete": True,
             "created_at": datetime.now(timezone.utc).isoformat(),
@@ -910,7 +926,7 @@ async def seed():
 
     # fee structure
     if not await db.fee_structures.find_one({"school_id": school_id}):
-        grades = ["Grade 9", "Grade 10", "Grade 11", "Grade 12"]
+        grades = ["LKG", "UKG"] + [f"Class {i}" for i in range(1, 13)]
         await db.fee_structures.insert_one({
             "school_id": school_id,
             "fee_heads": [
@@ -930,12 +946,12 @@ async def seed():
     # students
     if await db.students.count_documents({"school_id": school_id}) == 0:
         sample = [
-            {"name": "Aarav Sharma", "grade": "Grade 10", "roll_no": "H-1001", "parent_id": parent_id},
-            {"name": "Diya Mehta", "grade": "Grade 9", "roll_no": "H-1002", "parent_id": None},
-            {"name": "Kabir Nair", "grade": "Grade 11", "roll_no": "H-1003", "parent_id": None},
-            {"name": "Ishita Rao", "grade": "Grade 12", "roll_no": "H-1004", "parent_id": None},
-            {"name": "Vivaan Gupta", "grade": "Grade 10", "roll_no": "H-1005", "parent_id": None},
-            {"name": "Ananya Singh", "grade": "Grade 9", "roll_no": "H-1006", "parent_id": None},
+            {"name": "Aarav Sharma", "grade": "Class 10", "roll_no": "H-1001", "parent_id": parent_id},
+            {"name": "Diya Mehta", "grade": "Class 9", "roll_no": "H-1002", "parent_id": None},
+            {"name": "Kabir Nair", "grade": "Class 11", "roll_no": "H-1003", "parent_id": None},
+            {"name": "Ishita Rao", "grade": "Class 12", "roll_no": "H-1004", "parent_id": None},
+            {"name": "Vivaan Gupta", "grade": "Class 10", "roll_no": "H-1005", "parent_id": None},
+            {"name": "Ananya Singh", "grade": "Class 9", "roll_no": "H-1006", "parent_id": None},
         ]
         for s in sample:
             s.update({"school_id": school_id, "program": "",
@@ -987,7 +1003,7 @@ async def seed():
     # Fresh unpaid student linked to the parent (idempotent) — for testing payment options
     if not await db.students.find_one({"school_id": school_id, "name": "Sara Sharma"}):
         await db.students.insert_one({
-            "name": "Sara Sharma", "grade": "Grade 9", "roll_no": "H-2001",
+            "name": "Sara Sharma", "grade": "Class 9", "roll_no": "H-2001",
             "program": "", "parent_id": parent_id, "school_id": school_id,
             "created_at": datetime.now(timezone.utc).isoformat(),
         })

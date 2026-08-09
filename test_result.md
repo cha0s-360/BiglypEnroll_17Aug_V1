@@ -105,6 +105,21 @@
 user_problem_statement: "Modify the EMI duration option in fee financing from 6-12 months to 3-12 months (Student/Parent login), and rebuild the Student Fee Payment screen per provided design spec."
 
 backend:
+  - task: "verify-account (simulated penny-drop) + grade migration to LKG..Class 12"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "New POST /api/school/verify-account {account_number, ifsc} returns a deterministic simulated account_name + bank (SIMULATED penny-drop). Rejects <6 char acc/ifsc with 400. Seed grades changed to LKG, UKG, Class 1..12; existing DB migrated (students Grade N -> Class N, fee_head grades -> full class list, school courses -> full list). Settlement accounts now store {account_number, ifsc, account_name, fee_head_id} via /school/onboarding."
+        -working: true
+        -agent: "testing"
+        -comment: "Comprehensive testing completed. All 10 test cases passed: (A) POST /api/school/verify-account - (1) Valid account {account_number:'912010012345678', ifsc:'HDFC0001234'} returns HTTP 200 with account_name='Horizon International School Trust' (non-empty string), bank='HDFC Bank', verified=true; (2) Deterministic check: same input returns identical account_name on multiple calls; (3) Invalid account {account_number:'123', ifsc:'HD'} correctly returns HTTP 400 with error message. (B) Grade migration integrity - (4) GET /api/parent/children returns 2 children (Aarav Sharma, Sara Sharma) both with correct 'Class N' format (Class 10, Class 9), NOT 'Grade N' format; (5) GET /api/parent/fees/{sara_id} for Sara Sharma returns 5 fee items (Tuition Fee, Admission Fee, Lab & Technology Fee, Transport Fee, Examination Fee) confirming compute_pending works correctly with migrated grades; (6) GET /api/school returns courses list with exactly 14 entries: LKG, UKG, Class 1, Class 2, Class 3, Class 4, Class 5, Class 6, Class 7, Class 8, Class 9, Class 10, Class 11, Class 12. (C) Settlement persistence - (7) POST /api/school/onboarding with multi_account_enabled=true and settlement_accounts=[{id:'a1', account_number:'912010012345678', ifsc:'HDFC0001234', account_name:'Horizon International School Trust', fee_head_id:<tuition_fee_id>}] and complete=false returns HTTP 200; (8) GET /api/school confirms settlement_accounts persisted with correct fee_head_id and account_name; (9) multi_account_enabled persisted as true; (10) All account details (id, account_number, ifsc, account_name, fee_head_id) correctly stored and retrieved. All endpoints working correctly with proper validation and error handling."
+
   - task: "Active financing endpoints (list active EMI plans + prepay installment)"
     implemented: true
     working: true
@@ -167,8 +182,8 @@ backend:
 
 metadata:
   created_by: "main_agent"
-  version: "1.4"
-  test_sequence: 4
+  version: "1.5"
+  test_sequence: 5
   run_ui: false
 
 test_plan:
@@ -186,3 +201,5 @@ agent_communication:
     -message: "Round 3 testing completed successfully. All backend features tested and verified: (1) Auto-Debit Mandate setup endpoint - quarterly frequency (4 installments), semi frequency (2 installments), sum verification, account masking, payment structure, GET endpoint JSON serialization, negative test for empty fee_head_ids; (2) pay-financing with EMI schedule storage - tenure=3 with down_payment=0, tenure=12 with down_payment, EMI calculations, schedule array storage. All 6 test cases passed. Both features are production-ready. No issues found."
     -agent: "testing"
     -message: "Round 4 testing completed successfully. Active financing endpoints fully tested and verified: (1) GET /api/parent/children successfully retrieves children including Aarav Sharma with active EMI plan; (2) GET /api/parent/financing/active/{student_id} correctly returns EMI plans with proper structure (plan_type, emi, tenure, financed_amount, schedule array with correct statuses and rails); (3) POST /api/parent/financing/pay-emi successfully processes manual EMI payment for month 3, updates status to 'paid' with receipt and 'Manual' rail, correctly re-derives remaining installment statuses (exactly 1 'scheduled', rest 'upcoming'); (4) Negative tests passed: attempting to pay already paid installment returns HTTP 400, bogus payment_id returns HTTP 404; (5) POST /api/parent/pay-financing with tenure=6 creates correct EMI plan structure. All 6 test cases passed. All endpoints working correctly with proper validation and error handling. No issues found."
+    -agent: "testing"
+    -message: "Round 5 testing completed successfully. BiglypEnroll backend changes fully tested and verified: (A) POST /api/school/verify-account (simulated penny-drop) - valid account returns HTTP 200 with account_name (non-empty string), bank, verified=true; deterministic (same input returns same account_name); invalid account (<6 char) returns HTTP 400. (B) Grade migration integrity - GET /api/parent/children returns children with 'Class N' format (NOT 'Grade N'); GET /api/parent/fees/{sara_id} returns 5 fee items (compute_pending works with migrated grades); GET /api/school returns 14 courses (LKG, UKG, Class 1..12). (C) Settlement persistence - POST /api/school/onboarding with settlement_accounts persists correctly; GET /api/school confirms settlement_accounts with fee_head_id and account_name. All 10 test cases passed. All endpoints working correctly with proper validation. No issues found."

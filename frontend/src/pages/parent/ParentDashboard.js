@@ -9,6 +9,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
   Wallet, CheckCircle2, CreditCard, ShieldCheck, Download, Calendar,
@@ -28,6 +29,7 @@ export default function ParentDashboard() {
 
   // academic frequency selection
   const [freq, setFreq] = useState("yearly");
+  const [clubbed, setClubbed] = useState([]); // quarterly "other fee" ids clubbed with tuition
 
   // pay dialog
   const [payOpen, setPayOpen] = useState(false);
@@ -50,6 +52,7 @@ export default function ParentDashboard() {
 
   useEffect(() => {
     if (!activeChild) return;
+    setClubbed([]);
     api.get(`/parent/fees/${activeChild}`).then(({ data }) => setFeeData(data));
   }, [activeChild]);
 
@@ -57,17 +60,39 @@ export default function ParentDashboard() {
   const items = feeData?.items || [];
   const pending = items.filter((i) => !i.paid);
 
+  const isOneTime = (f = "") => /one.?time/i.test(f);
+  const isQuarterly = (f = "") => /quarter/i.test(f);
+
   const academicPending = pending.filter((i) => !isAddon(i.name));
-  const addonPending = pending.filter((i) => isAddon(i.name));
-  const academicTotal = academicPending.reduce((a, i) => a + i.amount, 0);
-  const academicIds = academicPending.map((i) => i.fee_head_id);
+  const otherPending = pending.filter((i) => isAddon(i.name));
+
+  // "Other fees" that are quarterly can be clubbed with tuition and paid on the academic plan
+  const clubbedItems = otherPending.filter((i) => clubbed.includes(i.fee_head_id));
+
+  // One-time academic fees must be paid in full (no EMI / auto-debit)
+  const academicOneTime = academicPending.filter((i) => isOneTime(i.frequency));
+  const academicRecurring = academicPending.filter((i) => !isOneTime(i.frequency));
+
+  const academicItems = [...academicPending, ...clubbedItems];          // full breakup
+  const academicTotal = academicItems.reduce((a, i) => a + i.amount, 0); // full total
+  const fullIds = academicItems.map((i) => i.fee_head_id);
+
+  // installment plans (semi / quarterly / monthly) exclude one-time fees
+  const installItems = [...academicRecurring, ...clubbedItems];
+  const installTotal = installItems.reduce((a, i) => a + i.amount, 0);
+  const installIds = installItems.map((i) => i.fee_head_id);
+
+  const hasOneTimeInAcademic = academicOneTime.length > 0;
+
+  const toggleClub = (id) =>
+    setClubbed((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
 
   const freqOptions = useMemo(() => ([
-    { key: "yearly", label: "Yearly", amount: academicTotal, unit: "/year" },
-    { key: "semi", label: "Semi-Annually", amount: Math.round(academicTotal / 2), unit: "/term" },
-    { key: "quarterly", label: "Quarterly", amount: Math.round(academicTotal / 4), unit: "/qtr" },
-    { key: "monthly", label: "Monthly (Via Fee Financing)", amount: Math.ceil(academicTotal / 12), unit: "/mo", financing: true },
-  ]), [academicTotal]);
+    { key: "yearly", label: "Full Payment", amount: academicTotal, unit: "one-time" },
+    { key: "semi", label: "Semi-Annual", amount: Math.round(installTotal / 2), unit: "/term" },
+    { key: "quarterly", label: "Quarterly", amount: Math.round(installTotal / 4), unit: "/qtr" },
+    { key: "monthly", label: "Monthly", amount: Math.ceil(installTotal / 12), unit: "/mo", financing: true },
+  ]), [academicTotal, installTotal]);
 
   const dueDate = useMemo(() => {
     const yr = (feeData?.academic_year || "2026-27").slice(0, 4);
@@ -80,6 +105,8 @@ export default function ParentDashboard() {
   const payItems = pending.filter((i) => payHeadIds.includes(i.fee_head_id));
   const payTotal = payItems.reduce((a, i) => a + i.amount, 0);
   const payGst = Math.round(payTotal * 0.18);
+  const payHasOneTime = payItems.some((i) => isOneTime(i.frequency));
+  const availableModes = payHasOneTime ? MODES.filter((m) => m !== "AutoPay/eNACH") : MODES;
 
   const startPay = (headIds) => {
     if (!headIds.length) return;
@@ -120,15 +147,15 @@ export default function ParentDashboard() {
 
 
   const proceedAcademic = () => {
-    if (freq === "monthly") { startFinancing(academicIds); return; }
-    if (freq === "yearly") { startPay(academicIds); return; }
-    // quarterly / semi -> auto-debit mandate setup for installment plan
+    if (freq === "yearly") { startPay(fullIds); return; }
+    if (freq === "monthly") { startFinancing(installIds); return; }
+    // quarterly / semi -> auto-debit mandate setup (one-time fees excluded)
     navigate("/app/mandate", {
       state: {
         studentId: activeChild,
         studentName: child?.name,
-        feeHeadIds: academicIds,
-        academicTotal,
+        feeHeadIds: installIds,
+        academicTotal: installTotal,
         frequency: freq,
       },
     });
@@ -165,87 +192,94 @@ export default function ParentDashboard() {
 
       {child && (
         <div className="space-y-10">
-          {/* ============ Section 1: Academic Core Fees ============ */}
+          {/* ============ Section 1: Academic Fee Dues (compact) ============ */}
           <section>
             <h2 className="font-head text-xl font-bold text-brand-navy">Academic Fee Dues</h2>
             <p className="text-sm text-slate-500 mt-0.5">Your core tuition &amp; academic charges for the year.</p>
 
             {academicTotal > 0 ? (
-              <div className="mt-4 bg-white border border-border rounded-2xl p-6 md:p-8 hard-shadow-sm" data-testid="academic-card">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="inline-flex items-center rounded-full bg-[#FEF3C7] text-[#92400E] text-xs font-semibold px-3 py-1" data-testid="status-badge">
-                    Pending Collection
-                  </span>
+              <div className="mt-4 bg-white border border-border rounded-2xl p-5 md:p-6 hard-shadow-sm" data-testid="academic-card">
+                {/* total + due date */}
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs uppercase tracking-[0.14em] text-slate-500 font-semibold">Total dues</span>
+                      <span className="inline-flex items-center rounded-full bg-[#FEF3C7] text-[#92400E] text-[10px] font-semibold px-2 py-0.5" data-testid="status-badge">Pending Collection</span>
+                    </div>
+                    <p className="font-head text-3xl font-black text-brand-navy mt-1">{inr(academicTotal)}</p>
+                  </div>
                   <span className="inline-flex items-center gap-1.5 text-sm text-slate-500">
                     <Calendar className="h-4 w-4" /> Due {dueDate}
                   </span>
                 </div>
 
-                {/* frequency pill bar */}
-                <div className="mt-6 grid sm:grid-cols-2 gap-3" data-testid="freq-pill-bar">
+                {/* breakup */}
+                <div className="mt-4 rounded-xl border border-border divide-y divide-border" data-testid="academic-breakup">
+                  {academicItems.map((i) => (
+                    <div key={i.fee_head_id} className="flex items-center justify-between px-3.5 py-2 text-sm">
+                      <span className="text-slate-600 flex items-center gap-2">
+                        {i.name}
+                        {clubbed.includes(i.fee_head_id) && <span className="text-[10px] font-semibold text-[#2563EB] bg-[#EFF6FF] rounded-full px-1.5 py-0.5">clubbed</span>}
+                        {isOneTime(i.frequency) && <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded-full px-1.5 py-0.5">one-time</span>}
+                      </span>
+                      <span className="font-semibold text-brand-navy">{inr(i.amount)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* compact payment options */}
+                <p className="mt-5 text-xs uppercase tracking-[0.14em] text-slate-500 font-semibold">Choose how to pay</p>
+                <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2" data-testid="freq-pill-bar">
                   {freqOptions.map((o) => {
                     const active = freq === o.key;
                     return (
-                      <button
-                        key={o.key}
-                        data-testid={`freq-${o.key}`}
-                        onClick={() => setFreq(o.key)}
-                        className={`text-left rounded-xl border p-4 transition-colors ${
-                          active
-                            ? o.financing
-                              ? "border-[#2563EB] bg-[#EFF6FF] ring-1 ring-[#2563EB]"
-                              : "border-[#2563EB] bg-[#EFF6FF]"
-                            : "border-border bg-white hover:border-[#2563EB]/40"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className={`text-sm font-semibold ${o.financing ? "text-[#2563EB]" : "text-brand-navy"}`}>
-                            {o.label}
-                          </span>
-                          {o.financing && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-[#2563EB] text-white text-[10px] font-bold px-2 py-0.5">
-                              <Zap className="h-3 w-3" /> 0% Interest EMI
-                            </span>
-                          )}
+                      <button key={o.key} data-testid={`freq-${o.key}`} onClick={() => setFreq(o.key)}
+                        className={`text-left rounded-xl border px-3 py-2.5 transition-colors ${
+                          active ? "border-[#2563EB] bg-[#EFF6FF] ring-1 ring-[#2563EB]" : "border-border bg-white hover:border-[#2563EB]/40"
+                        }`}>
+                        <div className="flex items-center gap-1">
+                          <span className={`text-xs font-semibold ${o.financing ? "text-[#2563EB]" : "text-brand-navy"}`}>{o.label}</span>
+                          {o.financing && <Zap className="h-3 w-3 text-[#2563EB]" />}
                         </div>
-                        <div className="mt-2 flex items-baseline gap-1">
-                          <span className={`font-head text-2xl font-black ${o.financing ? "text-[#2563EB]" : "text-brand-navy"}`}>
-                            {inr(o.amount)}
-                          </span>
-                          <span className="text-xs text-slate-500">{o.unit}</span>
+                        <div className="mt-1 flex items-baseline gap-1">
+                          <span className={`font-head text-lg font-black ${o.financing ? "text-[#2563EB]" : "text-brand-navy"}`}>{inr(o.amount)}</span>
+                          <span className="text-[10px] text-slate-400">{o.unit}</span>
                         </div>
+                        {o.financing && <span className="text-[9px] font-bold text-[#2563EB]">0% EMI</span>}
                       </button>
                     );
                   })}
                 </div>
 
-                {/* dynamic callout for monthly */}
                 {freq === "monthly" && (
-                  <div className="mt-5 flex items-start gap-3 rounded-xl bg-[#EFF6FF] border border-[#2563EB]/15 p-4" data-testid="emi-callout">
-                    <div className="h-8 w-8 rounded-lg bg-[#2563EB] text-white flex items-center justify-center shrink-0">
-                      <Zap className="h-4 w-4" />
-                    </div>
-                    <p className="text-sm text-brand-navy leading-relaxed">
-                      Convert bulky academic fees into zero-interest monthly EMIs. Upfront 100% payment
-                      cleared directly to school.
-                    </p>
+                  <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-[#EFF6FF] border border-[#2563EB]/15 p-3" data-testid="emi-callout">
+                    <Zap className="h-4 w-4 text-[#2563EB] shrink-0 mt-0.5" />
+                    <p className="text-xs text-brand-navy leading-relaxed">Convert bulky academic fees into zero-interest monthly EMIs. School is paid 100% upfront.</p>
                   </div>
                 )}
 
-                <Button
-                  onClick={proceedAcademic}
-                  data-testid="proceed-breakdown-btn"
-                  className="mt-6 h-12 px-6 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold"
-                >
-                  Proceed to Fee Breakdown <ArrowRight className="h-4 w-4 ml-2" />
+                {freq !== "yearly" && hasOneTimeInAcademic && (
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-50 border border-amber-200 p-3" data-testid="onetime-note">
+                    <p className="text-xs text-amber-800 leading-relaxed">
+                      One-time fees ({academicOneTime.map((i) => i.name).join(", ")}) can&apos;t be auto-debited — pay them in full separately.
+                    </p>
+                    <Button onClick={() => startPay(academicOneTime.map((i) => i.fee_head_id))} data-testid="pay-onetime-btn"
+                      variant="outline" className="h-8 rounded-lg border-amber-400 text-amber-800 hover:bg-amber-100 font-semibold text-xs">
+                      Pay one-time now
+                    </Button>
+                  </div>
+                )}
+
+                <Button onClick={proceedAcademic} data-testid="proceed-breakdown-btn"
+                  className="mt-5 h-11 px-6 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold">
+                  {freq === "monthly" ? "Start 0% EMI Application" : freq === "yearly" ? "Pay Full Amount" : "Set Up Auto-Debit Plan"}
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
 
                 {feeData?.scholarships?.length > 0 && (
-                  <div className="mt-5 flex items-start gap-2 text-xs text-slate-500">
-                    <Sparkles className="h-4 w-4 text-[#2563EB] shrink-0 mt-0.5" />
-                    <span>
-                      Scholarships available: {feeData.scholarships.map((s) => `${s.name} (${s.type === "percentage" ? s.value + "%" : inr(s.value)})`).join(" · ")}. Contact your counsellor to apply.
-                    </span>
+                  <div className="mt-4 flex items-start gap-2 text-[11px] text-slate-500">
+                    <Sparkles className="h-3.5 w-3.5 text-[#2563EB] shrink-0 mt-0.5" />
+                    <span>Scholarships available: {feeData.scholarships.map((s) => `${s.name} (${s.type === "percentage" ? s.value + "%" : inr(s.value)})`).join(" · ")}.</span>
                   </div>
                 )}
               </div>
@@ -258,36 +292,46 @@ export default function ParentDashboard() {
             )}
           </section>
 
-          {/* ============ Section 2: Add-On School Modules ============ */}
+          {/* ============ Section 2: Other Fees ============ */}
           <section>
-            <h2 className="font-head text-xl font-bold text-brand-navy">Add-On School Modules</h2>
-            <p className="text-sm text-slate-500 mt-0.5">Optional &amp; one-time collections. Paid upfront.</p>
+            <h2 className="font-head text-xl font-bold text-brand-navy">Other Fees</h2>
+            <p className="text-sm text-slate-500 mt-0.5">Transport, activities &amp; one-time collections. Quarterly items can be clubbed with tuition.</p>
 
-            {addonPending.length > 0 ? (
+            {otherPending.length > 0 ? (
               <div className="mt-4 grid sm:grid-cols-2 gap-4">
-                {addonPending.map((i) => {
+                {otherPending.map((i) => {
                   const Icon = i.name.toLowerCase().includes("trip") || i.name.toLowerCase().includes("excursion") ? Plane : Bus;
+                  const quarterly = isQuarterly(i.frequency);
+                  const oneTime = isOneTime(i.frequency);
+                  const isClubbed = clubbed.includes(i.fee_head_id);
                   return (
-                    <div key={i.fee_head_id} className="bg-white border border-border rounded-2xl p-5" data-testid={`addon-${i.fee_head_id}`}>
+                    <div key={i.fee_head_id} className={`bg-white border rounded-2xl p-5 ${isClubbed ? "border-[#2563EB] ring-1 ring-[#2563EB]/30" : "border-border"}`} data-testid={`addon-${i.fee_head_id}`}>
                       <div className="flex items-start justify-between">
-                        <div className="h-10 w-10 rounded-lg bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center">
-                          <Icon className="h-5 w-5" />
-                        </div>
+                        <div className="h-10 w-10 rounded-lg bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center"><Icon className="h-5 w-5" /></div>
                         <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-600 text-[11px] font-semibold px-2.5 py-1">
-                          Direct Payment Only
+                          {oneTime ? "One-Time · No Auto-Debit" : "Direct Payment"}
                         </span>
                       </div>
                       <p className="mt-4 font-semibold text-brand-navy">{i.name}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{i.frequency}</p>
+
+                      {quarterly && (
+                        <label className="mt-3 flex items-center gap-2.5 cursor-pointer rounded-lg bg-[#EFF6FF]/60 px-3 py-2" data-testid={`club-label-${i.fee_head_id}`}>
+                          <Checkbox checked={isClubbed} onCheckedChange={() => toggleClub(i.fee_head_id)} data-testid={`club-${i.fee_head_id}`} />
+                          <span className="text-xs text-brand-navy font-medium">Club with tuition fee &amp; pay on the plan above</span>
+                        </label>
+                      )}
+
                       <div className="mt-4 flex items-center justify-between">
                         <span className="font-head text-2xl font-black text-brand-navy">{inr(i.amount)}</span>
-                        <Button
-                          onClick={() => startPay([i.fee_head_id])}
-                          data-testid={`pay-upfront-${i.fee_head_id}`}
-                          className="h-10 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold"
-                        >
-                          Pay Upfront
-                        </Button>
+                        {isClubbed ? (
+                          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563EB]"><CheckCircle2 className="h-4 w-4" /> Clubbed above</span>
+                        ) : (
+                          <Button onClick={() => startPay([i.fee_head_id])} data-testid={`pay-upfront-${i.fee_head_id}`}
+                            className="h-10 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold">
+                            Pay Upfront
+                          </Button>
+                        )}
                       </div>
                     </div>
                   );
@@ -296,7 +340,7 @@ export default function ParentDashboard() {
             ) : (
               <div className="mt-4 bg-white border border-border rounded-2xl p-8 text-center">
                 <Wallet className="h-8 w-8 text-slate-300 mx-auto" />
-                <p className="mt-3 text-sm text-slate-500">No add-on modules pending.</p>
+                <p className="mt-3 text-sm text-slate-500">No other fees pending.</p>
               </div>
             )}
           </section>
@@ -324,10 +368,13 @@ export default function ParentDashboard() {
                 <span className="font-head font-black text-brand-navy text-lg">{inr(payTotal + payGst)}</span>
               </div>
             </div>
-            <Select value={mode} onValueChange={setMode}>
+            <Select value={availableModes.includes(mode) ? mode : availableModes[0]} onValueChange={setMode}>
               <SelectTrigger className="rounded-lg" data-testid="mode-select"><SelectValue /></SelectTrigger>
-              <SelectContent>{MODES.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+              <SelectContent>{availableModes.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
             </Select>
+            {payHasOneTime && (
+              <p className="text-[11px] text-slate-400 px-1">One-time fees must be paid in full — AutoPay / eNACH is not available.</p>
+            )}
             <div className="bg-slate-50 rounded-lg p-3 text-xs text-slate-500 flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-[#2563EB]" /> Simulated gateway — no real charge is made.
             </div>

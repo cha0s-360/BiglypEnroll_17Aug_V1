@@ -15,9 +15,9 @@ import { toast } from "sonner";
 import {
   Plus, Trash2, Sparkles, Upload, Save, Send, Loader2, Award,
 } from "lucide-react";
+import { GRADES, gradeShort } from "@/constants/grades";
 
 const FREQ = ["Yearly", "Half-Yearly", "Quarterly", "Monthly", "One-Time"];
-const GRADES = ["Grade 9", "Grade 10", "Grade 11", "Grade 12"];
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 export default function FeeStructure() {
@@ -165,13 +165,13 @@ export default function FeeStructure() {
                     </Select>
                   </td>
                   <td className="p-3">
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 max-w-[260px]">
                       {GRADES.map((g) => (
                         <button key={g} onClick={() => toggleGrade(h.id, g)}
                           className={`text-[11px] px-2 py-1 rounded-sm border transition-colors ${
                             h.grades.includes(g) ? "bg-brand-blue text-white border-brand-blue" : "border-border text-muted-foreground hover:border-brand-blue"
                           }`}>
-                          {g.replace("Grade ", "G")}
+                          {gradeShort(g)}
                         </button>
                       ))}
                     </div>

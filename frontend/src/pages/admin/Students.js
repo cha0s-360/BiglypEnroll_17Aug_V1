@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Plus, UserPlus, Pencil, Trash2 } from "lucide-react";
+import { GRADES } from "@/constants/grades";
 
-const GRADES = ["Grade 9", "Grade 10", "Grade 11", "Grade 12"];
-const EMPTY = { name: "", grade: "Grade 9", roll_no: "", parent_email: "" };
+const EMPTY = { name: "", grade: "Class 1", roll_no: "", parent_email: "" };
 
 export default function Students() {
   const [students, setStudents] = useState([]);
@@ -166,7 +166,7 @@ export default function Students() {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove {toDelete?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This deletes the student record and all associated fee payments. This can't be undone.
+              This deletes the student record and all associated fee payments. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

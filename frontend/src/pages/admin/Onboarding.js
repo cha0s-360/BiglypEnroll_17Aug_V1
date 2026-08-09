@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import {
-  Building2, GraduationCap, Landmark, Check, Plus, Trash2, ArrowRight, ArrowLeft, PartyPopper,
+  Building2, GraduationCap, Landmark, Check, Plus, Trash2, ArrowRight, ArrowLeft, PartyPopper, BadgeCheck, Loader2,
 } from "lucide-react";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -26,8 +29,10 @@ export default function Onboarding() {
   const [courses, setCourses] = useState([]);
   const [multi, setMulti] = useState(false);
   const [accounts, setAccounts] = useState([]);
+  const [feeHeads, setFeeHeads] = useState([]);
 
   useEffect(() => {
+    api.get("/fees/structure").then(({ data }) => setFeeHeads(data?.fee_heads || [])).catch(() => {});
     api.get("/school").then(({ data }) => {
       if (data) {
         setSchool(data);
@@ -164,12 +169,7 @@ export default function Onboarding() {
               <Switch checked={multi} onCheckedChange={setMulti} data-testid="multi-account-switch" />
             </div>
             {multi && (
-              <ListEditor
-                items={accounts} setItems={setAccounts}
-                template={() => ({ id: uid(), label: "", account_no: "" })}
-                fields={[{ k: "label", ph: "Account label" }, { k: "account_no", ph: "Account number" }]}
-                addLabel="Add settlement account" testid="account" embedded
-              />
+              <AccountsEditor accounts={accounts} setAccounts={setAccounts} feeHeads={feeHeads} />
             )}
             <div className="flex justify-between pt-2">
               <Button variant="outline" onClick={() => setStep(2)} className="rounded-sm">
@@ -216,6 +216,88 @@ function ListEditor({ items, setItems, template, fields, addLabel, testid, onNex
           <Button onClick={onNext} className="rounded-sm bg-brand-blue hover:bg-brand-navy">Continue <ArrowRight className="h-4 w-4 ml-2" /></Button>
         </div>
       )}
+    </div>
+  );
+}
+
+function AccountsEditor({ accounts, setAccounts, feeHeads }) {
+  const [verifying, setVerifying] = useState(null);
+  const add = () => setAccounts([...accounts, { id: uid(), account_number: "", ifsc: "", account_name: "", fee_head_id: "" }]);
+  const edit = (id, patch) => setAccounts(accounts.map((a) => (a.id === id ? { ...a, ...patch } : a)));
+  const remove = (id) => setAccounts(accounts.filter((a) => a.id !== id));
+
+  const verify = async (a) => {
+    if (!a.account_number || !a.ifsc) return toast.error("Enter account number and IFSC first");
+    setVerifying(a.id);
+    try {
+      const { data } = await api.post("/school/verify-account", { account_number: a.account_number, ifsc: a.ifsc });
+      edit(a.id, { account_name: data.account_name });
+      toast.success(`Account verified: ${data.account_name}`);
+    } catch (err) {
+      edit(a.id, { account_name: "" });
+      toast.error(err.response?.data?.detail || "Could not verify account");
+    } finally {
+      setVerifying(null);
+    }
+  };
+
+  const linkedElsewhere = (headId, selfId) => accounts.some((a) => a.id !== selfId && a.fee_head_id === headId);
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-4">
+        {accounts.map((a) => (
+          <div key={a.id} className="border border-border rounded-sm p-4 space-y-3" data-testid="account-row">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-brand-navy flex items-center gap-2"><Landmark className="h-4 w-4 text-brand-blue" /> Settlement account</p>
+              <button onClick={() => remove(a.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+            </div>
+            <div className="grid md:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Bank account number</Label>
+                <Input value={a.account_number} placeholder="Account number"
+                  onChange={(e) => edit(a.id, { account_number: e.target.value.replace(/[^0-9]/g, ""), account_name: "" })}
+                  className="rounded-sm mt-1.5 h-10" data-testid="acc-number" />
+              </div>
+              <div>
+                <Label className="text-xs">IFSC code</Label>
+                <Input value={a.ifsc} placeholder="HDFC0001234"
+                  onChange={(e) => edit(a.id, { ifsc: e.target.value.toUpperCase(), account_name: "" })}
+                  className="rounded-sm mt-1.5 h-10" data-testid="acc-ifsc" />
+              </div>
+            </div>
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <Label className="text-xs">Account holder name {a.account_name && <span className="text-green-600 ml-1">(auto-fetched)</span>}</Label>
+                <Input value={a.account_name} readOnly placeholder="Verify to auto-fetch name"
+                  className="rounded-sm mt-1.5 h-10 bg-muted/40" data-testid="acc-name" />
+              </div>
+              <Button variant="outline" onClick={() => verify(a)} disabled={verifying === a.id}
+                className="rounded-sm h-10 border-brand-blue text-brand-blue" data-testid="acc-verify">
+                {verifying === a.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><BadgeCheck className="h-4 w-4 mr-1.5" /> Verify</>}
+              </Button>
+            </div>
+            <div>
+              <Label className="text-xs">Linked fee header</Label>
+              <Select value={a.fee_head_id || ""} onValueChange={(v) => edit(a.id, { fee_head_id: v })}>
+                <SelectTrigger className="rounded-sm mt-1.5 h-10" data-testid="acc-feehead"><SelectValue placeholder="Select fee header" /></SelectTrigger>
+                <SelectContent>
+                  {feeHeads.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">Add fee heads first</div>}
+                  {feeHeads.map((h) => (
+                    <SelectItem key={h.id} value={h.id} disabled={linkedElsewhere(h.id, a.id)}>
+                      {h.name}{linkedElsewhere(h.id, a.id) ? " (linked)" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        ))}
+        {accounts.length === 0 && <p className="text-sm text-muted-foreground py-3">No settlement accounts yet. Add one to route a fee header to its own bank account.</p>}
+      </div>
+      <Button variant="outline" onClick={add} className="rounded-sm border-dashed" data-testid="add-account">
+        <Plus className="h-4 w-4 mr-2" /> Add settlement account
+      </Button>
     </div>
   );
 }
