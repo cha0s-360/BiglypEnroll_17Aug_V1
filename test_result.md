@@ -105,6 +105,21 @@
 user_problem_statement: "Modify the EMI duration option in fee financing from 6-12 months to 3-12 months (Student/Parent login), and rebuild the Student Fee Payment screen per provided design spec."
 
 backend:
+  - task: "Active financing endpoints (list active EMI plans + prepay installment)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "GET /api/parent/financing/active/{student_id} returns EMI plans (plan_type=EMI) sorted newest first, each with schedule. pay-financing now builds a richer schedule: EMI1 status 'paid' (rail UPI AutoPay, receipt set), EMI2 'scheduled' (eNACH), rest 'upcoming' (eNACH); doc also stores financed_amount. New POST /api/parent/financing/pay-emi {payment_id, month, mode} marks that installment 'paid' (sets receipt + rail '<mode> (Manual)') and re-derives remaining statuses (first unpaid -> 'scheduled', rest 'upcoming'); 400 if already paid/not found, ownership enforced."
+        -working: true
+        -agent: "testing"
+        -comment: "Comprehensive testing completed. All 6 test cases passed: (1) GET /api/parent/children successfully found Aarav Sharma with active EMI plan; (2) GET /api/parent/financing/active/{aarav_id} returned EMI plan with correct structure - plan_type='EMI', emi=13584, tenure=12, financed_amount=163000.0, schedule length=12, schedule[0] status='paid' with rail='UPI AutoPay' and receipt_no='BLP-FIN-343FBE', schedule[1] status='scheduled' with rail='eNACH Mandate', schedule[2] status='failed' (seeded demo data); (3) POST /api/parent/financing/pay-emi successfully paid month 3 - updated status to 'paid' with receipt_no='BLP-EMI-2F2DFF' and rail='UPI (Manual)', correctly re-derived remaining statuses with exactly 1 'scheduled' and 9 'upcoming'; (4) Negative test: attempting to pay already paid month 1 correctly returned HTTP 400 with error 'Installment already paid or not found'; (5) Negative test: bogus payment_id '000000000000000000000000' correctly returned HTTP 404 with error 'Financing plan not found'; (6) POST /api/parent/pay-financing with tenure=6 successfully created EMI plan with plan_type='EMI', tenure=6, financed_amount=24000.0, schedule length=6, schedule[0].status='paid', schedule[1].status='scheduled'. All endpoints working correctly with proper validation and error handling."
+
   - task: "Auto-Debit Mandate setup endpoint"
     implemented: true
     working: true
@@ -152,8 +167,8 @@ backend:
 
 metadata:
   created_by: "main_agent"
-  version: "1.3"
-  test_sequence: 3
+  version: "1.4"
+  test_sequence: 4
   run_ui: false
 
 test_plan:
@@ -169,3 +184,5 @@ agent_communication:
     -message: "Testing completed successfully. All 6 test cases passed including edge cases and smoke tests. The EMI tenure range change from 6-12 to 3-12 months is working correctly. Tenure clamping works as expected (2->3, 13->12). EMI calculations are accurate using ceil(financed_amount/tenure). Parent flow endpoints (children, fees, pay-financing) are all functioning properly. No issues found."
     -agent: "testing"
     -message: "Round 3 testing completed successfully. All backend features tested and verified: (1) Auto-Debit Mandate setup endpoint - quarterly frequency (4 installments), semi frequency (2 installments), sum verification, account masking, payment structure, GET endpoint JSON serialization, negative test for empty fee_head_ids; (2) pay-financing with EMI schedule storage - tenure=3 with down_payment=0, tenure=12 with down_payment, EMI calculations, schedule array storage. All 6 test cases passed. Both features are production-ready. No issues found."
+    -agent: "testing"
+    -message: "Round 4 testing completed successfully. Active financing endpoints fully tested and verified: (1) GET /api/parent/children successfully retrieves children including Aarav Sharma with active EMI plan; (2) GET /api/parent/financing/active/{student_id} correctly returns EMI plans with proper structure (plan_type, emi, tenure, financed_amount, schedule array with correct statuses and rails); (3) POST /api/parent/financing/pay-emi successfully processes manual EMI payment for month 3, updates status to 'paid' with receipt and 'Manual' rail, correctly re-derives remaining installment statuses (exactly 1 'scheduled', rest 'upcoming'); (4) Negative tests passed: attempting to pay already paid installment returns HTTP 400, bogus payment_id returns HTTP 404; (5) POST /api/parent/pay-financing with tenure=6 creates correct EMI plan structure. All 6 test cases passed. All endpoints working correctly with proper validation and error handling. No issues found."

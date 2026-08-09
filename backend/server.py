@@ -612,19 +612,26 @@ async def pay_financing(body: PayIn, user: dict = Depends(get_current_user)):
     financed = max(0.0, total - down)
     emi = math.ceil(financed / tenure) if tenure else 0
     base = datetime.now(timezone.utc)
+    main_receipt = "BLP-FIN-" + uuid.uuid4().hex[:6].upper()
     schedule = []
     for i in range(tenure):
-        due = base + timedelta(days=30 * (i + 1))
+        due = base + timedelta(days=30 * i)  # EMI 1 settled at activation
+        if i == 0:
+            status, rail, rcpt = "paid", "UPI AutoPay", main_receipt
+        elif i == 1:
+            status, rail, rcpt = "scheduled", "eNACH Mandate", None
+        else:
+            status, rail, rcpt = "upcoming", "eNACH Mandate", None
         schedule.append({"month": i + 1, "label": f"EMI {i + 1}",
                          "due_date": due.strftime("%d %b %Y"),
-                         "amount": emi, "status": "upcoming"})
-    receipt_no = "BLP-FIN-" + uuid.uuid4().hex[:6].upper()
+                         "amount": emi, "status": status, "rail": rail, "receipt_no": rcpt})
+    receipt_no = main_receipt
     doc = {
         "student_id": student["id"], "student_name": student["name"],
         "school_id": student["school_id"], "items": selected, "amount": total,
         "gst": round(total * 0.18, 2), "mode": "Financing (EMI)", "status": "success",
         "financing": True, "plan_type": "EMI", "tenure": tenure, "emi": emi,
-        "down_payment": down, "schedule": schedule,
+        "down_payment": down, "financed_amount": financed, "schedule": schedule,
         "receipt_no": receipt_no, "academic_year": ACADEMIC_YEAR,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -632,6 +639,51 @@ async def pay_financing(body: PayIn, user: dict = Depends(get_current_user)):
     doc["id"] = str(res.inserted_id)
     doc.pop("_id", None)
     return doc
+
+
+@api.get("/parent/financing/active/{student_id}")
+async def active_financing(student_id: str, user: dict = Depends(get_current_user)):
+    student = await _resolve_student(student_id, user)
+    out = []
+    async for p in db.payments.find({"student_id": student["id"], "plan_type": "EMI"}).sort("created_at", -1):
+        p["id"] = str(p.pop("_id"))
+        out.append(p)
+    return out
+
+
+class EmiPayIn(BaseModel):
+    payment_id: str
+    month: int
+    mode: str = "UPI"
+
+
+@api.post("/parent/financing/pay-emi")
+async def pay_emi(body: EmiPayIn, user: dict = Depends(get_current_user)):
+    p = await db.payments.find_one({"_id": ObjectId(body.payment_id)})
+    if not p:
+        raise HTTPException(status_code=404, detail="Financing plan not found")
+    await _resolve_student(p["student_id"], user)  # ownership guard
+    sched = p.get("schedule", [])
+    found = False
+    for s in sched:
+        if s["month"] == body.month and s["status"] != "paid":
+            s["status"] = "paid"
+            s["rail"] = f"{body.mode} (Manual)"
+            s["receipt_no"] = "BLP-EMI-" + uuid.uuid4().hex[:6].upper()
+            found = True
+    if not found:
+        raise HTTPException(status_code=400, detail="Installment already paid or not found")
+    # re-derive statuses for the remaining unpaid installments
+    first_unpaid_set = False
+    for s in sched:
+        if s["status"] == "paid":
+            continue
+        s["status"] = "scheduled" if not first_unpaid_set else "upcoming"
+        first_unpaid_set = True
+    await db.payments.update_one({"_id": ObjectId(body.payment_id)}, {"$set": {"schedule": sched}})
+    p["schedule"] = sched
+    p["id"] = str(p.pop("_id"))
+    return p
 
 
 @api.post("/parent/mandate")

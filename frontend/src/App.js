@@ -15,6 +15,7 @@ import Onboarding from "@/pages/admin/Onboarding";
 import ParentDashboard from "@/pages/parent/ParentDashboard";
 import PaymentHistory from "@/pages/parent/PaymentHistory";
 import MandateSetup from "@/pages/parent/MandateSetup";
+import ActiveFinancing from "@/pages/parent/ActiveFinancing";
 import CreditDashboard from "@/pages/credit/CreditDashboard";
 import Applications from "@/pages/credit/Applications";
 import NewApplication from "@/pages/credit/NewApplication";
@@ -46,6 +47,7 @@ function App() {
             <Route path="/app" element={<ProtectedRoute roles={["parent"]}><ParentDashboard /></ProtectedRoute>} />
             <Route path="/app/mandate" element={<ProtectedRoute roles={["parent"]}><MandateSetup /></ProtectedRoute>} />
             <Route path="/app/history" element={<ProtectedRoute roles={["parent"]}><PaymentHistory /></ProtectedRoute>} />
+            <Route path="/app/financing" element={<ProtectedRoute roles={["parent"]}><ActiveFinancing /></ProtectedRoute>} />
 
             {/* Credit / Loan Origination */}
             <Route path="/credit" element={<ProtectedRoute roles={CREDIT_VIEW}><CreditDashboard /></ProtectedRoute>} />

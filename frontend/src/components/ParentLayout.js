@@ -26,6 +26,7 @@ export function ParentLayout({ children }) {
   const subTabs = [
     { label: "Pay Fees", to: "/app", testid: "subtab-pay" },
     { label: "Payment History", to: "/app/history", testid: "subtab-history" },
+    { label: "Active Financing Schedule", to: "/app/financing", testid: "subtab-financing" },
   ];
 
   return (
