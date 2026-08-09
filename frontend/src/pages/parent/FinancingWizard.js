@@ -154,8 +154,8 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
         new Promise((r) => setTimeout(r, 1400)),
       ]);
       setCibilResult(data);
-      // If PAN is same as step 3 pan field, pre-fill for convenience
-      if (!pan) setPan(cibilPan.toUpperCase());
+      // Prefill the KYC PAN with the CIBIL-verified PAN so the parent doesn't retype it.
+      setPan(cibilPan.toUpperCase());
       toast.success(data.approved ? "Pre-approved for 0% EMI" : "Eligibility check completed");
     } catch (err) {
       toast.error(err.response?.data?.detail || "Could not run the eligibility check");
@@ -421,10 +421,31 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                 <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><Fingerprint className="h-4 w-4 text-[#2563EB]" /> PAN &amp; Income Pre-Approval</p>
                 <div className="mt-4 grid sm:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm text-brand-navy">PAN Card Number</Label>
-                    <Input value={pan} onChange={(e) => setPan(e.target.value.toUpperCase().slice(0, 10))} placeholder="ABCDE1234F"
-                      className="rounded-lg mt-1.5 uppercase" data-testid="kyc-pan" />
+                    <Label className="text-sm text-brand-navy flex items-center gap-2">
+                      PAN Card Number
+                      {cibilResult && cibilResult.approved && pan === cibilPan.toUpperCase() && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider" data-testid="kyc-pan-verified-chip">
+                          <BadgeCheck className="h-3 w-3" /> Verified via CIBIL
+                        </span>
+                      )}
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        value={pan}
+                        onChange={(e) => setPan(e.target.value.toUpperCase().slice(0, 10))}
+                        placeholder="ABCDE1234F"
+                        className={`rounded-lg mt-1.5 uppercase ${cibilResult && cibilResult.approved ? "bg-emerald-50/40 border-emerald-200 pr-9" : ""}`}
+                        data-testid="kyc-pan"
+                        readOnly={!!(cibilResult && cibilResult.approved)}
+                      />
+                      {cibilResult && cibilResult.approved && (
+                        <BadgeCheck className="h-4 w-4 text-emerald-600 absolute right-2.5 top-1/2 -translate-y-1/2 mt-[3px]" />
+                      )}
+                    </div>
                     {pan && !PAN_RE.test(pan) && <p className="text-[11px] text-red-500 mt-1">Format: ABCDE1234F</p>}
+                    {cibilResult && cibilResult.approved && pan === cibilPan.toUpperCase() && (
+                      <p className="text-[11px] text-emerald-700 mt-1">Auto-filled from your CIBIL pre-check.</p>
+                    )}
                   </div>
                   <div>
                     <Label className="text-sm text-brand-navy">Date of Birth</Label>
