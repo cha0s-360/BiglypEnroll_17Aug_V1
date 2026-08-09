@@ -302,7 +302,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                       placeholder="ABCDE1234F"
                       className="rounded-lg mt-1.5 uppercase tracking-wider"
                       data-testid="cibil-pan"
-                      disabled={cibilChecking || (cibilResult && cibilResult.approved)}
+                      disabled={cibilChecking}
                     />
                     {cibilPan && !PAN_RE.test(cibilPan) && (
                       <p className="text-[11px] text-red-500 mt-1">Format: ABCDE1234F</p>
@@ -310,7 +310,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                   </div>
                   <Button
                     onClick={runCibilCheck}
-                    disabled={!PAN_RE.test(cibilPan) || !eligConsent || cibilChecking || (cibilResult && cibilResult.approved)}
+                    disabled={!PAN_RE.test(cibilPan) || !eligConsent || cibilChecking}
                     data-testid="cibil-check-btn"
                     className="h-10 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] font-semibold px-4"
                   >
