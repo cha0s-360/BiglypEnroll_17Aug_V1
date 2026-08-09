@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { HomeFeatureSections } from "@/components/HomeFeatureSections";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight, Wallet, ShieldCheck, Sparkles, TrendingUp, Zap,
@@ -37,8 +38,9 @@ export default function Landing() {
           <Logo className="h-8" />
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
             <a href="#features" className="hover:text-brand-blue transition-colors">Features</a>
+            <a href="#payments" className="hover:text-brand-blue transition-colors">Payments</a>
             <a href="#how" className="hover:text-brand-blue transition-colors">How it works</a>
-            <a href="#audience" className="hover:text-brand-blue transition-colors">Who it's for</a>
+            <a href="#audience" className="hover:text-brand-blue transition-colors">{"Who it's for"}</a>
           </nav>
           <div className="flex items-center gap-3">
             <Link to="/login" data-testid="nav-login">
@@ -157,6 +159,9 @@ export default function Landing() {
           })}
         </div>
       </section>
+
+      {/* New feature sections: payment options, outcomes, platform */}
+      <HomeFeatureSections />
 
       {/* Audience */}
       <section id="audience" className="bg-brand-navy text-white">
