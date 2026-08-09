@@ -9,13 +9,12 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
   Wallet, CheckCircle2, CreditCard, ShieldCheck, Download, Calendar,
   GraduationCap, Zap, Bus, Plane, ArrowRight, Sparkles,
 } from "lucide-react";
+import { FinancingWizard } from "./FinancingWizard";
 
 const MODES = ["UPI", "Cards", "Net Banking", "Wallets", "AutoPay/eNACH"];
 const ADDON_KEYWORDS = ["transport", "bus", "trip", "excursion", "meal", "uniform", "activity", "field", "sport"];
@@ -37,13 +36,10 @@ export default function ParentDashboard() {
   const [processing, setProcessing] = useState(false);
   const [receipt, setReceipt] = useState(null);
 
-  // financing dialog
+  // financing wizard
   const [finOpen, setFinOpen] = useState(false);
   const [finHeadIds, setFinHeadIds] = useState([]);
   const [finAmount, setFinAmount] = useState(0);
-  const [down, setDown] = useState(0);
-  const [tenure, setTenure] = useState(12);
-  const [finPreview, setFinPreview] = useState(null);
 
   useEffect(() => {
     api.get("/parent/children").then(({ data }) => {
@@ -107,38 +103,21 @@ export default function ParentDashboard() {
     }
   };
 
-  // ---------- financing ----------
+  // ---------- financing (5-step wizard) ----------
   const startFinancing = (headIds) => {
     if (!headIds.length) return;
     const amt = pending.filter((i) => headIds.includes(i.fee_head_id)).reduce((a, i) => a + i.amount, 0);
     setFinHeadIds(headIds);
     setFinAmount(amt);
-    setDown(0);
-    setTenure(12);
-    setFinPreview(null);
     setFinOpen(true);
   };
 
-  useEffect(() => {
-    if (!finOpen || !finAmount) return;
-    api.post("/parent/financing/preview", { amount: finAmount, down_payment: down, tenure })
-      .then(({ data }) => setFinPreview(data));
-  }, [down, tenure, finOpen, finAmount]);
-
-  const payFinancing = async () => {
-    setProcessing(true);
-    try {
-      const { data } = await api.post("/parent/pay-financing", { student_id: activeChild, fee_head_ids: finHeadIds, tenure, down_payment: down });
-      setReceipt(data);
-      setFinOpen(false);
-      refresh();
-      toast.success("Financing approved — school paid in full");
-    } catch (err) {
-      toast.error(err.response?.data?.detail || "Financing failed");
-    } finally {
-      setProcessing(false);
-    }
+  const onFinancingSuccess = (data) => {
+    setReceipt(data);
+    refresh();
+    toast.success("Financing approved — school paid in full");
   };
+
 
   const proceedAcademic = () => {
     if (freq === "monthly") { startFinancing(academicIds); return; }
@@ -361,46 +340,15 @@ export default function ParentDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Financing dialog */}
-      <Dialog open={finOpen} onOpenChange={setFinOpen}>
-        <DialogContent className="rounded-2xl">
-          <DialogHeader><DialogTitle className="font-head flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-[#2563EB]" /> 0% Fee Financing</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-1">
-            <p className="text-sm text-slate-500">Split academic fees into zero-interest monthly EMIs. Your school is paid <b>100% upfront</b>.</p>
-            <div>
-              <label className="text-sm font-medium text-brand-navy">Down payment</label>
-              <Input type="number" value={down} onChange={(e) => setDown(Math.max(0, Math.min(finAmount, Number(e.target.value))))}
-                className="rounded-lg mt-1.5" data-testid="down-input" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-brand-navy flex justify-between"><span>Tenure</span><span>{tenure} months</span></label>
-              <Slider value={[tenure]} min={3} max={12} step={1} onValueChange={(v) => setTenure(v[0])} className="mt-3" data-testid="tenure-slider" />
-              <div className="flex justify-between text-[11px] text-slate-400 mt-1"><span>3 months</span><span>12 months</span></div>
-            </div>
-            {finPreview && (
-              <div className="bg-[#EFF6FF] rounded-xl p-4 space-y-1.5 text-sm">
-                <div className="flex justify-between"><span className="text-slate-500">Financed amount</span><span className="font-semibold">{inr(finPreview.financed_amount)}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Monthly EMI</span><span className="font-head font-bold text-[#2563EB] text-lg">{inr(finPreview.emi)}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Interest</span><span className="font-semibold text-green-600">0%</span></div>
-              </div>
-            )}
-            {finPreview && (
-              <div className="max-h-32 overflow-y-auto border border-border rounded-lg divide-y divide-border">
-                {finPreview.schedule.map((s) => (
-                  <div key={s.month} className="flex items-center justify-between px-3 py-2 text-xs">
-                    <span className="flex items-center gap-2 text-slate-500"><Calendar className="h-3 w-3" /> {s.due_date}</span>
-                    <span className="font-semibold text-brand-navy">{inr(s.amount)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            <Button onClick={payFinancing} disabled={processing} data-testid="confirm-finance-btn"
-              className="w-full h-11 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] font-semibold">
-              {processing ? "Setting up..." : "Confirm plan"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Financing wizard (5-step) */}
+      <FinancingWizard
+        open={finOpen}
+        onOpenChange={setFinOpen}
+        studentId={activeChild}
+        feeHeadIds={finHeadIds}
+        academicTotal={finAmount}
+        onSuccess={onFinancingSuccess}
+      />
 
       {/* Receipt dialog */}
       <Dialog open={!!receipt} onOpenChange={() => setReceipt(null)}>
