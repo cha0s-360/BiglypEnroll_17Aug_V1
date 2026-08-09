@@ -572,7 +572,7 @@ async def parent_pay(body: PayIn, user: dict = Depends(get_current_user)):
 
 @api.post("/parent/financing/preview")
 async def financing_preview(body: FinancingPreviewIn, user: dict = Depends(get_current_user)):
-    tenure = max(6, min(12, body.tenure))
+    tenure = max(3, min(12, body.tenure))
     financed = max(0.0, body.amount - body.down_payment)
     emi = math.ceil(financed / tenure) if tenure else 0
     schedule = []
