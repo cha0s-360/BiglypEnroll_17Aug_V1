@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ParentLayout } from "@/components/ParentLayout";
 import api, { inr } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ const ADDON_KEYWORDS = ["transport", "bus", "trip", "excursion", "meal", "unifor
 const isAddon = (name = "") => ADDON_KEYWORDS.some((k) => name.toLowerCase().includes(k));
 
 export default function ParentDashboard() {
+  const navigate = useNavigate();
   const [children, setChildren] = useState([]);
   const [activeChild, setActiveChild] = useState(null);
   const [feeData, setFeeData] = useState(null);
@@ -126,7 +128,7 @@ export default function ParentDashboard() {
   const payFinancing = async () => {
     setProcessing(true);
     try {
-      const { data } = await api.post("/parent/pay-financing", { student_id: activeChild, fee_head_ids: finHeadIds });
+      const { data } = await api.post("/parent/pay-financing", { student_id: activeChild, fee_head_ids: finHeadIds, tenure, down_payment: down });
       setReceipt(data);
       setFinOpen(false);
       refresh();
@@ -139,8 +141,18 @@ export default function ParentDashboard() {
   };
 
   const proceedAcademic = () => {
-    if (freq === "monthly") startFinancing(academicIds);
-    else startPay(academicIds);
+    if (freq === "monthly") { startFinancing(academicIds); return; }
+    if (freq === "yearly") { startPay(academicIds); return; }
+    // quarterly / semi -> auto-debit mandate setup for installment plan
+    navigate("/app/mandate", {
+      state: {
+        studentId: activeChild,
+        studentName: child?.name,
+        feeHeadIds: academicIds,
+        academicTotal,
+        frequency: freq,
+      },
+    });
   };
 
   return (

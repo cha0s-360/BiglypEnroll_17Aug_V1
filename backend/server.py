@@ -201,12 +201,26 @@ class PayIn(BaseModel):
     student_id: str
     fee_head_ids: List[str]
     mode: str = "UPI"
+    tenure: int = 12
+    down_payment: float = 0
 
 
 class FinancingPreviewIn(BaseModel):
     amount: float
     down_payment: float = 0
     tenure: int = 6
+
+
+class MandateIn(BaseModel):
+    student_id: str
+    fee_head_ids: List[str]
+    frequency: str = "quarterly"  # "quarterly" | "semi"
+    rail: str = "UPI AutoPay"
+    bank_name: str
+    account_holder: str
+    account_number: str
+    ifsc: str
+    upfront_mode: str = "UPI"
 
 
 # ------------------------------------------------------------ auth ------------
@@ -593,18 +607,91 @@ async def pay_financing(body: PayIn, user: dict = Depends(get_current_user)):
     if not selected:
         raise HTTPException(status_code=400, detail="No payable items selected")
     total = sum(i["amount"] for i in selected)
+    tenure = max(3, min(12, body.tenure))
+    down = max(0.0, min(total, body.down_payment))
+    financed = max(0.0, total - down)
+    emi = math.ceil(financed / tenure) if tenure else 0
+    base = datetime.now(timezone.utc)
+    schedule = []
+    for i in range(tenure):
+        due = base + timedelta(days=30 * (i + 1))
+        schedule.append({"month": i + 1, "label": f"EMI {i + 1}",
+                         "due_date": due.strftime("%d %b %Y"),
+                         "amount": emi, "status": "upcoming"})
     receipt_no = "BLP-FIN-" + uuid.uuid4().hex[:6].upper()
     doc = {
         "student_id": student["id"], "student_name": student["name"],
         "school_id": student["school_id"], "items": selected, "amount": total,
         "gst": round(total * 0.18, 2), "mode": "Financing (EMI)", "status": "success",
-        "financing": True, "receipt_no": receipt_no, "academic_year": ACADEMIC_YEAR,
+        "financing": True, "plan_type": "EMI", "tenure": tenure, "emi": emi,
+        "down_payment": down, "schedule": schedule,
+        "receipt_no": receipt_no, "academic_year": ACADEMIC_YEAR,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     res = await db.payments.insert_one(doc)
     doc["id"] = str(res.inserted_id)
     doc.pop("_id", None)
     return doc
+
+
+@api.post("/parent/mandate")
+async def setup_mandate(body: MandateIn, user: dict = Depends(get_current_user)):
+    student = await _resolve_student(body.student_id, user)
+    pending = await compute_pending(student["school_id"], student)
+    selected = [i for i in pending if i["fee_head_id"] in body.fee_head_ids and not i["paid"]]
+    if not selected:
+        raise HTTPException(status_code=400, detail="No payable items selected")
+    total = sum(i["amount"] for i in selected)
+
+    freq = body.frequency.lower()
+    n = 4 if freq.startswith("quart") else 2
+    step_months = 3 if n == 4 else 6
+    per = round(total / n)
+    upfront = total - per * (n - 1)  # keep the sum exact
+
+    base = datetime.now(timezone.utc)
+    schedule = []
+    for i in range(n):
+        due = base if i == 0 else (base + timedelta(days=30 * step_months * i)).replace(day=10)
+        label = (f"Q{i + 1}" if n == 4 else f"Term {i + 1}")
+        schedule.append({
+            "month": i + 1, "label": label,
+            "due_date": due.strftime("%d %b %Y"),
+            "amount": upfront if i == 0 else per,
+            "status": "paid" if i == 0 else "upcoming",
+        })
+
+    acct = body.account_number.strip()
+    acct_masked = ("•••• " + acct[-4:]) if len(acct) >= 4 else "••••"
+    mandate_id = "BLP-MND-" + uuid.uuid4().hex[:8].upper()
+    mandate_doc = {
+        "id": mandate_id, "student_id": student["id"], "school_id": student["school_id"],
+        "frequency": freq, "rail": body.rail, "bank_name": body.bank_name,
+        "account_holder": body.account_holder, "account_masked": acct_masked,
+        "ifsc": body.ifsc.upper(), "installments": n, "installment_amount": per,
+        "upfront_amount": upfront, "total": total, "schedule": schedule,
+        "status": "active", "academic_year": ACADEMIC_YEAR,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.mandates.insert_one(mandate_doc)
+    mandate_doc.pop("_id", None)
+
+    receipt_no = "BLP-AD-" + uuid.uuid4().hex[:6].upper()
+    doc = {
+        "student_id": student["id"], "student_name": student["name"],
+        "school_id": student["school_id"], "items": selected, "amount": total,
+        "gst": round(total * 0.18, 2), "mode": f"Auto-Debit ({body.rail})",
+        "status": "success", "financing": False, "auto_debit": True,
+        "plan_type": "AutoDebit", "frequency": freq, "installments": n,
+        "installment_amount": per, "upfront_amount": upfront,
+        "mandate_id": mandate_id, "schedule": schedule,
+        "receipt_no": receipt_no, "academic_year": ACADEMIC_YEAR,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    res = await db.payments.insert_one(doc)
+    doc["id"] = str(res.inserted_id)
+    doc.pop("_id", None)
+    return {"mandate": mandate_doc, "payment": doc}
 
 
 @api.get("/parent/payments/{student_id}")

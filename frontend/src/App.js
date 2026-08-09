@@ -14,6 +14,7 @@ import Team from "@/pages/admin/Team";
 import Onboarding from "@/pages/admin/Onboarding";
 import ParentDashboard from "@/pages/parent/ParentDashboard";
 import PaymentHistory from "@/pages/parent/PaymentHistory";
+import MandateSetup from "@/pages/parent/MandateSetup";
 import CreditDashboard from "@/pages/credit/CreditDashboard";
 import Applications from "@/pages/credit/Applications";
 import NewApplication from "@/pages/credit/NewApplication";
@@ -43,6 +44,7 @@ function App() {
 
             {/* Parent app */}
             <Route path="/app" element={<ProtectedRoute roles={["parent"]}><ParentDashboard /></ProtectedRoute>} />
+            <Route path="/app/mandate" element={<ProtectedRoute roles={["parent"]}><MandateSetup /></ProtectedRoute>} />
             <Route path="/app/history" element={<ProtectedRoute roles={["parent"]}><PaymentHistory /></ProtectedRoute>} />
 
             {/* Credit / Loan Origination */}

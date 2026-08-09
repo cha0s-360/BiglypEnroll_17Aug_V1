@@ -105,6 +105,36 @@
 user_problem_statement: "Modify the EMI duration option in fee financing from 6-12 months to 3-12 months (Student/Parent login), and rebuild the Student Fee Payment screen per provided design spec."
 
 backend:
+  - task: "Auto-Debit Mandate setup endpoint"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "New POST /api/parent/mandate. Creates a mandate record + payment. quarterly=4 installments (upfront paid + 3 upcoming at +3mo each, day 10), semi=2 installments (upfront + 1 at +6mo). upfront = total - per*(n-1) so sum is exact. Masks account number to last 4. Marks selected academic fee heads paid (school settled). Returns {mandate, payment}. Verified via curl: quarterly mandate returns 4-entry schedule (Q1 paid, Q2-Q4 upcoming) and history includes schedule."
+        -working: true
+        -agent: "testing"
+        -comment: "Comprehensive testing completed. All test cases passed: (1) Quarterly frequency: mandate.installments=4, schedule length=4, schedule[0].status='paid', rest='upcoming', sum check verified (upfront 30000 + installment 30000*3 = total 120000), account_masked='•••• 9012' (only last 4 digits shown), payment.plan_type='AutoDebit', payment.mode='Auto-Debit (UPI AutoPay)'; (2) GET /api/parent/payments/{student_id} returns JSON-serializable response with schedule and plan_type fields; (3) Semi frequency: mandate.installments=2, schedule length=2; (4) Negative test: empty fee_head_ids correctly returns 400 error. All mandate creation, retrieval, and validation requirements verified successfully."
+
+  - task: "pay-financing stores EMI schedule + accepts tenure/down_payment"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Extended PayIn with tenure(3-12, default12) & down_payment. /api/parent/pay-financing now clamps tenure 3-12, computes emi=ceil((total-down)/tenure), stores plan_type=EMI, tenure, emi, down_payment, and a schedule array (all 'upcoming') on the payment doc so Payment History can render the EMI schedule."
+        -working: true
+        -agent: "testing"
+        -comment: "Comprehensive testing completed. All test cases passed: (1) tenure=3 with down_payment=0: plan_type='EMI', tenure=3, emi=4000 (ceil(12000/3)), schedule length=3, all schedule items status='upcoming', financing=true; (2) tenure=12 with down_payment=1200: tenure=12, schedule length=12, emi=400 (ceil((6000-1200)/12)), financed_amount=4800 correctly calculated. EMI calculation verified as ceil(financed_amount/tenure), schedule array properly stored with all items marked 'upcoming'. Payment document structure validated with all required fields (plan_type, tenure, emi, down_payment, schedule)."
+
   - task: "Fee financing EMI tenure range 3-12 months"
     implemented: true
     working: true
@@ -122,19 +152,20 @@ backend:
 
 metadata:
   created_by: "main_agent"
-  version: "1.2"
-  test_sequence: 2
+  version: "1.3"
+  test_sequence: 3
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Fee financing EMI tenure range 3-12 months"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
     -agent: "main"
-    -message: "Please test /api/parent/financing/preview (auth as parent@biglyp.com / parent123). Verify: tenure=3 -> 3 EMIs; tenure=2 -> clamps to 3; tenure=12 -> 12 EMIs; tenure=13 -> clamps to 12; financed_amount = amount - down_payment; emi = ceil(financed/tenure); schedule length == tenure. Also confirm /api/parent/pay-financing still works for a parent's pending academic fee heads."
+    -message: "New round: test POST /api/parent/mandate and the updated /api/parent/pay-financing. Auth parent@biglyp.com/parent123. Use child 'Sara Sharma' (has unpaid fees) — GET /api/parent/children then /api/parent/fees/{id}. For mandate: send {student_id, fee_head_ids:[<unpaid academic head>], frequency:'quarterly'|'semi', rail:'UPI AutoPay', bank_name, account_holder, account_number, ifsc}. Verify quarterly -> installments=4, schedule len 4 (index0 status 'paid', rest 'upcoming'), upfront+3*per == total, account_masked shows last4; semi -> installments=2. Confirm GET /api/parent/payments/{id} returns the AutoDebit payment WITH schedule and plan_type. For pay-financing: send tenure=3 and tenure=12 with down_payment, verify response/stored doc has plan_type='EMI', tenure, emi, and schedule of length==tenure."
     -agent: "testing"
     -message: "Testing completed successfully. All 6 test cases passed including edge cases and smoke tests. The EMI tenure range change from 6-12 to 3-12 months is working correctly. Tenure clamping works as expected (2->3, 13->12). EMI calculations are accurate using ceil(financed_amount/tenure). Parent flow endpoints (children, fees, pay-financing) are all functioning properly. No issues found."
+    -agent: "testing"
+    -message: "Round 3 testing completed successfully. All backend features tested and verified: (1) Auto-Debit Mandate setup endpoint - quarterly frequency (4 installments), semi frequency (2 installments), sum verification, account masking, payment structure, GET endpoint JSON serialization, negative test for empty fee_head_ids; (2) pay-financing with EMI schedule storage - tenure=3 with down_payment=0, tenure=12 with down_payment, EMI calculations, schedule array storage. All 6 test cases passed. Both features are production-ready. No issues found."
