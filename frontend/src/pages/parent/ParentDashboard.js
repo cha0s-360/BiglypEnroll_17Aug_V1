@@ -166,7 +166,7 @@ export default function ParentDashboard() {
       {/* page heading + child selector */}
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div>
-          <p className="text-xs tracking-[0.2em] uppercase text-[#2563EB] font-semibold">Fee Payment</p>
+          <p className="text-xs tracking-[0.2em] uppercase text-[#5548D1] font-semibold">Fee Payment</p>
           <h1 className="font-head text-3xl font-black tracking-tight text-brand-navy mt-1">
             {child ? `${child.name.split(" ")[0]}'s Fees` : "Fee Payment"}
           </h1>
@@ -184,7 +184,7 @@ export default function ParentDashboard() {
 
       {children.length === 0 && (
         <div className="bg-white border border-border rounded-2xl p-12 text-center">
-          <GraduationCap className="h-10 w-10 text-[#2563EB] mx-auto" />
+          <GraduationCap className="h-10 w-10 text-[#5548D1] mx-auto" />
           <p className="mt-4 font-head font-bold text-brand-navy text-lg">No students linked yet</p>
           <p className="text-sm text-slate-500 mt-1">Ask your school to link your child to this email.</p>
         </div>
@@ -219,7 +219,7 @@ export default function ParentDashboard() {
                     <div key={i.fee_head_id} className="flex items-center justify-between px-3.5 py-2 text-sm">
                       <span className="text-slate-600 flex items-center gap-2">
                         {i.name}
-                        {clubbed.includes(i.fee_head_id) && <span className="text-[10px] font-semibold text-[#2563EB] bg-[#EFF6FF] rounded-full px-1.5 py-0.5">clubbed</span>}
+                        {clubbed.includes(i.fee_head_id) && <span className="text-[10px] font-semibold text-[#5548D1] bg-[#EEF0FF] rounded-full px-1.5 py-0.5">clubbed</span>}
                         {isOneTime(i.frequency) && <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded-full px-1.5 py-0.5">one-time</span>}
                       </span>
                       <span className="font-semibold text-brand-navy">{inr(i.amount)}</span>
@@ -235,25 +235,25 @@ export default function ParentDashboard() {
                     return (
                       <button key={o.key} data-testid={`freq-${o.key}`} onClick={() => setFreq(o.key)}
                         className={`text-left rounded-xl border px-3 py-2.5 transition-colors ${
-                          active ? "border-[#2563EB] bg-[#EFF6FF] ring-1 ring-[#2563EB]" : "border-border bg-white hover:border-[#2563EB]/40"
+                          active ? "border-[#5548D1] bg-[#EEF0FF] ring-1 ring-[#5548D1]" : "border-border bg-white hover:border-[#5548D1]/40"
                         }`}>
                         <div className="flex items-center gap-1">
-                          <span className={`text-xs font-semibold ${o.financing ? "text-[#2563EB]" : "text-brand-navy"}`}>{o.label}</span>
-                          {o.financing && <Zap className="h-3 w-3 text-[#2563EB]" />}
+                          <span className={`text-xs font-semibold ${o.financing ? "text-[#5548D1]" : "text-brand-navy"}`}>{o.label}</span>
+                          {o.financing && <Zap className="h-3 w-3 text-[#5548D1]" />}
                         </div>
                         <div className="mt-1 flex items-baseline gap-1">
-                          <span className={`font-head text-lg font-black ${o.financing ? "text-[#2563EB]" : "text-brand-navy"}`}>{inr(o.amount)}</span>
+                          <span className={`font-head text-lg font-black ${o.financing ? "text-[#5548D1]" : "text-brand-navy"}`}>{inr(o.amount)}</span>
                           <span className="text-[10px] text-slate-400">{o.unit}</span>
                         </div>
-                        {o.financing && <span className="text-[9px] font-bold text-[#2563EB]">0% EMI</span>}
+                        {o.financing && <span className="text-[9px] font-bold text-[#5548D1]">0% EMI</span>}
                       </button>
                     );
                   })}
                 </div>
 
                 {freq === "monthly" && (
-                  <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-[#EFF6FF] border border-[#2563EB]/15 p-3" data-testid="emi-callout">
-                    <Zap className="h-4 w-4 text-[#2563EB] shrink-0 mt-0.5" />
+                  <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-[#EEF0FF] border border-[#5548D1]/15 p-3" data-testid="emi-callout">
+                    <Zap className="h-4 w-4 text-[#5548D1] shrink-0 mt-0.5" />
                     <p className="text-xs text-brand-navy leading-relaxed">Convert bulky academic fees into zero-interest monthly EMIs. School is paid 100% upfront.</p>
                   </div>
                 )}
@@ -271,14 +271,14 @@ export default function ParentDashboard() {
                 )}
 
                 <Button onClick={proceedAcademic} data-testid="proceed-breakdown-btn"
-                  className="mt-5 h-11 px-6 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold">
+                  className="mt-5 h-11 px-6 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] text-white font-semibold">
                   {freq === "monthly" ? "Start 0% EMI Application" : freq === "yearly" ? "Pay Full Amount" : "Set Up Auto-Debit Plan"}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
 
                 {feeData?.scholarships?.length > 0 && (
                   <div className="mt-4 flex items-start gap-2 text-[11px] text-slate-500">
-                    <Sparkles className="h-3.5 w-3.5 text-[#2563EB] shrink-0 mt-0.5" />
+                    <Sparkles className="h-3.5 w-3.5 text-[#5548D1] shrink-0 mt-0.5" />
                     <span>Scholarships available: {feeData.scholarships.map((s) => `${s.name} (${s.type === "percentage" ? s.value + "%" : inr(s.value)})`).join(" · ")}.</span>
                   </div>
                 )}
@@ -305,9 +305,9 @@ export default function ParentDashboard() {
                   const oneTime = isOneTime(i.frequency);
                   const isClubbed = clubbed.includes(i.fee_head_id);
                   return (
-                    <div key={i.fee_head_id} className={`bg-white border rounded-2xl p-5 ${isClubbed ? "border-[#2563EB] ring-1 ring-[#2563EB]/30" : "border-border"}`} data-testid={`addon-${i.fee_head_id}`}>
+                    <div key={i.fee_head_id} className={`bg-white border rounded-2xl p-5 ${isClubbed ? "border-[#5548D1] ring-1 ring-[#5548D1]/30" : "border-border"}`} data-testid={`addon-${i.fee_head_id}`}>
                       <div className="flex items-start justify-between">
-                        <div className="h-10 w-10 rounded-lg bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center"><Icon className="h-5 w-5" /></div>
+                        <div className="h-10 w-10 rounded-lg bg-[#EEF0FF] text-[#5548D1] flex items-center justify-center"><Icon className="h-5 w-5" /></div>
                         <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-600 text-[11px] font-semibold px-2.5 py-1">
                           {oneTime ? "One-Time · No Auto-Debit" : "Direct Payment"}
                         </span>
@@ -316,7 +316,7 @@ export default function ParentDashboard() {
                       <p className="text-xs text-slate-500 mt-0.5">{i.frequency}</p>
 
                       {quarterly && (
-                        <label className="mt-3 flex items-center gap-2.5 cursor-pointer rounded-lg bg-[#EFF6FF]/60 px-3 py-2" data-testid={`club-label-${i.fee_head_id}`}>
+                        <label className="mt-3 flex items-center gap-2.5 cursor-pointer rounded-lg bg-[#EEF0FF]/60 px-3 py-2" data-testid={`club-label-${i.fee_head_id}`}>
                           <Checkbox checked={isClubbed} onCheckedChange={() => toggleClub(i.fee_head_id)} data-testid={`club-${i.fee_head_id}`} />
                           <span className="text-xs text-brand-navy font-medium">Club with tuition fee &amp; pay on the plan above</span>
                         </label>
@@ -325,10 +325,10 @@ export default function ParentDashboard() {
                       <div className="mt-4 flex items-center justify-between">
                         <span className="font-head text-2xl font-black text-brand-navy">{inr(i.amount)}</span>
                         {isClubbed ? (
-                          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563EB]"><CheckCircle2 className="h-4 w-4" /> Clubbed above</span>
+                          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#5548D1]"><CheckCircle2 className="h-4 w-4" /> Clubbed above</span>
                         ) : (
                           <Button onClick={() => startPay([i.fee_head_id])} data-testid={`pay-upfront-${i.fee_head_id}`}
-                            className="h-10 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold">
+                            className="h-10 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] text-white font-semibold">
                             Pay Upfront
                           </Button>
                         )}
@@ -376,10 +376,10 @@ export default function ParentDashboard() {
               <p className="text-[11px] text-slate-400 px-1">One-time fees must be paid in full — AutoPay / eNACH is not available.</p>
             )}
             <div className="bg-slate-50 rounded-lg p-3 text-xs text-slate-500 flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-[#2563EB]" /> Simulated gateway — no real charge is made.
+              <ShieldCheck className="h-4 w-4 text-[#5548D1]" /> Simulated gateway — no real charge is made.
             </div>
             <Button onClick={pay} disabled={processing} data-testid="confirm-pay-btn"
-              className="w-full h-11 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] font-semibold">
+              className="w-full h-11 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] font-semibold">
               <CreditCard className="h-4 w-4 mr-2" />
               {processing ? "Processing..." : `Pay ${inr(payTotal + payGst)}`}
             </Button>
@@ -413,7 +413,7 @@ export default function ParentDashboard() {
               <div className="flex justify-between"><span className="text-slate-500">Amount</span><span className="font-medium">{inr(receipt?.amount)}</span></div>
               <div className="flex justify-between"><span className="text-slate-500">GST</span><span className="font-medium">{inr(receipt?.gst)}</span></div>
             </div>
-            <Button onClick={() => setReceipt(null)} className="w-full mt-5 h-11 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8]" data-testid="receipt-close">
+            <Button onClick={() => setReceipt(null)} className="w-full mt-5 h-11 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8]" data-testid="receipt-close">
               <Download className="h-4 w-4 mr-2" /> Done
             </Button>
           </div>

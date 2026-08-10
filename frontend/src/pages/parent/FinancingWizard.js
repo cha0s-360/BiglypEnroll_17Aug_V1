@@ -218,7 +218,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
         {/* Header */}
         <DialogHeader className="px-6 md:px-8 pt-6 pb-5 border-b border-border">
           <DialogTitle className="font-head text-lg text-brand-navy flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-[#2563EB]" /> 0% Interest Fee Financing Application
+            <ShieldCheck className="h-5 w-5 text-[#5548D1]" /> 0% Interest Fee Financing Application
           </DialogTitle>
           {/* step progress bar */}
           <div className="mt-5 flex items-center" data-testid="wizard-stepper">
@@ -229,14 +229,14 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                 <div key={s.n} className="flex items-center flex-1 last:flex-none">
                   <div className="flex items-center gap-2">
                     <span className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      done ? "bg-[#2563EB] text-white" : active ? "bg-[#2563EB] text-white ring-4 ring-[#EFF6FF]" : "bg-slate-100 text-slate-400"
+                      done ? "bg-[#5548D1] text-white" : active ? "bg-[#5548D1] text-white ring-4 ring-[#EEF0FF]" : "bg-slate-100 text-slate-400"
                     }`}>
                       {done ? <Check className="h-4 w-4" /> : s.n}
                     </span>
-                    <span className={`text-xs font-semibold hidden sm:inline ${active ? "text-[#2563EB]" : done ? "text-brand-navy" : "text-slate-400"}`}>{s.label}</span>
+                    <span className={`text-xs font-semibold hidden sm:inline ${active ? "text-[#5548D1]" : done ? "text-brand-navy" : "text-slate-400"}`}>{s.label}</span>
                   </div>
                   {i < STEPS.length - 1 && (
-                    <div className={`h-0.5 flex-1 mx-2 rounded-full ${done ? "bg-[#2563EB]" : "bg-slate-100"}`} />
+                    <div className={`h-0.5 flex-1 mx-2 rounded-full ${done ? "bg-[#5548D1]" : "bg-slate-100"}`} />
                   )}
                 </div>
               );
@@ -265,9 +265,9 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                 <div className="flex justify-between text-[11px] text-slate-400 mt-1"><span>3 months</span><span>12 months</span></div>
               </div>
               {preview && (
-                <div className="bg-[#EFF6FF] rounded-xl p-4 space-y-1.5 text-sm">
+                <div className="bg-[#EEF0FF] rounded-xl p-4 space-y-1.5 text-sm">
                   <div className="flex justify-between"><span className="text-slate-500">Financed amount</span><span className="font-semibold">{inr(preview.financed_amount)}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Monthly EMI</span><span className="font-head font-bold text-[#2563EB] text-lg">{inr(preview.emi)}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">Monthly EMI</span><span className="font-head font-bold text-[#5548D1] text-lg">{inr(preview.emi)}</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Interest</span><span className="font-semibold text-green-600">0%</span></div>
                 </div>
               )}
@@ -277,8 +277,8 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
           {/* ---------- Step 2: Eligibility (with CIBIL check) ---------- */}
           {step === 2 && (
             <div className="space-y-5" data-testid="step-eligibility">
-              <div className="rounded-xl bg-[#EFF6FF] border border-[#2563EB]/15 p-4 flex items-start gap-3">
-                <div className="h-9 w-9 rounded-lg bg-[#2563EB] text-white flex items-center justify-center shrink-0"><Zap className="h-4 w-4" /></div>
+              <div className="rounded-xl bg-[#EEF0FF] border border-[#5548D1]/15 p-4 flex items-start gap-3">
+                <div className="h-9 w-9 rounded-lg bg-[#5548D1] text-white flex items-center justify-center shrink-0"><Zap className="h-4 w-4" /></div>
                 <div>
                   <p className="font-semibold text-brand-navy text-sm">Instant CIBIL Eligibility Pre-Check</p>
                   <p className="text-xs text-slate-500 mt-0.5">Soft credit pull via CIBIL (TransUnion) — no impact on your credit score.</p>
@@ -288,7 +288,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
               {/* PAN input for CIBIL pull */}
               <div className="rounded-xl border border-border p-4">
                 <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2">
-                  <Fingerprint className="h-4 w-4 text-[#2563EB]" /> Verify your CIBIL Score
+                  <Fingerprint className="h-4 w-4 text-[#5548D1]" /> Verify your CIBIL Score
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
                   Enter the PAN of the primary applicant. We fetch your CIBIL score securely from the bureau.
@@ -312,7 +312,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                     onClick={runCibilCheck}
                     disabled={!PAN_RE.test(cibilPan) || !eligConsent || cibilChecking}
                     data-testid="cibil-check-btn"
-                    className="h-10 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] font-semibold px-4"
+                    className="h-10 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] font-semibold px-4"
                   >
                     {cibilChecking ? (
                       <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Checking...</>
@@ -342,8 +342,8 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
 
               {/* CIBIL Result */}
               {cibilChecking && !cibilResult && (
-                <div className="rounded-xl border border-dashed border-[#2563EB]/40 p-6 flex items-center gap-4" data-testid="cibil-checking">
-                  <Loader2 className="h-8 w-8 text-[#2563EB] animate-spin" />
+                <div className="rounded-xl border border-dashed border-[#5548D1]/40 p-6 flex items-center gap-4" data-testid="cibil-checking">
+                  <Loader2 className="h-8 w-8 text-[#5548D1] animate-spin" />
                   <div>
                     <p className="font-head font-bold text-brand-navy text-sm">Fetching your CIBIL score…</p>
                     <p className="text-xs text-slate-500 mt-0.5">Securely connecting to CIBIL (TransUnion) via RBI-regulated NBFC rails.</p>
@@ -397,8 +397,8 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                   </div>
 
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500 border-t border-border/60 pt-3">
-                    <span className="flex items-center gap-1"><BadgeCheck className="h-3.5 w-3.5 text-[#2563EB]" /> {cibilResult.bureau}</span>
-                    <span className="flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5 text-[#2563EB]" /> {cibilResult.pull_type}</span>
+                    <span className="flex items-center gap-1"><BadgeCheck className="h-3.5 w-3.5 text-[#5548D1]" /> {cibilResult.bureau}</span>
+                    <span className="flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5 text-[#5548D1]" /> {cibilResult.pull_type}</span>
                   </div>
                 </div>
               )}
@@ -418,7 +418,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
             <div className="space-y-5" data-testid="step-kyc">
               {/* PAN & income */}
               <div className="rounded-xl border border-border p-4">
-                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><Fingerprint className="h-4 w-4 text-[#2563EB]" /> PAN &amp; Income Pre-Approval</p>
+                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><Fingerprint className="h-4 w-4 text-[#5548D1]" /> PAN &amp; Income Pre-Approval</p>
                 <div className="mt-4 grid sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm text-brand-navy flex items-center gap-2">
@@ -472,7 +472,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
 
               {/* Aadhaar */}
               <div className="rounded-xl border border-border p-4">
-                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><ScanFace className="h-4 w-4 text-[#2563EB]" /> Instant Digital Identity Check</p>
+                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><ScanFace className="h-4 w-4 text-[#5548D1]" /> Instant Digital Identity Check</p>
                 <p className="text-xs text-slate-500 mt-1">Authorize fast identity verification via Aadhaar-linked OTP / DigiLocker.</p>
                 {aadhaarVerified ? (
                   <div className="mt-3 flex items-center gap-2 text-sm font-semibold text-green-600" data-testid="aadhaar-verified">
@@ -480,7 +480,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                   </div>
                 ) : !otpSent ? (
                   <Button variant="outline" onClick={sendOtp} data-testid="send-otp-btn"
-                    className="mt-3 h-10 rounded-lg border-[#2563EB] text-[#2563EB] hover:bg-[#EFF6FF] font-semibold">
+                    className="mt-3 h-10 rounded-lg border-[#5548D1] text-[#5548D1] hover:bg-[#EEF0FF] font-semibold">
                     Send Verification Code
                   </Button>
                 ) : (
@@ -490,16 +490,16 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                       <Input value={otp} onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))} placeholder="6-digit code"
                         className="rounded-lg mt-1.5" inputMode="numeric" data-testid="otp-input" />
                     </div>
-                    <Button onClick={verifyOtp} data-testid="verify-otp-btn" className="h-10 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] font-semibold">Verify</Button>
+                    <Button onClick={verifyOtp} data-testid="verify-otp-btn" className="h-10 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] font-semibold">Verify</Button>
                   </div>
                 )}
               </div>
 
               {/* Liveness */}
               <div className="rounded-xl border border-border p-4">
-                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><Camera className="h-4 w-4 text-[#2563EB]" /> Live Liveness Verification</p>
+                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><Camera className="h-4 w-4 text-[#5548D1]" /> Live Liveness Verification</p>
                 <div className="mt-4 flex flex-col items-center">
-                  <div className="relative h-40 w-40 rounded-full overflow-hidden border-4 border-dashed border-[#2563EB]/40 bg-slate-50 flex items-center justify-center" data-testid="liveness-frame">
+                  <div className="relative h-40 w-40 rounded-full overflow-hidden border-4 border-dashed border-[#5548D1]/40 bg-slate-50 flex items-center justify-center" data-testid="liveness-frame">
                     {camOn && liveness !== "done" ? (
                       <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
                     ) : liveness === "done" ? (
@@ -507,7 +507,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                         <CheckCircle2 className="h-10 w-10" />
                       </div>
                     ) : liveness === "checking" ? (
-                      <Loader2 className="h-10 w-10 text-[#2563EB] animate-spin" />
+                      <Loader2 className="h-10 w-10 text-[#5548D1] animate-spin" />
                     ) : (
                       <ScanFace className="h-12 w-12 text-slate-300" />
                     )}
@@ -523,7 +523,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                         </Button>
                       )}
                       <Button onClick={captureLiveness} disabled={liveness === "checking"} data-testid="capture-liveness-btn"
-                        className="h-9 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] font-semibold">
+                        className="h-9 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] font-semibold">
                         {liveness === "checking" ? "Verifying..." : "Capture Selfie & Verify"}
                       </Button>
                     </div>
@@ -533,7 +533,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
 
               {/* Compliance note */}
               <div className="flex items-start gap-2 text-xs text-slate-500 rounded-lg bg-slate-50 p-3" data-testid="kyc-compliance">
-                <Lock className="h-4 w-4 text-[#2563EB] shrink-0 mt-0.5" />
+                <Lock className="h-4 w-4 text-[#5548D1] shrink-0 mt-0.5" />
                 Data transmitted via encrypted RBI-regulated NBFC lending partner rails. Zero manual paperwork.
               </div>
             </div>
@@ -548,11 +548,11 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                   const Icon = r.icon; const active = rail === r.key;
                   return (
                     <label key={r.key} data-testid={`wiz-rail-${r.key.split(" ")[0].toLowerCase()}`}
-                      className={`flex items-center gap-3 rounded-xl border p-3.5 cursor-pointer transition-colors ${active ? "border-[#2563EB] bg-[#EFF6FF]" : "border-border hover:border-[#2563EB]/40"}`}>
+                      className={`flex items-center gap-3 rounded-xl border p-3.5 cursor-pointer transition-colors ${active ? "border-[#5548D1] bg-[#EEF0FF]" : "border-border hover:border-[#5548D1]/40"}`}>
                       <RadioGroupItem value={r.key} />
-                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${active ? "bg-[#2563EB] text-white" : "bg-slate-100 text-slate-500"}`}><Icon className="h-4 w-4" /></div>
+                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${active ? "bg-[#5548D1] text-white" : "bg-slate-100 text-slate-500"}`}><Icon className="h-4 w-4" /></div>
                       <span className="flex-1 text-sm font-medium text-brand-navy">{r.title}</span>
-                      {r.badge && <span className="rounded-full bg-[#2563EB] text-white text-[10px] font-bold px-2 py-0.5">{r.badge}</span>}
+                      {r.badge && <span className="rounded-full bg-[#5548D1] text-white text-[10px] font-bold px-2 py-0.5">{r.badge}</span>}
                     </label>
                   );
                 })}
@@ -578,8 +578,8 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                   <Input value={ifsc} onChange={(e) => setIfsc(e.target.value.toUpperCase())} className="rounded-lg mt-1.5" data-testid="wiz-ifsc" />
                 </div>
               </div>
-              <div className="flex items-start gap-2 text-xs text-slate-500 rounded-lg bg-[#EFF6FF] p-3">
-                <ShieldCheck className="h-4 w-4 text-[#2563EB] shrink-0 mt-0.5" /> <b className="text-brand-navy">₹1 Penny Drop</b>&nbsp;validation confirms bank account ownership.
+              <div className="flex items-start gap-2 text-xs text-slate-500 rounded-lg bg-[#EEF0FF] p-3">
+                <ShieldCheck className="h-4 w-4 text-[#5548D1] shrink-0 mt-0.5" /> <b className="text-brand-navy">₹1 Penny Drop</b>&nbsp;validation confirms bank account ownership.
               </div>
             </div>
           )}
@@ -588,18 +588,18 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
           {step === 5 && (
             <div className="space-y-5" data-testid="step-esign">
               <div className="rounded-xl border border-border p-4 text-sm space-y-2">
-                <p className="font-head font-bold text-brand-navy flex items-center gap-2"><FileSignature className="h-4 w-4 text-[#2563EB]" /> Loan Agreement Summary</p>
+                <p className="font-head font-bold text-brand-navy flex items-center gap-2"><FileSignature className="h-4 w-4 text-[#5548D1]" /> Loan Agreement Summary</p>
                 <div className="flex justify-between"><span className="text-slate-500">Financed amount</span><span className="font-semibold">{inr(preview?.financed_amount || 0)}</span></div>
                 <div className="flex justify-between"><span className="text-slate-500">Tenure</span><span className="font-semibold">{tenure} months</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Monthly EMI</span><span className="font-semibold text-[#2563EB]">{inr(preview?.emi || 0)}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">Monthly EMI</span><span className="font-semibold text-[#5548D1]">{inr(preview?.emi || 0)}</span></div>
                 <div className="flex justify-between"><span className="text-slate-500">Interest</span><span className="font-semibold text-green-600">0%</span></div>
                 <div className="flex justify-between"><span className="text-slate-500">Repayment</span><span className="font-semibold">{rail}</span></div>
               </div>
               <div className="rounded-xl border border-border p-4">
-                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><ShieldQuestion className="h-4 w-4 text-[#2563EB]" /> Aadhaar e-Sign</p>
+                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><ShieldQuestion className="h-4 w-4 text-[#5548D1]" /> Aadhaar e-Sign</p>
                 <p className="text-xs text-slate-500 mt-1">Digitally sign the loan agreement via Aadhaar OTP e-Sign.</p>
                 {!esignSent ? (
-                  <Button variant="outline" onClick={sendEsign} data-testid="send-esign-btn" className="mt-3 h-10 rounded-lg border-[#2563EB] text-[#2563EB] hover:bg-[#EFF6FF] font-semibold">
+                  <Button variant="outline" onClick={sendEsign} data-testid="send-esign-btn" className="mt-3 h-10 rounded-lg border-[#5548D1] text-[#5548D1] hover:bg-[#EEF0FF] font-semibold">
                     Send e-Sign OTP
                   </Button>
                 ) : (
@@ -615,8 +615,8 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                 <span className="text-sm text-slate-600 leading-relaxed">I have read and agree to the 0% EMI loan agreement, repayment schedule and auto-debit mandate.</span>
               </label>
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500 border-t border-border pt-4">
-                <span className="flex items-center gap-1.5"><BadgeCheck className="h-4 w-4 text-[#2563EB]" /> RBI-regulated NBFC</span>
-                <span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-[#2563EB]" /> 256-Bit Encryption</span>
+                <span className="flex items-center gap-1.5"><BadgeCheck className="h-4 w-4 text-[#5548D1]" /> RBI-regulated NBFC</span>
+                <span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-[#5548D1]" /> 256-Bit Encryption</span>
               </div>
             </div>
           )}
@@ -629,7 +629,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
             <ArrowLeft className="h-4 w-4 mr-1.5" /> Back
           </Button>
           <Button onClick={next} disabled={!canContinue || processing} data-testid="wiz-next"
-            className="h-11 px-6 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold">
+            className="h-11 px-6 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] text-white font-semibold">
             {processing ? "Activating..."
               : step === 3 ? <>Continue to Bank Setup <ArrowRight className="h-4 w-4 ml-1.5" /></>
               : step === 5 ? <><ShieldCheck className="h-4 w-4 mr-1.5" /> Authorize &amp; Activate 0% EMI</>
@@ -655,10 +655,10 @@ function CibilGauge({ score, target, band, color = "blue" }) {
   const y = cy - r * Math.sin(angle);
   const stroke = {
     emerald: "#10B981",
-    blue: "#2563EB",
+    blue: "#5548D1",
     amber: "#F59E0B",
     red: "#EF4444",
-  }[color] || "#2563EB";
+  }[color] || "#5548D1";
   // Arc path
   const startX = cx - r, startY = cy;
   const large = 0; // always small arc for semi-circle segment

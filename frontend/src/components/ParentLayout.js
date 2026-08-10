@@ -45,9 +45,9 @@ export function ParentLayout({ children }) {
                   key={n.key}
                   to={n.to}
                   data-testid={n.testid}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold bg-[#EFF6FF] text-[#2563EB] transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-bold bg-brand-tint text-brand-blue transition-colors"
                 >
-                  <Icon className="h-5 w-5 text-[#2563EB]" />
+                  <Icon className="h-5 w-5 text-brand-blue" />
                   {n.label}
                 </Link>
               );
@@ -57,7 +57,7 @@ export function ParentLayout({ children }) {
                 key={n.key}
                 data-testid={n.testid}
                 onClick={() => toast.info(`${n.label} — coming soon`)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-brand-navy transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-semibold text-slate-500 hover:bg-slate-50 hover:text-brand-navy transition-colors"
               >
                 <Icon className="h-5 w-5" />
                 {n.label}
@@ -104,11 +104,11 @@ export function ParentLayout({ children }) {
               className="relative h-9 w-9 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors"
             >
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#2563EB]" />
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#5548D1]" />
             </button>
 
             <div className="flex items-center gap-2 pl-2 md:pl-3 border-l border-border">
-              <div className="h-9 w-9 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-sm font-bold">
+              <div className="h-9 w-9 rounded-full bg-[#5548D1] text-white flex items-center justify-center text-sm font-bold">
                 {user?.name?.[0] || "P"}
               </div>
               <button
@@ -134,11 +134,11 @@ export function ParentLayout({ children }) {
                   to={t.to}
                   data-testid={t.testid}
                   className={`relative py-4 text-sm font-semibold transition-colors ${
-                    active ? "text-[#2563EB]" : "text-slate-500 hover:text-brand-navy"
+                    active ? "text-[#5548D1]" : "text-slate-500 hover:text-brand-navy"
                   }`}
                 >
                   {t.label}
-                  {active && <span className="absolute left-0 -bottom-px h-0.5 w-full bg-[#2563EB] rounded-full" />}
+                  {active && <span className="absolute left-0 -bottom-px h-0.5 w-full bg-[#5548D1] rounded-full" />}
                 </Link>
               );
             })}

@@ -18,10 +18,13 @@ module.exports = {
       },
       colors: {
         brand: {
-          navy: '#1E2A78',
-          blue: '#2540E8',
-          sky: '#3B82F6',
-          tint: '#EEF2FF',
+          navy: '#0F1A5B',
+          blue: '#5548D1',
+          indigo: '#5548D1',
+          'indigo-deep': '#3F35A8',
+          sky: '#7C6FF5',
+          tint: '#EEF0FF',
+          accent: '#FBBF24',
         },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',

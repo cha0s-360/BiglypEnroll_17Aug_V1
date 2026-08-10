@@ -33,7 +33,7 @@ function printDoc(title, bodyHtml) {
     h1{color:#1E2A78;font-size:22px;margin-bottom:4px;} .muted{color:#64748b;font-size:12px;}
     table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;}
     td,th{border:1px solid #E2E8F0;padding:8px 10px;text-align:left;}
-    .badge{display:inline-block;background:#EFF6FF;color:#2563EB;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;}
+    .badge{display:inline-block;background:#EEF0FF;color:#5548D1;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;}
     .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef2f7;font-size:13px;}
     </style></head><body>${bodyHtml}</body></html>`);
   w.document.close(); w.focus();
@@ -135,7 +135,7 @@ export default function ActiveFinancing() {
     <ParentLayout>
       <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
-          <p className="text-xs tracking-[0.2em] uppercase text-[#2563EB] font-semibold">Active Financing Schedule</p>
+          <p className="text-xs tracking-[0.2em] uppercase text-[#5548D1] font-semibold">Active Financing Schedule</p>
           <h1 className="font-head text-3xl font-black tracking-tight text-brand-navy mt-1">0% EMI Repayment</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -159,7 +159,7 @@ export default function ActiveFinancing() {
           <Wallet className="h-10 w-10 text-slate-300 mx-auto" />
           <p className="mt-4 font-head font-bold text-brand-navy text-lg">No active financing plan</p>
           <p className="text-sm text-slate-500 mt-1">Split academic fees into 0% EMIs from the Pay Fees tab.</p>
-          <Link to="/app" className="inline-flex items-center gap-1.5 mt-4 text-sm text-[#2563EB] font-semibold hover:underline">
+          <Link to="/app" className="inline-flex items-center gap-1.5 mt-4 text-sm text-[#5548D1] font-semibold hover:underline">
             Go to Pay Fees <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -168,17 +168,17 @@ export default function ActiveFinancing() {
           {/* KPI cards */}
           <div className="grid sm:grid-cols-3 gap-4" data-testid="fin-kpis">
             <div className="bg-white border border-border rounded-2xl p-5">
-              <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-[0.12em]"><Wallet className="h-4 w-4 text-[#2563EB]" /> Total Financed Fee</div>
+              <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-[0.12em]"><Wallet className="h-4 w-4 text-[#5548D1]" /> Total Financed Fee</div>
               <p className="font-head text-3xl font-black text-brand-navy mt-3">{inr(financed)}</p>
               <p className="text-xs text-slate-500 mt-1">100% Disbursed to School</p>
             </div>
             <div className="bg-white border border-border rounded-2xl p-5">
-              <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-[0.12em]"><Percent className="h-4 w-4 text-[#2563EB]" /> Monthly EMI Amount</div>
+              <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-[0.12em]"><Percent className="h-4 w-4 text-[#5548D1]" /> Monthly EMI Amount</div>
               <p className="font-head text-3xl font-black text-brand-navy mt-3">{inr(emi)}<span className="text-base font-bold text-slate-400">/mo</span></p>
               <p className="text-xs text-slate-500 mt-1">Tenure: {tenure} Months @ 0% Interest</p>
             </div>
             <div className="bg-white border border-border rounded-2xl p-5">
-              <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-[0.12em]"><CalendarClock className="h-4 w-4 text-[#2563EB]" /> Next Auto-Debit</div>
+              <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-[0.12em]"><CalendarClock className="h-4 w-4 text-[#5548D1]" /> Next Auto-Debit</div>
               <p className="font-head text-3xl font-black text-brand-navy mt-3">{nextDebit ? nextDebit.due_date : "—"}</p>
               {nextDebit
                 ? <span className="inline-flex items-center gap-1 rounded-full bg-[#DCFCE7] text-[#166534] text-[11px] font-semibold px-2.5 py-1 mt-2"><ShieldCheck className="h-3 w-3" /> UPI AutoPay Active</span>
@@ -220,7 +220,7 @@ export default function ActiveFinancing() {
                 </SelectContent>
               </Select>
               <Button variant="outline" onClick={downloadAgreement} data-testid="download-agreement-btn"
-                className="h-10 rounded-lg border-[#2563EB] text-[#2563EB] hover:bg-[#EFF6FF] font-semibold">
+                className="h-10 rounded-lg border-[#5548D1] text-[#5548D1] hover:bg-[#EEF0FF] font-semibold">
                 <FileDown className="h-4 w-4 mr-1.5" /> Download Loan Agreement (PDF)
               </Button>
             </div>
@@ -249,13 +249,13 @@ export default function ActiveFinancing() {
                       <td className="px-4 py-3 text-right">
                         {s.status === "paid" ? (
                           <button onClick={() => downloadReceipt(s)} data-testid={`receipt-${s.month}`}
-                            className="inline-flex items-center gap-1.5 text-[#2563EB] font-semibold hover:underline">
+                            className="inline-flex items-center gap-1.5 text-[#5548D1] font-semibold hover:underline">
                             <Download className="h-4 w-4" /> Download Receipt
                           </button>
                         ) : s.status === "scheduled" || s.status === "failed" ? (
                           <Button variant="outline" onClick={() => payEmi(s.month)} disabled={busyMonth === s.month}
                             data-testid={`paynow-${s.month}`}
-                            className="h-9 rounded-lg border-[#2563EB] text-[#2563EB] hover:bg-[#EFF6FF] font-semibold">
+                            className="h-9 rounded-lg border-[#5548D1] text-[#5548D1] hover:bg-[#EEF0FF] font-semibold">
                             {busyMonth === s.month ? "Paying..." : "Pay Now Upfront"}
                           </Button>
                         ) : (

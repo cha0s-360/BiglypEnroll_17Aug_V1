@@ -18,30 +18,30 @@ h1, h2, h3, h4, h5, h6, .font-head {
 @layer base {
     :root {
         --background: 0 0% 100%;
-        --foreground: 230 62% 11%;
+        --foreground: 230 71% 21%;
         --card: 0 0% 100%;
-        --card-foreground: 230 62% 11%;
+        --card-foreground: 230 71% 21%;
         --popover: 0 0% 100%;
-        --popover-foreground: 230 62% 11%;
-        --primary: 229 82% 53%;
+        --popover-foreground: 230 71% 21%;
+        --primary: 247 62% 55%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 232 61% 30%;
+        --secondary: 230 71% 21%;
         --secondary-foreground: 0 0% 100%;
-        --muted: 210 40% 96%;
-        --muted-foreground: 215 20% 45%;
-        --accent: 229 100% 96%;
-        --accent-foreground: 232 61% 30%;
+        --muted: 234 100% 97%;
+        --muted-foreground: 220 15% 47%;
+        --accent: 234 100% 96%;
+        --accent-foreground: 247 62% 55%;
         --destructive: 0 72% 51%;
         --destructive-foreground: 0 0% 100%;
-        --border: 214 32% 91%;
-        --input: 214 32% 91%;
-        --ring: 229 82% 53%;
-        --chart-1: 229 82% 53%;
-        --chart-2: 232 61% 30%;
-        --chart-3: 199 89% 48%;
+        --border: 220 30% 92%;
+        --input: 220 30% 92%;
+        --ring: 247 62% 55%;
+        --chart-1: 247 62% 55%;
+        --chart-2: 230 71% 21%;
+        --chart-3: 45 96% 56%;
         --chart-4: 262 83% 58%;
-        --chart-5: 291 64% 42%;
-        --radius: 0.25rem;
+        --chart-5: 156 72% 40%;
+        --radius: 0.75rem;
     }
 }
 
@@ -53,26 +53,26 @@ h1, h2, h3, h4, h5, h6, .font-head {
         @apply bg-background text-foreground;
     }
     ::selection {
-        background: #2540E8;
+        background: #5548D1;
         color: #fff;
     }
 }
 
 .grid-bg {
     background-image:
-        linear-gradient(to right, rgba(30,42,120,0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(30,42,120,0.05) 1px, transparent 1px);
+        linear-gradient(to right, rgba(85,72,209,0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(85,72,209,0.05) 1px, transparent 1px);
     background-size: 44px 44px;
 }
 
 .hard-shadow {
-    box-shadow: 4px 4px 0px #1E2A78;
+    box-shadow: 4px 4px 0px #0F1A5B;
 }
 .hard-shadow-sm {
-    box-shadow: 2px 2px 0px #1E2A78;
+    box-shadow: 2px 2px 0px #0F1A5B;
 }
 .hard-shadow:hover {
-    box-shadow: 6px 6px 0px #1E2A78;
+    box-shadow: 6px 6px 0px #0F1A5B;
 }
 
 @keyframes float-up {

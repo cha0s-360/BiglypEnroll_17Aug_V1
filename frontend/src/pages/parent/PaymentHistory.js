@@ -50,7 +50,7 @@ export default function PaymentHistory() {
     <ParentLayout>
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-          <p className="text-xs tracking-[0.2em] uppercase text-[#2563EB] font-semibold">Payment History</p>
+          <p className="text-xs tracking-[0.2em] uppercase text-[#5548D1] font-semibold">Payment History</p>
           <h1 className="font-head text-3xl font-black tracking-tight text-brand-navy mt-1">Transactions &amp; Schedule</h1>
         </div>
         {children.length > 1 && (
@@ -63,15 +63,15 @@ export default function PaymentHistory() {
 
       {/* Upcoming schedule summary */}
       {planPayments.length > 0 && (
-        <div className="mb-6 rounded-2xl bg-[#EFF6FF] border border-[#2563EB]/15 p-5 flex items-center gap-4" data-testid="upcoming-summary">
-          <div className="h-11 w-11 rounded-xl bg-[#2563EB] text-white flex items-center justify-center shrink-0">
+        <div className="mb-6 rounded-2xl bg-[#EEF0FF] border border-[#5548D1]/15 p-5 flex items-center gap-4" data-testid="upcoming-summary">
+          <div className="h-11 w-11 rounded-xl bg-[#5548D1] text-white flex items-center justify-center shrink-0">
             <CalendarClock className="h-5 w-5" />
           </div>
           <div className="flex-1">
             <p className="text-sm font-semibold text-brand-navy">Upcoming scheduled dues</p>
             <p className="text-xs text-slate-500 mt-0.5">Across your EMI &amp; auto-debit plans. Reminders sent before each debit.</p>
           </div>
-          <span className="font-head text-2xl font-black text-[#2563EB]">{inr(totalUpcoming)}</span>
+          <span className="font-head text-2xl font-black text-[#5548D1]">{inr(totalUpcoming)}</span>
         </div>
       )}
 
@@ -82,10 +82,10 @@ export default function PaymentHistory() {
           return (
             <div key={p.id} className="bg-white border border-border rounded-2xl overflow-hidden" data-testid={`payment-${p.id}`}>
               <div className="flex items-center gap-4 p-4">
-                <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${p.financing ? "bg-brand-navy" : p.auto_debit ? "bg-[#2563EB]" : "bg-[#EFF6FF]"}`}>
+                <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${p.financing ? "bg-brand-navy" : p.auto_debit ? "bg-[#5548D1]" : "bg-[#EEF0FF]"}`}>
                   {p.financing ? <ShieldCheck className="h-5 w-5 text-white" />
                     : p.auto_debit ? <CalendarClock className="h-5 w-5 text-white" />
-                    : <Receipt className="h-5 w-5 text-[#2563EB]" />}
+                    : <Receipt className="h-5 w-5 text-[#5548D1]" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-brand-navy text-sm truncate">
