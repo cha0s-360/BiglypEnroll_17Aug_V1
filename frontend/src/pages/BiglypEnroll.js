@@ -14,6 +14,7 @@ import {
   UserCheck, Fingerprint, Bell, Wallet as WalletIcon, Gift,
   IndianRupee, ChevronRight, Check, PhoneCall, Mail,
   Star, PlayCircle, Users, School, Sparkle, Award, Clock,
+  RefreshCw, BadgePercent, QrCode, ChevronDown, Calendar,
 } from "lucide-react";
 
 /* --------- Brand tokens (scoped inline styles) ---------- */
@@ -294,6 +295,221 @@ function LogoWall() {
         </div>
       </div>
     </section>
+  );
+}
+
+/* --------- Payment Options (3 cards: Auto-Collect · Instantly-Collect · Offer No-cost EMIs) ---------- */
+function PaymentOptions() {
+  const cards = [
+    {
+      title: "Auto-Collect",
+      copy: "Automate fee collections as customers authorize recurring payments via NACH or UPI.",
+      render: <FlexCard />,
+    },
+    {
+      title: "Instantly-Collect",
+      copy: "Collect fees instantly via QR codes or payment links.",
+      render: <ScanPayCard />,
+    },
+    {
+      title: "Offer No-cost EMIs",
+      copy: "Receive full fee upfront while your customers pay in convenient, no-cost EMIs.",
+      render: <CredCard />,
+    },
+  ];
+  return (
+    <section id="payments" className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center max-w-3xl mx-auto">
+          <span className="inline-flex items-center gap-2 rounded-lg bg-brand-tint px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest" style={{ color: INDIGO }}>
+            <Sparkle className="h-3.5 w-3.5" /> Payment options
+          </span>
+          <h2 className="font-head mt-5 text-4xl md:text-5xl font-black tracking-tight leading-[1.05]" style={{ color: NAVY }}>
+            Tailored payment options to<br className="hidden md:block" /> your institute&apos;s needs
+          </h2>
+          <p className="mt-5 text-[15px] md:text-base" style={{ color: SUBTLE }}>
+            Empower your customers with multiple ways to pay, ensuring a smooth experience for both institutes and fee payers.
+          </p>
+        </div>
+
+        <div className="mt-14 grid md:grid-cols-3 gap-6">
+          {cards.map((c, i) => (
+            <motion.div
+              key={c.title}
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+              transition={{ delay: i * 0.08 }}
+              className="rounded-3xl p-6 md:p-7 text-white flex flex-col"
+              style={{ background: `linear-gradient(180deg, ${INDIGO} 0%, ${INDIGO_DEEP} 100%)` }}
+            >
+              <div className="text-center">
+                <h3 className="font-head text-2xl md:text-[26px] font-black tracking-tight">{c.title}</h3>
+                <p className="mt-3 text-[13px] text-white/85 leading-relaxed max-w-[280px] mx-auto">{c.copy}</p>
+              </div>
+              <div className="mt-6 flex-1 flex items-stretch">
+                {c.render}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Auto-Collect — FLEX schedule card */
+function FlexCard() {
+  const rows = [
+    { l: "Downpayment (1 Apr '25)", tag: "Paid", amt: "₹50,000" },
+    { l: "Instalment 1 (2 May '25)", tag: "Paid", amt: "₹10,000" },
+    { l: "Instalment 2 (15 Jun '25)", tag: "Scheduled", amt: "₹10,000" },
+    { l: "Instalment 3 (31 Jul '25)", tag: "Scheduled", amt: "₹10,000" },
+  ];
+  return (
+    <div className="rounded-2xl bg-white text-slate-800 w-full p-4 shadow-xl">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full flex items-center justify-center" style={{ background: INDIGO_TINT, color: INDIGO }}>
+            <RefreshCw className="h-4 w-4" />
+          </div>
+          <span className="text-[11px] font-bold tracking-widest uppercase" style={{ color: NAVY }}>FLEX</span>
+        </div>
+        <div className="flex items-center gap-2 text-slate-400">
+          <Calendar className="h-3.5 w-3.5" />
+          <Bell className="h-3.5 w-3.5" />
+        </div>
+      </div>
+      <div className="mt-4">
+        <p className="font-head font-bold text-[15px]" style={{ color: NAVY }}>Punith Kumar</p>
+        <p className="text-[11px] text-slate-500 leading-snug">Pragati Institute of Learning · 678987654 · LKG · CBSE · 2024-25</p>
+      </div>
+      <div className="mt-4 border-t border-slate-100 pt-3">
+        <p className="text-[12px] font-bold mb-2" style={{ color: NAVY }}>Payment Schedule</p>
+        <div className="space-y-2">
+          {rows.map((r) => (
+            <div key={r.l} className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[11.5px] text-slate-600 truncate">{r.l}</span>
+                <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                  r.tag === "Paid" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"
+                }`}>{r.tag}</span>
+              </div>
+              <span className="text-[12px] font-bold" style={{ color: NAVY }}>{r.amt}</span>
+            </div>
+          ))}
+        </div>
+        <button className="mt-3 w-full flex items-center justify-center gap-1 text-[12px] font-bold" style={{ color: INDIGO }}>
+          Show More <ChevronDown className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* Instantly-Collect — Scan & pay card */
+function ScanPayCard() {
+  // Deterministic-looking QR pattern
+  const cells = Array.from({ length: 15 * 15 }, (_, i) => {
+    const x = i % 15, y = Math.floor(i / 15);
+    // Force position markers
+    const inCorner = (cx, cy) => x >= cx && x < cx + 3 && y >= cy && y < cy + 3;
+    if (inCorner(0, 0) || inCorner(12, 0) || inCorner(0, 12)) {
+      const inside = (cx, cy) => x === cx + 1 && y === cy + 1;
+      if (inside(0, 0) || inside(12, 0) || inside(0, 12)) return false;
+      return true;
+    }
+    // Pseudo-random
+    return ((x * 31 + y * 17 + x * y) % 5) < 2;
+  });
+
+  const methods = ["UPI / Google Pay", "Debit / Credit Card", "Net Banking"];
+
+  return (
+    <div className="rounded-2xl bg-white text-slate-800 w-full p-4 shadow-xl">
+      <div className="flex items-center justify-between">
+        <p className="font-head font-black text-[16px]" style={{ color: NAVY }}>Scan &amp; pay</p>
+        <span className="text-[11px] font-bold tracking-widest" style={{ color: INDIGO }}>PAY</span>
+      </div>
+      <div className="mt-4 flex flex-col items-center">
+        <div className="rounded-lg border-2 border-slate-800 p-2.5 bg-white">
+          <div className="grid grid-cols-15 gap-[1.5px]" style={{ gridTemplateColumns: "repeat(15, 8px)" }}>
+            {cells.map((on, i) => (
+              <div
+                key={i}
+                className="h-2 w-2"
+                style={{ background: on ? NAVY : "transparent" }}
+              />
+            ))}
+          </div>
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">Scan the QR with any UPI app</p>
+      </div>
+      <div className="mt-4 border-t border-slate-100 pt-3">
+        <p className="text-[12px] font-bold mb-2" style={{ color: NAVY }}>Select payment method</p>
+        <div className="space-y-1.5">
+          {methods.map((m) => (
+            <button key={m} className="w-full flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 hover:border-slate-200 hover:bg-slate-50 transition-colors">
+              <span className="text-[12.5px] text-slate-700">{m}</span>
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Offer No-cost EMIs — CRED card */
+function CredCard() {
+  return (
+    <div className="rounded-2xl bg-white text-slate-800 w-full p-4 shadow-xl">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full flex items-center justify-center" style={{ background: INDIGO_TINT, color: INDIGO }}>
+            <BadgePercent className="h-4 w-4" />
+          </div>
+          <span className="text-[11px] font-bold tracking-widest uppercase" style={{ color: NAVY }}>CRED</span>
+        </div>
+        <div className="flex items-center gap-2 text-slate-400">
+          <Calendar className="h-3.5 w-3.5" />
+          <Bell className="h-3.5 w-3.5" />
+        </div>
+      </div>
+      <div className="mt-4">
+        <p className="font-head font-bold text-[15px]" style={{ color: NAVY }}>Punith Kumar</p>
+        <p className="text-[11px] text-slate-500 leading-snug">Pragati Institute of Learning · 678544 · LKG · CBSE · 2024-25</p>
+      </div>
+      <div className="mt-4 border-t border-slate-100 pt-3">
+        <p className="text-[12px] font-bold mb-2" style={{ color: NAVY }}>Loan details</p>
+        <div className="flex items-center justify-between text-[12px] text-slate-600">
+          <span>Loan amount</span>
+          <span className="font-bold" style={{ color: NAVY }}>₹1,00,000</span>
+        </div>
+        <div className="flex items-center justify-between text-[12px] text-slate-600 mt-1">
+          <span>Interest rate</span>
+          <span className="font-bold" style={{ color: NAVY }}>₹0</span>
+        </div>
+      </div>
+      <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-100 py-2 text-center text-[12px] font-bold text-emerald-700">
+        Zero Processing Fee
+      </div>
+      <div className="mt-3 border-t border-slate-100 pt-3">
+        <p className="text-[12px] font-bold mb-2" style={{ color: NAVY }}>EMI details</p>
+        <div className="grid grid-cols-3 gap-1 text-center">
+          <div>
+            <p className="text-[9.5px] uppercase tracking-widest text-slate-400 font-bold">EMI</p>
+            <p className="font-head font-bold text-[13px] mt-0.5" style={{ color: NAVY }}>₹10,000</p>
+          </div>
+          <div>
+            <p className="text-[9.5px] uppercase tracking-widest text-slate-400 font-bold">Tenure</p>
+            <p className="font-head font-bold text-[13px] mt-0.5" style={{ color: NAVY }}>10 Months</p>
+          </div>
+          <div>
+            <p className="text-[9.5px] uppercase tracking-widest text-slate-400 font-bold">Start on</p>
+            <p className="font-head font-bold text-[13px] mt-0.5" style={{ color: NAVY }}>14 May 2025</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -829,6 +1045,7 @@ export default function BiglypEnroll() {
       <Hero />
       <StatStrip />
       <LogoWall />
+      <PaymentOptions />
       <AudienceTabs />
       <WhyChoose />
       <Testimonials />
