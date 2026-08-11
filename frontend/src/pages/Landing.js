@@ -1,8 +1,6 @@
-// The landing page and BiglypEnroll marketing page share the same look-and-feel
-// (both are the public product page for biglyp.com). This keeps a single source
-// of truth for the marketing shell.
-import BiglypEnroll from "@/pages/BiglypEnroll";
+// The homepage of biglyp.com is now the BiglypEnroll Master platform landing.
+import BiglypMaster from "@/pages/BiglypMaster";
 
 export default function Landing() {
-  return <BiglypEnroll />;
+  return <BiglypMaster />;
 }

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
+import { MarketingNav, MarketingFooter } from "@/components/MarketingShell";
 import {
   ArrowRight, ArrowUpRight, ShieldCheck, Zap, Sparkles, GraduationCap,
   Wallet, CreditCard, Landmark, Smartphone, Building2, PieChart,
@@ -1041,7 +1042,7 @@ function Footer() {
 export default function BiglypEnroll() {
   return (
     <div className="min-h-screen bg-white text-slate-800 font-sans">
-      <TopNav />
+      <MarketingNav />
       <Hero />
       <StatStrip />
       <LogoWall />
@@ -1052,7 +1053,7 @@ export default function BiglypEnroll() {
       <MediaStrip />
       <FinalCTA />
       <FAQ />
-      <Footer />
+      <MarketingFooter />
     </div>
   );
 }

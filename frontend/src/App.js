@@ -5,6 +5,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Toaster } from "@/components/ui/sonner";
 
 import Landing from "@/pages/Landing";
+import BiglypMaster from "@/pages/BiglypMaster";
+import CareerHub from "@/pages/CareerHub";
 import BiglypEnroll from "@/pages/BiglypEnroll";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -34,7 +36,9 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/biglypenroll" element={<BiglypEnroll />} />
+            <Route path="/biglypenroll" element={<BiglypMaster />} />
+            <Route path="/career-hub" element={<CareerHub />} />
+            <Route path="/fee-collection" element={<BiglypEnroll />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
