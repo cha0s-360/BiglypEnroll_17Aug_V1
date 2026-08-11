@@ -477,6 +477,8 @@ export default function ParentDashboard() {
         open={finOpen}
         onOpenChange={setFinOpen}
         studentId={activeChild}
+        studentName={child?.name}
+        studentGrade={child?.grade}
         feeHeadIds={finHeadIds}
         academicTotal={finAmount}
         onSuccess={onFinancingSuccess}

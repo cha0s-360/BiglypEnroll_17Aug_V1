@@ -45,10 +45,11 @@ const RAILS = [
 ];
 const PAN_RE = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 
-export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, academicTotal, onSuccess }) {
+export function FinancingWizard({ open, onOpenChange, studentId, studentName, studentGrade, feeHeadIds, academicTotal, onSuccess }) {
   const [step, setStep] = useState(1);
 
   // Step 1 — plan
+  const [payMode, setPayMode] = useState("emi"); // emi | lump
   const [down, setDown] = useState(0);
   const [tenure, setTenure] = useState(12);
   const [preview, setPreview] = useState(null);
@@ -60,11 +61,33 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
   const [cibilResult, setCibilResult] = useState(null); // {score, band, band_color, approved, max_eligible, factors, decision, pan_masked}
   const [scoreAnim, setScoreAnim] = useState(0);
 
-  // Step 3 — KYC
+  // Step 3 — KYC — Applicant Basic Details (GrayQuest Step 1)
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [fatherName, setFatherName] = useState("");
+  const [gender, setGender] = useState("");
+  const [maritalStatus, setMaritalStatus] = useState("");
+  const [email, setEmail] = useState("");
   const [pan, setPan] = useState("");
   const [dob, setDob] = useState("");
+  // Step 3 — Applicant Residential Details (GrayQuest Step 2)
+  const [residenceType, setResidenceType] = useState("");
+  const [addressLine1, setAddressLine1] = useState("");
+  const [locality, setLocality] = useState("");
+  const [pincode, setPincode] = useState("");
+  const [city, setCity] = useState("");
+  const [addrState, setAddrState] = useState("");
+  // Step 3 — Employment Details (GrayQuest Step 3)
   const [income, setIncome] = useState("");
   const [employment, setEmployment] = useState("Salaried");
+  const [companyName, setCompanyName] = useState("");
+  const [workExperience, setWorkExperience] = useState("");
+  // Step 3 — Student Details (GrayQuest Step 4)
+  const [studFirstName, setStudFirstName] = useState("");
+  const [studLastName, setStudLastName] = useState("");
+  const [studType, setStudType] = useState("");
+  const [studClass, setStudClass] = useState("");
+  // Aadhaar + liveness
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [aadhaarVerified, setAadhaarVerified] = useState(false);
@@ -90,10 +113,18 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
   // reset on open
   useEffect(() => {
     if (open) {
-      setStep(1); setDown(0); setTenure(12); setPreview(null);
+      setStep(1); setPayMode("emi"); setDown(0); setTenure(12); setPreview(null);
       setEligConsent(false);
       setCibilPan(""); setCibilChecking(false); setCibilResult(null); setScoreAnim(0);
-      setPan(""); setDob(""); setIncome(""); setEmployment("Salaried");
+      setFirstName(""); setLastName(""); setFatherName(""); setGender(""); setMaritalStatus(""); setEmail("");
+      setPan(""); setDob("");
+      setResidenceType(""); setAddressLine1(""); setLocality(""); setPincode(""); setCity(""); setAddrState("");
+      setIncome(""); setEmployment("Salaried"); setCompanyName(""); setWorkExperience("");
+      // Prefill student first/last from parent-provided name
+      const parts = (studentName || "").trim().split(/\s+/);
+      setStudFirstName(parts[0] || "");
+      setStudLastName(parts.slice(1).join(" ") || "");
+      setStudType(""); setStudClass(studentGrade || "");
       setOtpSent(false); setOtp(""); setAadhaarVerified(false); setLiveness("idle");
       setRail("UPI AutoPay"); setBankName(""); setHolder(""); setAccount(""); setIfsc("");
       setEsignSent(false); setEsignOtp(""); setAgree(false); setProcessing(false);
@@ -178,15 +209,46 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
     return () => clearInterval(id);
   }, [cibilResult]);
 
+  // Pincode auto-fill (deterministic mock — pincode-first-3 maps to city/state)
+  useEffect(() => {
+    if (!/^\d{6}$/.test(pincode)) return;
+    // Deterministic simulated PIN → City/State — covers common ranges
+    const p = parseInt(pincode.slice(0, 3), 10);
+    let c = "Mumbai", s = "Maharashtra";
+    if (p >= 110 && p <= 140) { c = "New Delhi"; s = "Delhi"; }
+    else if (p >= 400 && p <= 445) { c = "Mumbai"; s = "Maharashtra"; }
+    else if (p >= 500 && p <= 535) { c = "Hyderabad"; s = "Telangana"; }
+    else if (p >= 560 && p <= 583) { c = "Bengaluru"; s = "Karnataka"; }
+    else if (p >= 600 && p <= 643) { c = "Chennai"; s = "Tamil Nadu"; }
+    else if (p >= 700 && p <= 743) { c = "Kolkata"; s = "West Bengal"; }
+    else if (p >= 380 && p <= 396) { c = "Ahmedabad"; s = "Gujarat"; }
+    else if (p >= 411 && p <= 415) { c = "Pune"; s = "Maharashtra"; }
+    setCity(c);
+    setAddrState(s);
+  }, [pincode]);
+
   // per-step validity
   const canContinue = useMemo(() => {
     if (step === 1) return !!preview;
     if (step === 2) return eligConsent && cibilResult && cibilResult.approved;
-    if (step === 3) return PAN_RE.test(pan) && dob && Number(income) > 0 && employment && aadhaarVerified && liveness === "done";
+    if (step === 3) return (
+      // Applicant Basic
+      firstName.trim() && lastName.trim() && fatherName.trim() && gender && maritalStatus &&
+      email.trim() && /^\S+@\S+\.\S+$/.test(email) &&
+      PAN_RE.test(pan) && dob &&
+      // Residential
+      residenceType && addressLine1.trim() && locality.trim() && /^\d{6}$/.test(pincode) && city && addrState &&
+      // Employment
+      companyName.trim() && workExperience && Number(income) > 0 && employment &&
+      // Student
+      studFirstName.trim() && studLastName.trim() && studType && studClass &&
+      // Aadhaar + liveness
+      aadhaarVerified && liveness === "done"
+    );
     if (step === 4) return bankName && holder.trim() && account.trim().length >= 6 && ifsc.trim().length >= 6;
     if (step === 5) return agree && esignSent && esignOtp.trim().length >= 4;
     return false;
-  }, [step, preview, eligConsent, cibilResult, pan, dob, income, employment, aadhaarVerified, liveness, bankName, holder, account, ifsc, agree, esignSent, esignOtp]);
+  }, [step, preview, eligConsent, cibilResult, firstName, lastName, fatherName, gender, maritalStatus, email, pan, dob, residenceType, addressLine1, locality, pincode, city, addrState, companyName, workExperience, income, employment, studFirstName, studLastName, studType, studClass, aadhaarVerified, liveness, bankName, holder, account, ifsc, agree, esignSent, esignOtp]);
 
   const next = () => {
     if (!canContinue) { toast.error("Please complete this step to continue."); return; }
@@ -210,7 +272,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
     }
   };
 
-  const employmentIsSelf = employment === "Self-Employed";
+  // (employmentIsSelf was previously used in the KYC step's employment note; retained as reference)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -252,7 +314,47 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
           {/* ---------- Step 1: Plan ---------- */}
           {step === 1 && (
             <div className="space-y-5" data-testid="step-plan">
-              <p className="text-sm text-slate-500">Split <b className="text-brand-navy">{inr(academicTotal)}</b> of academic fees into zero-interest monthly EMIs. Your school is paid 100% upfront.</p>
+              <p className="text-sm text-slate-500">Choose how you want to pay <b className="text-brand-navy">{inr(academicTotal)}</b>. Your school is paid 100% upfront either way.</p>
+
+              {/* EMI vs Lumpsum plan chooser (GrayQuest parity) */}
+              <div className="grid sm:grid-cols-2 gap-3" data-testid="plan-mode-chooser">
+                <button type="button" onClick={() => setPayMode("emi")} data-testid="plan-mode-emi"
+                  className={`text-left rounded-xl border p-4 transition-colors ${payMode === "emi" ? "border-[#5548D1] bg-[#EEF0FF] ring-1 ring-[#5548D1]" : "border-border bg-white hover:border-[#5548D1]/40"}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest font-bold text-[#5548D1]">Option A</p>
+                      <p className="font-head text-[15px] font-black text-brand-navy leading-tight mt-1">Pay full-year fees in EMIs</p>
+                      <p className="text-[11.5px] text-slate-500 mt-1">Small, convenient monthly payments</p>
+                    </div>
+                    <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest">0% Interest</span>
+                  </div>
+                  {preview && (
+                    <p className="mt-3 font-head text-2xl font-black text-brand-navy">
+                      {inr(preview.emi)}
+                      <span className="text-[11px] font-semibold text-slate-500 ml-1">/ month</span>
+                    </p>
+                  )}
+                </button>
+                <button type="button" onClick={() => setPayMode("lump")} data-testid="plan-mode-lump"
+                  className={`text-left rounded-xl border p-4 transition-colors ${payMode === "lump" ? "border-[#5548D1] bg-[#EEF0FF] ring-1 ring-[#5548D1]" : "border-border bg-white hover:border-[#5548D1]/40"}`}>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-[#5548D1]">Option B</p>
+                    <p className="font-head text-[15px] font-black text-brand-navy leading-tight mt-1">Pay full year upfront</p>
+                    <p className="text-[11.5px] text-slate-500 mt-1">UPI, Credit/Debit Card or Net Banking</p>
+                  </div>
+                  <p className="mt-3 font-head text-2xl font-black text-brand-navy">
+                    {inr(academicTotal)}
+                    <span className="text-[11px] font-semibold text-slate-500 ml-1">today</span>
+                  </p>
+                </button>
+              </div>
+              {payMode === "lump" && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 flex items-start gap-2.5 text-xs text-amber-800" data-testid="plan-lump-note">
+                  <Zap className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>Full upfront pay is available on the standard checkout. Close this wizard and use the &quot;Pay Full Amount&quot; option to continue via UPI / Card / Net Banking.</span>
+                </div>
+              )}
+
               <div>
                 <Label className="text-sm text-brand-navy">Down payment (optional)</Label>
                 <Input type="number" value={down} data-testid="wiz-down"
@@ -416,11 +518,54 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
           {/* ---------- Step 3: Digital KYC ---------- */}
           {step === 3 && (
             <div className="space-y-5" data-testid="step-kyc">
-              {/* PAN & income */}
+              {/* Section A — Applicant Basic Details */}
               <div className="rounded-xl border border-border p-4">
-                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><Fingerprint className="h-4 w-4 text-[#5548D1]" /> PAN &amp; Income Pre-Approval</p>
+                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><Fingerprint className="h-4 w-4 text-[#5548D1]" /> Applicant / Parent Basic Details</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">As per PAN card records.</p>
                 <div className="mt-4 grid sm:grid-cols-2 gap-4">
                   <div>
+                    <Label className="text-sm text-brand-navy">First Name</Label>
+                    <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Sachin" className="rounded-lg mt-1.5" data-testid="kyc-first-name" />
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Last Name</Label>
+                    <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Tendulkar" className="rounded-lg mt-1.5" data-testid="kyc-last-name" />
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Father&apos;s First Name</Label>
+                    <Input value={fatherName} onChange={(e) => setFatherName(e.target.value)} placeholder="Ramesh" className="rounded-lg mt-1.5" data-testid="kyc-father-name" />
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Date of Birth</Label>
+                    <Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="rounded-lg mt-1.5" data-testid="kyc-dob" />
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Gender</Label>
+                    <Select value={gender} onValueChange={setGender}>
+                      <SelectTrigger className="rounded-lg mt-1.5" data-testid="kyc-gender"><SelectValue placeholder="Select gender" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Marital Status</Label>
+                    <Select value={maritalStatus} onValueChange={setMaritalStatus}>
+                      <SelectTrigger className="rounded-lg mt-1.5" data-testid="kyc-marital"><SelectValue placeholder="Select status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Single">Single</SelectItem>
+                        <SelectItem value="Married">Married</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label className="text-sm text-brand-navy">Email Address</Label>
+                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="rounded-lg mt-1.5" data-testid="kyc-email" />
+                  </div>
+                  <div className="sm:col-span-2">
                     <Label className="text-sm text-brand-navy flex items-center gap-2">
                       PAN Card Number
                       {cibilResult && cibilResult.approved && pan === cibilPan.toUpperCase() && (
@@ -447,15 +592,60 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                       <p className="text-[11px] text-emerald-700 mt-1">Auto-filled from your CIBIL pre-check.</p>
                     )}
                   </div>
-                  <div>
-                    <Label className="text-sm text-brand-navy">Date of Birth</Label>
-                    <Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="rounded-lg mt-1.5" data-testid="kyc-dob" />
+                </div>
+              </div>
+
+              {/* Section B — Applicant Residential Details */}
+              <div className="rounded-xl border border-border p-4">
+                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><Landmark className="h-4 w-4 text-[#5548D1]" /> Applicant Residential Details</p>
+                <div className="mt-4 grid sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <Label className="text-sm text-brand-navy">Residence Type</Label>
+                    <Select value={residenceType} onValueChange={setResidenceType}>
+                      <SelectTrigger className="rounded-lg mt-1.5" data-testid="kyc-residence-type"><SelectValue placeholder="Select residence type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Self Owned">Self Owned</SelectItem>
+                        <SelectItem value="Rented">Rented</SelectItem>
+                        <SelectItem value="Company Provided">Company Provided</SelectItem>
+                        <SelectItem value="Paying Guest">Paying Guest</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label className="text-sm text-brand-navy">Flat / House No. / Floor / Building</Label>
+                    <Input value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} placeholder="12, Prince Street" className="rounded-lg mt-1.5" data-testid="kyc-address1" />
                   </div>
                   <div>
-                    <Label className="text-sm text-brand-navy">Net Monthly Income</Label>
-                    <Input type="number" value={income} onChange={(e) => setIncome(e.target.value.replace(/[^0-9]/g, ""))} placeholder="60000"
-                      className="rounded-lg mt-1.5" inputMode="numeric" data-testid="kyc-income" />
+                    <Label className="text-sm text-brand-navy">Colony / Street / Locality</Label>
+                    <Input value={locality} onChange={(e) => setLocality(e.target.value)} placeholder="Carter Road" className="rounded-lg mt-1.5" data-testid="kyc-locality" />
                   </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Pincode</Label>
+                    <Input value={pincode} onChange={(e) => setPincode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
+                      placeholder="400012" inputMode="numeric" className="rounded-lg mt-1.5" data-testid="kyc-pincode" />
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy flex items-center gap-1.5">
+                      City {city && <span className="text-[10px] text-emerald-700 font-bold">Auto-filled</span>}
+                    </Label>
+                    <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="From pincode" className="rounded-lg mt-1.5 bg-slate-50" data-testid="kyc-city" />
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy flex items-center gap-1.5">
+                      State {addrState && <span className="text-[10px] text-emerald-700 font-bold">Auto-filled</span>}
+                    </Label>
+                    <Input value={addrState} onChange={(e) => setAddrState(e.target.value)} placeholder="From pincode" className="rounded-lg mt-1.5 bg-slate-50" data-testid="kyc-state" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section C — Employment Details */}
+              <div className="rounded-xl border border-border p-4">
+                <div className="flex items-center justify-between">
+                  <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4 text-[#5548D1]" /> Applicant Employment Details</p>
+                  <span className={`rounded-full text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest ${employment === "Salaried" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>{employment}</span>
+                </div>
+                <div className="mt-4 grid sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm text-brand-navy">Employment Type</Label>
                     <Select value={employment} onValueChange={setEmployment}>
@@ -465,7 +655,63 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
                         <SelectItem value="Self-Employed">Self-Employed</SelectItem>
                       </SelectContent>
                     </Select>
-                    {employmentIsSelf && <p className="text-[11px] text-slate-400 mt-1">Business vintage may be verified.</p>}
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Full Name of Current Company</Label>
+                    <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="MRF Tyres" className="rounded-lg mt-1.5" data-testid="kyc-company" />
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Work Experience at Current Company</Label>
+                    <Select value={workExperience} onValueChange={setWorkExperience}>
+                      <SelectTrigger className="rounded-lg mt-1.5" data-testid="kyc-experience"><SelectValue placeholder="Select experience" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Less Than 2 Years">Less than 2 years</SelectItem>
+                        <SelectItem value="2-5 Years">2–5 years</SelectItem>
+                        <SelectItem value="5-10 Years">5–10 years</SelectItem>
+                        <SelectItem value="Greater Than 10 Years">Greater than 10 years</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Monthly Household Income</Label>
+                    <Input type="number" value={income} onChange={(e) => setIncome(e.target.value.replace(/[^0-9]/g, ""))} placeholder="75000"
+                      className="rounded-lg mt-1.5" inputMode="numeric" data-testid="kyc-income" />
+                    <p className="text-[10.5px] text-slate-400 mt-1">Including spouse salary, rent/lease, pension, deposit interest etc.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section D — Student Details */}
+              <div className="rounded-xl border border-border p-4">
+                <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><ShieldQuestion className="h-4 w-4 text-[#5548D1]" /> Student Details</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Confirm the child this fee is being paid for.</p>
+                <div className="mt-4 grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm text-brand-navy">Student First Name</Label>
+                    <Input value={studFirstName} onChange={(e) => setStudFirstName(e.target.value)} className="rounded-lg mt-1.5" data-testid="kyc-stud-first" />
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Student Last Name</Label>
+                    <Input value={studLastName} onChange={(e) => setStudLastName(e.target.value)} className="rounded-lg mt-1.5" data-testid="kyc-stud-last" />
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Student Type</Label>
+                    <Select value={studType} onValueChange={setStudType}>
+                      <SelectTrigger className="rounded-lg mt-1.5" data-testid="kyc-stud-type"><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="New Admission">New Admission</SelectItem>
+                        <SelectItem value="Existing">Existing / Renewal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-brand-navy">Class / Standard / Year</Label>
+                    <Input value={studClass} onChange={(e) => setStudClass(e.target.value)} placeholder="Class 10" className="rounded-lg mt-1.5" data-testid="kyc-stud-class" />
+                    <p className="text-[10.5px] text-slate-400 mt-1">Select the class/standard/year for which fees are being paid.</p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label className="text-sm text-brand-navy">Student Unique ID</Label>
+                    <Input value={studentId || ""} readOnly className="rounded-lg mt-1.5 bg-slate-50" data-testid="kyc-stud-id" />
                   </div>
                 </div>
               </div>
@@ -587,6 +833,65 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
           {/* ---------- Step 5: e-Sign ---------- */}
           {step === 5 && (
             <div className="space-y-5" data-testid="step-esign">
+              {/* Confirm Details — sectioned review with Edit chips */}
+              <div className="rounded-xl border border-border" data-testid="confirm-details">
+                <div className="px-4 py-3 border-b border-border bg-slate-50/50 rounded-t-xl">
+                  <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2"><FileSignature className="h-4 w-4 text-[#5548D1]" /> Confirm your details</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Please review everything below carefully — you cannot change these details after e-Sign.</p>
+                </div>
+
+                {/* Plan Details */}
+                <ConfirmSection title="Plan Details" onEdit={() => setStep(1)} testid="cd-plan"
+                  rows={[
+                    ["Fee Amount", inr(academicTotal)],
+                    ["Down payment", inr(down || 0)],
+                    ["Financed Amount", inr(preview?.financed_amount || 0)],
+                    ["Monthly EMI", inr(preview?.emi || 0)],
+                    ["Interest", "0% p.a."],
+                    ["Plan Tenure", `${tenure} months`],
+                  ]} />
+
+                {/* Applicant Basic Details */}
+                <ConfirmSection title="Applicant Basic Details" onEdit={() => setStep(3)} testid="cd-basic"
+                  rows={[
+                    ["Full Name", `${firstName} ${lastName}`.trim() || "—"],
+                    ["Father's Name", fatherName || "—"],
+                    ["Date of Birth", dob || "—"],
+                    ["Gender", (gender || "—").toUpperCase()],
+                    ["Marital Status", (maritalStatus || "—").toUpperCase()],
+                    ["Email", email || "—"],
+                    ["PAN", pan || "—"],
+                  ]} />
+
+                {/* Residential Details */}
+                <ConfirmSection title="Applicant Residential Details" onEdit={() => setStep(3)} testid="cd-address"
+                  rows={[
+                    ["Residence Type", (residenceType || "—").toUpperCase()],
+                    ["Address", [addressLine1, locality].filter(Boolean).join(", ") || "—"],
+                    ["Pincode", pincode || "—"],
+                    ["City", city || "—"],
+                    ["State", addrState || "—"],
+                  ]} />
+
+                {/* Employment Details */}
+                <ConfirmSection title="Applicant Employment Details" onEdit={() => setStep(3)} testid="cd-employment"
+                  rows={[
+                    ["Employment Type", (employment || "—").toUpperCase()],
+                    ["Current Company", companyName || "—"],
+                    ["Work Experience", workExperience || "—"],
+                    ["Monthly Household Income", income ? inr(Number(income)) : "—"],
+                  ]} />
+
+                {/* Student Details */}
+                <ConfirmSection title="Student Details" onEdit={() => setStep(3)} testid="cd-student" last
+                  rows={[
+                    ["Full Name", `${studFirstName} ${studLastName}`.trim() || "—"],
+                    ["Student Type", (studType || "—").toUpperCase()],
+                    ["Class / Standard / Year", studClass || "—"],
+                    ["Student Unique ID", studentId || "—"],
+                  ]} />
+              </div>
+
               <div className="rounded-xl border border-border p-4 text-sm space-y-2">
                 <p className="font-head font-bold text-brand-navy flex items-center gap-2"><FileSignature className="h-4 w-4 text-[#5548D1]" /> Loan Agreement Summary</p>
                 <div className="flex justify-between"><span className="text-slate-500">Financed amount</span><span className="font-semibold">{inr(preview?.financed_amount || 0)}</span></div>
@@ -612,7 +917,9 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
               </div>
               <label className="flex items-start gap-3 cursor-pointer" data-testid="esign-agree-label">
                 <Checkbox checked={agree} onCheckedChange={(v) => setAgree(!!v)} className="mt-0.5" data-testid="esign-agree" />
-                <span className="text-sm text-slate-600 leading-relaxed">I have read and agree to the 0% EMI loan agreement, repayment schedule and auto-debit mandate.</span>
+                <span className="text-sm text-slate-600 leading-relaxed">
+                  I accept the <b className="text-brand-navy">Terms &amp; Conditions</b> and hereby declare all information provided by me is correct. I consent to allow Biglyp / Banks / NBFCs to fetch my bureau records and KYC details in order to process the EMI facility.
+                </span>
               </label>
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500 border-t border-border pt-4">
                 <span className="flex items-center gap-1.5"><BadgeCheck className="h-4 w-4 text-[#5548D1]" /> RBI-regulated NBFC</span>
@@ -643,6 +950,27 @@ export function FinancingWizard({ open, onOpenChange, studentId, feeHeadIds, aca
 
 
 /* -------- CIBIL Score Gauge (SVG semi-circle meter) -------- */
+function ConfirmSection({ title, rows, onEdit, testid, last = false }) {
+  return (
+    <div className={`px-4 py-3 ${last ? "" : "border-b border-border"}`} data-testid={testid}>
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] uppercase tracking-widest font-bold text-slate-500">{title}</p>
+        <button type="button" onClick={onEdit} className="text-[11px] font-bold text-[#5548D1] hover:underline" data-testid={`${testid}-edit`}>
+          Edit
+        </button>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5">
+        {rows.map(([k, v]) => (
+          <div key={k} className="flex flex-col">
+            <span className="text-[10.5px] text-slate-400">{k}</span>
+            <span className="text-[13px] font-semibold text-brand-navy break-words">{v}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CibilGauge({ score, target, band, color = "blue" }) {
   // Score band 300..900 -> 0..1
   const min = 300, max = 900;
