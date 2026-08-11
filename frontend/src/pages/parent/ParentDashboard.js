@@ -234,8 +234,9 @@ export default function ParentDashboard() {
       {/* Payment-option selector (Option A / B / C — school-configurable) */}
       {child && academicTotal > 0 && enabledOptions.length > 0 && (
         <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="option-cards">
-          {enabledOptions.map((o) => {
+          {enabledOptions.map((o, idx) => {
             const active = selectedOption === o.key;
+            const displayLetter = String.fromCharCode(65 + idx); // sequential A, B, C — no gaps
             const badgeTone = {
               green: "bg-emerald-100 text-emerald-700",
               blue: "bg-[#EEF0FF] text-[#5548D1]",
@@ -254,7 +255,7 @@ export default function ParentDashboard() {
               >
                 {/* highlight badge (always visible, like the reference) */}
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-[#5548D1]">Option {o.key.toUpperCase()}</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-[#5548D1]">Option {displayLetter}</p>
                   <span className={`shrink-0 rounded-full text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 leading-tight ${badgeTone}`}>
                     {o.badge.text}
                   </span>

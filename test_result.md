@@ -211,12 +211,29 @@ backend:
 
 metadata:
   created_by: "main_agent"
-  version: "1.7"
-  test_sequence: 7
+  version: "1.8"
+  test_sequence: 8
   run_ui: false
 
+frontend:
+  - task: "Sequential Option labels on parent Fee Payment (no gaps when an option is disabled)"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/parent/ParentDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "BUG FIX: Parent Fee Payment option cards previously displayed the fixed key letter (Option A/B/C), so disabling e.g. Auto-Debit showed 'Option A' and 'Option C' (a gap). Now the displayed letter is derived from the card's index among ENABLED options (String.fromCharCode(65+idx)), so visible cards are always labeled sequentially Option A, Option B, ... Internal keys (a=emi, b=auto_debit, c=full) and data-testids (option-a/option-b/option-c) are unchanged and still drive logic. Verify by: (1) school_admin school@biglyp.com/school123 -> School Setup -> Fee Collection step -> disable Option B (Auto-Debit) -> Go live. (2) parent parent@biglyp.com/parent123 -> Fee Payment: exactly 2 cards visible; first labeled 'OPTION A' (title 'Pay full-year fees in EMIs'), second labeled 'OPTION B' (title 'Pay full year upfront') — NOT 'OPTION C'. (3) Re-enable all as school_admin and confirm 3 cards labeled A/B/C. RESTORE all options enabled at the end."
+        -working: true
+        -agent: "testing"
+        -comment: "Comprehensive UI testing completed successfully. BUG FIX VERIFIED - PASS. Test scenario 1 (Auto-Debit disabled): (1) Logged in as school_admin (school@biglyp.com/school123); (2) Navigated to /dashboard/onboarding > Fee Collection step (data-testid='step-fees'); (3) Verified all 3 payment options initially enabled (EMI: true, Auto-Debit: true, Full: true); (4) Disabled Auto-Debit toggle (data-testid='payopt-switch-auto_debit') - confirmed state changed to false; (5) Clicked 'Go live' (data-testid='onb-golive') to save changes; (6) Logged in as parent (parent@biglyp.com/parent123); (7) Navigated to Fee Payment page (/app); (8) VERIFIED exactly 2 option cards visible (option-a: visible, option-b: hidden, option-c: visible); (9) CRITICAL SUCCESS: First card labeled 'Option A' with title 'Pay full-year fees in EMIs', second card labeled 'Option B' with title 'Pay full year upfront' - sequential labeling with NO gap (NOT 'Option C'). Test scenario 2 (All options enabled): (10) Logged back in as school_admin; (11) Navigated to School Setup > Fee Collection; (12) Re-enabled Auto-Debit toggle; (13) Verified all 3 options enabled (EMI: true, Auto-Debit: true, Full: true); (14) Clicked 'Go live' to save; (15) Logged in as parent; (16) Navigated to Fee Payment page; (17) VERIFIED all 3 option cards visible (option-a, option-b, option-c); (18) VERIFIED sequential labels: 'Option A' (Pay full-year fees in EMIs), 'Option B' (Set up Auto-Debit), 'Option C' (Pay full year upfront). Cleanup: All 3 payment options restored to enabled state. Screenshots captured: fee_payment_2_options.png (2 cards with sequential A, B labels), fee_payment_3_options.png (3 cards with A, B, C labels). Bug fix working correctly - when a payment option is disabled, remaining cards are re-labeled sequentially with NO gaps."
+
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Sequential Option labels on parent Fee Payment (no gaps when an option is disabled)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -238,3 +255,7 @@ agent_communication:
     -message: "New feature: school-configurable parent payment options (Option A=EMI, B=Auto-Debit, C=Full). Please test ONLY the backend task 'School payment options (Option A/B/C) persistence + parent exposure'. Auth: school_admin school@biglyp.com/school123; parent parent@biglyp.com/parent123. Steps: (1) GET /api/parent/children as parent to get Aarav's student_id. (2) POST /api/school/onboarding as school_admin with body including payment_options {emi:true, auto_debit:false, full:true} and complete:true (also pass campuses/courses/settlement_accounts as-is from GET /api/school to avoid wiping — but note onboarding overwrites those fields, so read them first and echo back). (3) GET /api/school confirms payment_options persisted. (4) GET /api/parent/fees/{student_id} returns payment_options {emi:true, auto_debit:false, full:true}. (5) POST onboarding with payment_options all-false -> GET should show all-true (fallback). (6) POST onboarding WITHOUT payment_options key -> existing payment_options must be unchanged (not wiped). IMPORTANT: after tests, restore payment_options to all-true so the parent UI shows all 3 options."
     -agent: "testing"
     -message: "Round 7 testing completed successfully. School payment options (Option A/B/C) persistence + parent exposure fully tested and verified. All 7 test steps passed: (1) GET /api/parent/children successfully retrieved Aarav Sharma with student_id; (2) POST /api/school/onboarding with payment_options {emi:true, auto_debit:false, full:true} returned HTTP 200 (captured and echoed back existing campuses, courses, team, multi_account_enabled, settlement_accounts to avoid wiping); (3) GET /api/school confirmed payment_options persisted correctly; (4) GET /api/parent/fees/{student_id} confirmed payment_options exposed to parent; (5) POST with all-false correctly fell back to all-true (at-least-one-enabled rule enforced); (6) POST without payment_options key correctly preserved existing value (did NOT wipe); (7) CLEANUP: restored payment_options to all-true. All persistence, normalization, and parent exposure requirements verified. Feature working correctly. No issues found."
+    -agent: "main"
+    -message: "BUG FIX: Sequential Option labels on parent Fee Payment. Previously when school disabled one payment option (e.g. Auto-Debit/Option B), parent Fee Payment cards showed 'Option A' and 'Option C' (a gap). Fixed by deriving displayed letter from card's index among ENABLED options (String.fromCharCode(65+idx)) in ParentDashboard.js line 239. Now visible cards are always labeled sequentially (Option A, Option B, ...) with NO gaps. Internal keys (a/b/c) and data-testids (option-a/option-b/option-c) unchanged. Please test: (1) school_admin disables Auto-Debit -> parent sees 2 cards labeled 'Option A' (EMI) and 'Option B' (Full) NOT 'Option C'. (2) Re-enable all -> parent sees 3 cards labeled A/B/C. Restore all options enabled at end."
+    -agent: "testing"
+    -message: "Round 8 UI testing completed successfully. Sequential Option labels bug fix VERIFIED - PASS. Comprehensive Playwright testing performed: Scenario 1 (Auto-Debit disabled): school_admin disabled Auto-Debit toggle, parent Fee Payment page showed exactly 2 cards with sequential labels 'Option A' (Pay full-year fees in EMIs) and 'Option B' (Pay full year upfront) - CRITICAL SUCCESS: second card labeled 'Option B' NOT 'Option C' (no gap). Scenario 2 (All options enabled): Re-enabled Auto-Debit, parent Fee Payment page showed all 3 cards with sequential labels 'Option A' (Pay full-year fees in EMIs), 'Option B' (Set up Auto-Debit), 'Option C' (Pay full year upfront). Cleanup: All 3 payment options restored to enabled state. Screenshots captured: fee_payment_2_options.png (2 cards, sequential A-B), fee_payment_3_options.png (3 cards, A-B-C). Bug fix working correctly - when a payment option is disabled, remaining cards are re-labeled sequentially with NO gaps. Feature is production-ready."
