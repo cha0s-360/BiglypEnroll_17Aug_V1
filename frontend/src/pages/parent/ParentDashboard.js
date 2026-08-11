@@ -14,12 +14,24 @@ import { toast } from "sonner";
 import {
   Wallet, CheckCircle2, CreditCard, ShieldCheck, Download, Calendar,
   GraduationCap, Zap, Bus, Plane, ArrowRight, Sparkles, Star, RefreshCw,
+  UtensilsCrossed, Shirt, Trophy, Music, MapPin,
 } from "lucide-react";
 import { FinancingWizard } from "./FinancingWizard";
 
 const MODES = ["UPI", "Cards", "Net Banking", "Wallets", "AutoPay/eNACH"];
-const ADDON_KEYWORDS = ["transport", "bus", "trip", "excursion", "meal", "uniform", "activity", "field", "sport"];
+const ADDON_KEYWORDS = ["transport", "bus", "trip", "excursion", "meal", "uniform", "activity", "field", "sport", "music", "arts", "club"];
 const isAddon = (name = "") => ADDON_KEYWORDS.some((k) => name.toLowerCase().includes(k));
+
+const addonMeta = (name = "") => {
+  const n = name.toLowerCase();
+  if (n.includes("transport") || n.includes("bus")) return { Icon: Bus, tint: "#EEF0FF", fg: "#5548D1" };
+  if (n.includes("meal") || n.includes("cafeter")) return { Icon: UtensilsCrossed, tint: "#FEF3C7", fg: "#B45309" };
+  if (n.includes("uniform")) return { Icon: Shirt, tint: "#E0F2FE", fg: "#0369A1" };
+  if (n.includes("sport") || n.includes("activity")) return { Icon: Trophy, tint: "#DCFCE7", fg: "#166534" };
+  if (n.includes("music") || n.includes("arts") || n.includes("club")) return { Icon: Music, tint: "#FCE7F3", fg: "#BE185D" };
+  if (n.includes("field") || n.includes("trip") || n.includes("excursion")) return { Icon: MapPin, tint: "#F1F5F9", fg: "#334155" };
+  return { Icon: Plane, tint: "#EEF0FF", fg: "#5548D1" };
+};
 
 export default function ParentDashboard() {
   const navigate = useNavigate();
@@ -345,45 +357,67 @@ export default function ParentDashboard() {
 
           {/* ============ Section 2: Other Fees ============ */}
           <section>
-            <h2 className="font-head text-xl font-bold text-brand-navy">Other Fees</h2>
-            <p className="text-sm text-slate-500 mt-0.5">Transport, activities &amp; one-time collections. Quarterly items can be clubbed with tuition.</p>
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="font-head text-xl font-bold text-brand-navy">Other Fees</h2>
+                <p className="text-sm text-slate-500 mt-0.5">Transport, activities &amp; one-time collections. Quarterly items can be clubbed with tuition.</p>
+              </div>
+              {otherPending.length > 0 && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EEF0FF] text-[#5548D1] px-2.5 py-1 text-[11px] font-bold">
+                  {otherPending.length} pending
+                </span>
+              )}
+            </div>
 
             {otherPending.length > 0 ? (
-              <div className="mt-4 grid sm:grid-cols-2 gap-4">
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {otherPending.map((i) => {
-                  const Icon = i.name.toLowerCase().includes("trip") || i.name.toLowerCase().includes("excursion") ? Plane : Bus;
+                  const { Icon, tint, fg } = addonMeta(i.name);
                   const quarterly = isQuarterly(i.frequency);
                   const oneTime = isOneTime(i.frequency);
                   const isClubbed = clubbed.includes(i.fee_head_id);
                   return (
-                    <div key={i.fee_head_id} className={`bg-white border rounded-2xl p-5 ${isClubbed ? "border-[#5548D1] ring-1 ring-[#5548D1]/30" : "border-border"}`} data-testid={`addon-${i.fee_head_id}`}>
-                      <div className="flex items-start justify-between">
-                        <div className="h-10 w-10 rounded-lg bg-[#EEF0FF] text-[#5548D1] flex items-center justify-center"><Icon className="h-5 w-5" /></div>
-                        <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-600 text-[11px] font-semibold px-2.5 py-1">
-                          {oneTime ? "One-Time · No Auto-Debit" : "Direct Payment"}
-                        </span>
+                    <div key={i.fee_head_id}
+                      className={`relative bg-white border rounded-xl p-3.5 flex flex-col ${isClubbed ? "border-[#5548D1] ring-1 ring-[#5548D1]/30" : "border-border"}`}
+                      data-testid={`addon-${i.fee_head_id}`}>
+                      <div className="flex items-start gap-2.5">
+                        <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0"
+                          style={{ background: tint, color: fg }}>
+                          <Icon className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-head font-bold text-[13.5px] text-brand-navy truncate leading-tight">{i.name}</p>
+                          <div className="mt-0.5 flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10.5px] text-slate-500">{i.frequency}</span>
+                            {oneTime && (
+                              <span className="text-[9px] font-bold text-amber-700 bg-amber-100 rounded-full px-1.5 py-0.5 uppercase tracking-wider">One-Time</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <p className="mt-4 font-semibold text-brand-navy">{i.name}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">{i.frequency}</p>
 
-                      {quarterly && (
-                        <label className="mt-3 flex items-center gap-2.5 cursor-pointer rounded-lg bg-[#EEF0FF]/60 px-3 py-2" data-testid={`club-label-${i.fee_head_id}`}>
-                          <Checkbox checked={isClubbed} onCheckedChange={() => toggleClub(i.fee_head_id)} data-testid={`club-${i.fee_head_id}`} />
-                          <span className="text-xs text-brand-navy font-medium">Club with tuition fee &amp; pay on the plan above</span>
+                      <div className="mt-3 flex items-baseline justify-between">
+                        <span className="font-head text-xl font-black text-brand-navy leading-none">{inr(i.amount)}</span>
+                        {isClubbed && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#5548D1]"><CheckCircle2 className="h-3 w-3" /> Clubbed</span>
+                        )}
+                      </div>
+
+                      {quarterly && !isClubbed && (
+                        <label className="mt-2.5 flex items-center gap-2 cursor-pointer rounded-md bg-[#EEF0FF]/60 px-2 py-1.5"
+                          data-testid={`club-label-${i.fee_head_id}`}>
+                          <Checkbox checked={isClubbed} onCheckedChange={() => toggleClub(i.fee_head_id)}
+                            data-testid={`club-${i.fee_head_id}`} className="h-3.5 w-3.5" />
+                          <span className="text-[10.5px] text-brand-navy font-medium leading-tight">Club with tuition plan</span>
                         </label>
                       )}
 
-                      <div className="mt-4 flex items-center justify-between">
-                        <span className="font-head text-2xl font-black text-brand-navy">{inr(i.amount)}</span>
-                        {isClubbed ? (
-                          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#5548D1]"><CheckCircle2 className="h-4 w-4" /> Clubbed above</span>
-                        ) : (
-                          <Button onClick={() => startPay([i.fee_head_id])} data-testid={`pay-upfront-${i.fee_head_id}`}
-                            className="h-10 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] text-white font-semibold">
-                            Pay Upfront
-                          </Button>
-                        )}
-                      </div>
+                      {!isClubbed && (
+                        <Button onClick={() => startPay([i.fee_head_id])} data-testid={`pay-upfront-${i.fee_head_id}`}
+                          className="mt-2.5 h-8 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] text-white font-semibold text-[11.5px] px-3 self-start">
+                          Pay Upfront <ArrowRight className="h-3 w-3 ml-1" />
+                        </Button>
+                      )}
                     </div>
                   );
                 })}

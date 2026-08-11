@@ -149,17 +149,19 @@ function TopNav() {
 /* --------- Hero (Fee Collection · editorial light-mode) ---------- */
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-white">
+    <section className="relative overflow-hidden" style={{ background: "#F1F5FC" }}>
       {/* subtle grid pattern */}
-      <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
-        backgroundImage: `linear-gradient(${INDIGO_TINT} 1px, transparent 1px), linear-gradient(90deg, ${INDIGO_TINT} 1px, transparent 1px)`,
+      <div className="absolute inset-0 opacity-[0.5] pointer-events-none" style={{
+        backgroundImage: `linear-gradient(#FFFFFF99 1px, transparent 1px), linear-gradient(90deg, #FFFFFF99 1px, transparent 1px)`,
         backgroundSize: "44px 44px",
         maskImage: "linear-gradient(180deg, black 0%, transparent 85%)",
         WebkitMaskImage: "linear-gradient(180deg, black 0%, transparent 85%)",
       }} />
       {/* color splash blob */}
       <div className="absolute -top-24 -right-24 h-[420px] w-[420px] rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle at center, ${INDIGO}22 0%, transparent 65%)` }} />
+        style={{ background: `radial-gradient(circle at center, ${INDIGO}33 0%, transparent 65%)` }} />
+      <div className="absolute -bottom-24 -left-24 h-[380px] w-[380px] rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle at center, #93C5FD55 0%, transparent 65%)` }} />
 
       <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-24">
         {/* Overline chip */}

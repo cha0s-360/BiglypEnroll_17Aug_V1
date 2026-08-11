@@ -1011,6 +1011,29 @@ async def seed():
             "early_bird_discount": 5, "late_fee": 500, "published": True,
         })
 
+    # Idempotent: ensure add-on / "other" fee heads exist for a richer parent dashboard
+    fs_doc = await db.fee_structures.find_one({"school_id": school_id})
+    if fs_doc:
+        grades_all = ["LKG", "UKG"] + [f"Class {i}" for i in range(1, 13)]
+        existing_names = {h["name"] for h in fs_doc.get("fee_heads", [])}
+        addon_heads = [
+            {"name": "Meal Plan",           "amount": 18000, "frequency": "Quarterly", "grades": grades_all},
+            {"name": "Uniform Kit",         "amount": 4500,  "frequency": "One-Time",  "grades": grades_all},
+            {"name": "Sports & Activity Fee","amount": 9000, "frequency": "Yearly",    "grades": grades_all},
+            {"name": "Annual Field Trip",   "amount": 3500,  "frequency": "One-Time",  "grades": grades_all},
+            {"name": "Overnight Excursion", "amount": 6500,  "frequency": "One-Time",  "grades": grades_all},
+            {"name": "Music & Arts Club",   "amount": 5400,  "frequency": "Half-Yearly","grades": grades_all},
+        ]
+        new_heads = [
+            {"id": str(uuid.uuid4()), "account_id": None, **h}
+            for h in addon_heads if h["name"] not in existing_names
+        ]
+        if new_heads:
+            await db.fee_structures.update_one(
+                {"school_id": school_id},
+                {"$push": {"fee_heads": {"$each": new_heads}}}
+            )
+
     # students
     if await db.students.count_documents({"school_id": school_id}) == 0:
         sample = [

@@ -33,10 +33,10 @@ const STATS = [
 /* --------- Hero (Career Hub · editorial mosaic) ---------- */
 function Hero() {
   return (
-    <section className="relative overflow-hidden" style={{ background: "#FFF7ED" }}>
-      {/* Soft warm gradient tiles */}
+    <section className="relative overflow-hidden" style={{ background: "#EFF6FF" }}>
+      {/* Soft blue gradient tiles */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        background: `radial-gradient(circle at 15% 20%, #FDE68A55 0%, transparent 45%), radial-gradient(circle at 85% 80%, ${INDIGO}22 0%, transparent 45%)`,
+        background: `radial-gradient(circle at 15% 20%, #BFDBFE66 0%, transparent 45%), radial-gradient(circle at 85% 80%, ${INDIGO}22 0%, transparent 45%)`,
       }} />
 
       <div className="relative max-w-7xl mx-auto px-6 pt-14 pb-24">
