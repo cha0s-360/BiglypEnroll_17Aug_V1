@@ -159,7 +159,7 @@ export default function NewApplication() {
               <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1" data-testid="f-consent" />
               <span className="text-sm text-muted-foreground">
                 <ShieldCheck className="h-4 w-4 inline text-brand-blue mr-1" />
-                I authorise Biglyp to pull the applicant's credit bureau report and process personal data
+                I authorise Biglyp to pull the applicant&apos;s credit bureau report and process personal data
                 in line with RBI Digital Lending Guidelines and the DPDP Act.
               </span>
             </label>

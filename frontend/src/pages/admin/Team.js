@@ -196,7 +196,7 @@ export default function Team() {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove {toDelete?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              They will lose access to this school's console. This can't be undone.
+              They will lose access to this school&apos;s console. This can&apos;t be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
