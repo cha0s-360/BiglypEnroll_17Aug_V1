@@ -58,3 +58,8 @@ GrayQuest-inspired school fee-financing credit platform at `/credit` (staff + cr
 - P1: Real payment gateway (Razorpay), settlement auto-reconciliation, collection & recovery queue
 - P2: Communication engine (Email/SMS/WhatsApp templates), Student Info System, multi-campus selector, financial-year switcher, Biglyp Ops Hub, financing partner API
 - Low: split server.py into routers, cache fee structure in analytics loop, brute-force lockout on login
+
+## Update (2025-07) — Configurable parent payment options (Option A/B/C)
+- School Setup gained a **Fee Collection** step: toggle 3 parent payment options (A=0% EMI, B=Auto-Debit quarterly/half-yearly, C=Pay full upfront). At least one must stay enabled (enforced client + server via normalize_payment_options). Stored as `payment_options {emi, auto_debit, full}` on the school doc; exposed via GET /api/parent/fees.
+- Parent Fee Payment screen: top quick-pick replaced by prominent **Option A/B/C** cards (wizard-style, with highlight badges). Only school-enabled options render. "Choose how to pay" (Quarterly/Half-Yearly) now shows only when Option B is selected.
+- Financing wizard Step 1: removed the EMI-vs-lumpsum (Option A/B) chooser; it's now a clean 0% EMI setup.
