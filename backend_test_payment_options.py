@@ -6,7 +6,7 @@ import requests
 import json
 
 # Backend URL from frontend/.env
-BASE_URL = "https://8c5c3244-a445-4b19-bd14-ab0524d6a58e.preview.emergentagent.com/api"
+BASE_URL = "https://enroll-system-21.preview.emergentagent.com/api"
 
 # Test credentials from test_credentials.md
 SCHOOL_EMAIL = "school@biglyp.com"
