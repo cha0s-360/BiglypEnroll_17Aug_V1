@@ -26,4 +26,17 @@ export function formatApiErrorDetail(detail) {
 export const inr = (n) =>
   "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 
+// Download an authenticated file (e.g. PDF) via the api instance and save it.
+export async function downloadFile(path, filename) {
+  const res = await api.get(path, { responseType: "blob" });
+  const url = window.URL.createObjectURL(new Blob([res.data]));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+}
+
 export default api;

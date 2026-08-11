@@ -19,6 +19,8 @@ import ParentDashboard from "@/pages/parent/ParentDashboard";
 import PaymentHistory from "@/pages/parent/PaymentHistory";
 import MandateSetup from "@/pages/parent/MandateSetup";
 import ActiveFinancing from "@/pages/parent/ActiveFinancing";
+import Rewards from "@/pages/parent/Rewards";
+import Reminders from "@/pages/admin/Reminders";
 import CreditDashboard from "@/pages/credit/CreditDashboard";
 import Applications from "@/pages/credit/Applications";
 import NewApplication from "@/pages/credit/NewApplication";
@@ -48,12 +50,14 @@ function App() {
             <Route path="/dashboard/students" element={<ProtectedRoute roles={STAFF}><Students /></ProtectedRoute>} />
             <Route path="/dashboard/team" element={<ProtectedRoute roles={["super_admin", "school_admin", "manager"]}><Team /></ProtectedRoute>} />
             <Route path="/dashboard/onboarding" element={<ProtectedRoute roles={["super_admin", "school_admin"]}><Onboarding /></ProtectedRoute>} />
+            <Route path="/dashboard/reminders" element={<ProtectedRoute roles={STAFF}><Reminders /></ProtectedRoute>} />
 
             {/* Parent app */}
             <Route path="/app" element={<ProtectedRoute roles={["parent"]}><ParentDashboard /></ProtectedRoute>} />
             <Route path="/app/mandate" element={<ProtectedRoute roles={["parent"]}><MandateSetup /></ProtectedRoute>} />
             <Route path="/app/history" element={<ProtectedRoute roles={["parent"]}><PaymentHistory /></ProtectedRoute>} />
             <Route path="/app/financing" element={<ProtectedRoute roles={["parent"]}><ActiveFinancing /></ProtectedRoute>} />
+            <Route path="/app/rewards" element={<ProtectedRoute roles={["parent"]}><Rewards /></ProtectedRoute>} />
 
             {/* Credit / Loan Origination */}
             <Route path="/credit" element={<ProtectedRoute roles={CREDIT_VIEW}><CreditDashboard /></ProtectedRoute>} />

@@ -6,7 +6,7 @@ import {
   PieChart, Pie, Cell, LineChart, Line,
 } from "recharts";
 import {
-  Wallet, TrendingUp, AlertTriangle, Users, ArrowUpRight, Landmark,
+  Wallet, TrendingUp, AlertTriangle, Users, ArrowUpRight, Landmark, CalendarClock,
 } from "lucide-react";
 
 const COLORS = ["#2540E8", "#1E2A78", "#3B82F6", "#8B5CF6", "#06B6D4"];
@@ -28,9 +28,11 @@ function Kpi({ icon: Icon, label, value, accent }) {
 
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
+  const [cf, setCf] = useState(null);
 
   useEffect(() => {
     api.get("/analytics/overview").then(({ data }) => setData(data)).catch(() => {});
+    api.get("/analytics/cashflow").then(({ data }) => setCf(data)).catch(() => {});
   }, []);
 
   if (!data) {
@@ -142,6 +144,67 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Cashflow forecast */}
+      {cf && (
+        <div className="mt-4" data-testid="cashflow-section">
+          <div className="flex items-center gap-2 mb-3 mt-8">
+            <CalendarClock className="h-5 w-5 text-brand-blue" />
+            <h2 className="font-head font-black text-brand-navy text-xl">Cashflow Forecast</h2>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            <Kpi icon={TrendingUp} label="Expected next 6 months" value={inr(cf.total_upcoming)} accent="bg-brand-blue" />
+            <Kpi icon={Wallet} label={`Expected this month`} value={inr(cf.expected_this_month)} accent="bg-brand-navy" />
+            <Kpi icon={AlertTriangle} label="Total overdue" value={inr(cf.total_overdue)} accent="bg-brand-sky" />
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-4">
+            {/* Upcoming collections */}
+            <div className="lg:col-span-2 bg-white border border-border rounded-sm p-6" data-testid="chart-cashflow-upcoming">
+              <div className="mb-6">
+                <h3 className="font-head font-bold text-brand-navy text-lg">Upcoming collections</h3>
+                <p className="text-xs text-muted-foreground">Projected fee inflows over the next 6 months (due {cf.due_date})</p>
+              </div>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={cf.upcoming}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EEF" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                  <YAxis tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
+                  <Tooltip formatter={(v) => inr(v)} />
+                  <Bar dataKey="amount" fill="#5548D1" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Overdue aging */}
+            <div className="bg-white border border-border rounded-sm p-6" data-testid="chart-cashflow-aging">
+              <h3 className="font-head font-bold text-brand-navy text-lg mb-1">Overdue aging</h3>
+              <p className="text-xs text-muted-foreground mb-4">Outstanding dues by days overdue</p>
+              <div className="space-y-3 mt-6">
+                {cf.overdue_aging.map((a, i) => {
+                  const max = Math.max(...cf.overdue_aging.map((x) => x.amount), 1);
+                  const pct = Math.round((a.amount / max) * 100);
+                  const tones = ["#F59E0B", "#F97316", "#EF4444", "#B91C1C"];
+                  return (
+                    <div key={a.bucket}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-brand-navy font-medium">{a.bucket}</span>
+                        <span className="text-muted-foreground">{inr(a.amount)}{a.count ? ` · ${a.count}` : ""}</span>
+                      </div>
+                      <div className="h-3 bg-muted rounded-sm overflow-hidden">
+                        <div className="h-full rounded-sm transition-all" style={{ width: `${pct}%`, background: tones[i % tones.length] }} />
+                      </div>
+                    </div>
+                  );
+                })}
+                {cf.total_overdue === 0 && (
+                  <p className="text-sm text-emerald-600 font-medium mt-4">✓ No overdue dues — collections are on track!</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

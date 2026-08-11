@@ -50,6 +50,8 @@ export default function ParentDashboard() {
   const [mode, setMode] = useState("UPI");
   const [processing, setProcessing] = useState(false);
   const [receipt, setReceipt] = useState(null);
+  const [wallet, setWallet] = useState(0);
+  const [useWallet, setUseWallet] = useState(false);
 
   // financing wizard
   const [finOpen, setFinOpen] = useState(false);
@@ -150,10 +152,17 @@ export default function ParentDashboard() {
 
   const refresh = () => api.get(`/parent/fees/${activeChild}`).then(({ data }) => setFeeData(data));
 
+  // reward wallet balance (auto-applies to fee payments)
+  const loadWallet = () => api.get("/parent/rewards").then(({ data }) => setWallet(data.wallet || 0)).catch(() => {});
+  useEffect(() => { loadWallet(); }, [activeChild]);
+
   // ---------- payment ----------
   const payItems = pending.filter((i) => payHeadIds.includes(i.fee_head_id));
   const payTotal = payItems.reduce((a, i) => a + i.amount, 0);
   const payGst = Math.round(payTotal * 0.18);
+  const payGross = payTotal + payGst;
+  const walletApplied = useWallet ? Math.min(wallet, payGross) : 0;
+  const finalPayable = payGross - walletApplied;
   const payHasOneTime = payItems.some((i) => isOneTime(i.frequency));
   const availableModes = payHasOneTime ? MODES.filter((m) => m !== "AutoPay/eNACH") : MODES;
 
@@ -161,17 +170,24 @@ export default function ParentDashboard() {
     if (!headIds.length) return;
     setPayHeadIds(headIds);
     setMode("UPI");
+    setUseWallet(false);
     setPayOpen(true);
   };
 
   const pay = async () => {
     setProcessing(true);
     try {
-      const { data } = await api.post("/parent/pay", { student_id: activeChild, fee_head_ids: payHeadIds, mode });
+      const { data } = await api.post("/parent/pay", { student_id: activeChild, fee_head_ids: payHeadIds, mode, use_wallet: useWallet });
       setReceipt(data);
       setPayOpen(false);
       refresh();
-      toast.success("Payment successful");
+      loadWallet();
+      const re = data.rewards_earned;
+      if (re && (re.points || re.wallet)) {
+        toast.success(`Payment successful — earned ${re.points} points${re.wallet ? ` + ${inr(re.wallet)} cashback` : ""}!`);
+      } else {
+        toast.success("Payment successful");
+      }
     } catch (err) {
       toast.error(err.response?.data?.detail || "Payment failed");
     } finally {
@@ -486,9 +502,29 @@ export default function ParentDashboard() {
               </div>
               <div className="flex items-center justify-between px-4 py-3 bg-[#F8FAFC]">
                 <span className="font-head font-bold text-brand-navy">Total payable</span>
-                <span className="font-head font-black text-brand-navy text-lg">{inr(payTotal + payGst)}</span>
+                <span className="font-head font-black text-brand-navy text-lg">{inr(payGross)}</span>
               </div>
+              {useWallet && walletApplied > 0 && (
+                <div className="flex items-center justify-between px-4 py-2.5 text-sm bg-emerald-50">
+                  <span className="text-emerald-700 font-medium">Cashback wallet applied</span>
+                  <span className="font-semibold text-emerald-700">-{inr(walletApplied)}</span>
+                </div>
+              )}
             </div>
+            {wallet > 0 && (
+              <button type="button" onClick={() => setUseWallet((v) => !v)} data-testid="use-wallet-toggle"
+                className={`w-full flex items-center justify-between rounded-lg border-2 px-4 py-3 transition-colors ${
+                  useWallet ? "border-emerald-500 bg-emerald-50" : "border-border bg-white hover:border-emerald-300"
+                }`}>
+                <span className="flex items-center gap-2 text-sm font-semibold text-brand-navy">
+                  <Wallet className="h-4 w-4 text-emerald-600" /> Use cashback wallet
+                  <span className="text-xs font-normal text-slate-500">({inr(wallet)} available)</span>
+                </span>
+                <span className={`h-5 w-5 rounded-md border-2 flex items-center justify-center ${useWallet ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300"}`}>
+                  {useWallet && <Check className="h-3.5 w-3.5" />}
+                </span>
+              </button>
+            )}
             <Select value={availableModes.includes(mode) ? mode : availableModes[0]} onValueChange={setMode}>
               <SelectTrigger className="rounded-lg" data-testid="mode-select"><SelectValue /></SelectTrigger>
               <SelectContent>{availableModes.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
@@ -502,7 +538,7 @@ export default function ParentDashboard() {
             <Button onClick={pay} disabled={processing} data-testid="confirm-pay-btn"
               className="w-full h-11 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] font-semibold">
               <CreditCard className="h-4 w-4 mr-2" />
-              {processing ? "Processing..." : `Pay ${inr(payTotal + payGst)}`}
+              {processing ? "Processing..." : `Pay ${inr(finalPayable)}`}
             </Button>
           </div>
         </DialogContent>

@@ -23,6 +23,10 @@ from bson import ObjectId
 
 from fee_parser import parse_fee_file
 from credit import credit_router, ensure_seed as ensure_credit_seed
+from extras import create_extras_router, seed_extras
+
+# Populated at startup with helpers returned by the extras factory
+EXTRAS = {}
 
 # ---------------------------------------------------------------- DB ----------
 mongo_url = os.environ["MONGO_URL"]
@@ -218,6 +222,7 @@ class PayIn(BaseModel):
     mode: str = "UPI"
     tenure: int = 12
     down_payment: float = 0
+    use_wallet: bool = False
 
 
 class FinancingPreviewIn(BaseModel):
@@ -586,12 +591,21 @@ async def parent_pay(body: PayIn, user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=400, detail="No payable items selected")
     total = sum(i["amount"] for i in selected)
     receipt_no = "BLP-" + datetime.now().strftime("%y%m%d") + "-" + uuid.uuid4().hex[:6].upper()
+
+    # apply reward-wallet credit if requested
+    wallet_applied = 0.0
+    if body.use_wallet and user["role"] == "parent" and EXTRAS.get("spend_wallet"):
+        wallet_applied = await EXTRAS["spend_wallet"](user["id"], total)
+    net_paid = round(total - wallet_applied, 2)
+
     doc = {
         "student_id": student["id"],
         "student_name": student["name"],
         "school_id": student["school_id"],
         "items": selected,
         "amount": total,
+        "wallet_applied": wallet_applied,
+        "net_paid": net_paid,
         "gst": round(total * 0.18, 2),
         "mode": body.mode,
         "status": "success",
@@ -603,6 +617,10 @@ async def parent_pay(body: PayIn, user: dict = Depends(get_current_user)):
     res = await db.payments.insert_one(doc)
     doc["id"] = str(res.inserted_id)
     doc.pop("_id", None)
+    # reward: full/upfront payment earns 2x points + 1% cashback
+    if user["role"] == "parent" and EXTRAS.get("award_rewards"):
+        doc["rewards_earned"] = await EXTRAS["award_rewards"](
+            user["id"], student["school_id"], total, "full")
     return doc
 
 
@@ -660,6 +678,9 @@ async def pay_financing(body: PayIn, user: dict = Depends(get_current_user)):
     res = await db.payments.insert_one(doc)
     doc["id"] = str(res.inserted_id)
     doc.pop("_id", None)
+    if user["role"] == "parent" and EXTRAS.get("award_rewards"):
+        doc["rewards_earned"] = await EXTRAS["award_rewards"](
+            user["id"], student["school_id"], total, "financing")
     return doc
 
 
@@ -852,7 +873,11 @@ async def setup_mandate(body: MandateIn, user: dict = Depends(get_current_user))
     res = await db.payments.insert_one(doc)
     doc["id"] = str(res.inserted_id)
     doc.pop("_id", None)
-    return {"mandate": mandate_doc, "payment": doc}
+    rewards_earned = None
+    if user["role"] == "parent" and EXTRAS.get("award_rewards"):
+        rewards_earned = await EXTRAS["award_rewards"](
+            user["id"], student["school_id"], total, "autodebit")
+    return {"mandate": mandate_doc, "payment": doc, "rewards_earned": rewards_earned}
 
 
 @api.get("/parent/payments/{student_id}")
@@ -1127,6 +1152,32 @@ async def seed():
 async def on_start():
     await seed()
     await ensure_credit_seed()
+
+    # wire up extra-features router (rewards, reminders, receipts, cashflow)
+    bundle = create_extras_router(db, {
+        "get_current_user": get_current_user,
+        "require_roles": require_roles,
+        "resolve_student": _resolve_student,
+        "compute_pending": compute_pending,
+        "get_user_school_id": get_user_school_id,
+        "STAFF_ROLES": STAFF_ROLES,
+        "ACADEMIC_YEAR": ACADEMIC_YEAR,
+    })
+    EXTRAS.update(bundle)
+    app.include_router(bundle["router"])
+    await seed_extras(db)
+
+    # daily auto-reminder job (respects each school's reminder_settings)
+    try:
+        from apscheduler.schedulers.asyncio import AsyncIOScheduler
+        scheduler = AsyncIOScheduler(timezone="UTC")
+        scheduler.add_job(lambda: bundle["generate_reminders"](force=False),
+                          "cron", hour=3, minute=0, id="daily_reminders", replace_existing=True)
+        scheduler.start()
+        EXTRAS["scheduler"] = scheduler
+        logger.info("Reminder scheduler started")
+    except Exception as e:
+        logger.warning(f"Scheduler not started: {e}")
 
 
 @app.on_event("shutdown")

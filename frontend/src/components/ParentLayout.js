@@ -1,17 +1,20 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
+import api from "@/lib/api";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Wallet, LayoutGrid, Brain, Settings, LifeBuoy, Bell, LogOut,
+  Wallet, LayoutGrid, Brain, Settings, LifeBuoy, Bell, LogOut, Gift, CheckCheck,
 } from "lucide-react";
 
 // Sidebar navigation — "Fee Payment" is the live screen; others are placeholders.
 const SIDEBAR = [
   { key: "fees", label: "Fee Payment", icon: Wallet, to: "/app", active: true, testid: "snav-fees" },
+  { key: "rewards", label: "Rewards", icon: Gift, to: "/app/rewards", active: true, testid: "snav-rewards" },
   { key: "dashboard", label: "Dashboard", icon: LayoutGrid, testid: "snav-dashboard" },
   { key: "psychometry", label: "Psychometry", icon: Brain, testid: "snav-psychometry" },
   { key: "settings", label: "Settings", icon: Settings, testid: "snav-settings" },
@@ -23,10 +26,29 @@ export function ParentLayout({ children }) {
   const loc = useLocation();
   const navigate = useNavigate();
 
+  const [notifs, setNotifs] = useState([]);
+  const [unread, setUnread] = useState(0);
+  const [showNotifs, setShowNotifs] = useState(false);
+
+  const loadNotifs = async () => {
+    try {
+      const { data } = await api.get("/parent/notifications");
+      setNotifs(data.items || []);
+      setUnread(data.unread || 0);
+    } catch { /* ignore */ }
+  };
+  useEffect(() => { loadNotifs(); }, []);
+
+  const markAllRead = async () => {
+    await api.post("/parent/notifications/read-all");
+    loadNotifs();
+  };
+
   const subTabs = [
     { label: "Pay Fees", to: "/app", testid: "subtab-pay" },
     { label: "Payment History", to: "/app/history", testid: "subtab-history" },
     { label: "Active Financing Schedule", to: "/app/financing", testid: "subtab-financing" },
+    { label: "Rewards", to: "/app/rewards", testid: "subtab-rewards" },
   ];
 
   return (
@@ -40,14 +62,17 @@ export function ParentLayout({ children }) {
           {SIDEBAR.map((n) => {
             const Icon = n.icon;
             if (n.active) {
+              const isCur = loc.pathname === n.to;
               return (
                 <Link
                   key={n.key}
                   to={n.to}
                   data-testid={n.testid}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-bold bg-brand-tint text-brand-blue transition-colors"
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-full text-sm transition-colors ${
+                    isCur ? "font-bold bg-brand-tint text-brand-blue" : "font-semibold text-slate-500 hover:bg-slate-50 hover:text-brand-navy"
+                  }`}
                 >
-                  <Icon className="h-5 w-5 text-brand-blue" />
+                  <Icon className={`h-5 w-5 ${isCur ? "text-brand-blue" : ""}`} />
                   {n.label}
                 </Link>
               );
@@ -98,14 +123,47 @@ export function ParentLayout({ children }) {
               </SelectContent>
             </Select>
 
-            <button
-              data-testid="notif-bell"
-              onClick={() => toast.info("No new notifications")}
-              className="relative h-9 w-9 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors"
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#5548D1]" />
-            </button>
+            <div className="relative">
+              <button
+                data-testid="notif-bell"
+                onClick={() => { setShowNotifs((v) => !v); }}
+                className="relative h-9 w-9 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors"
+              >
+                <Bell className="h-5 w-5" />
+                {unread > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#5548D1] text-white text-[10px] font-bold flex items-center justify-center" data-testid="notif-count">
+                    {unread}
+                  </span>
+                )}
+              </button>
+              {showNotifs && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowNotifs(false)} />
+                  <div className="absolute right-0 mt-2 w-80 max-h-[70vh] overflow-auto rounded-xl border border-border bg-white shadow-xl z-50" data-testid="notif-panel">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-white">
+                      <p className="font-head font-black text-brand-navy text-sm">Notifications</p>
+                      {unread > 0 && (
+                        <button onClick={markAllRead} data-testid="notif-mark-all" className="text-[11px] font-semibold text-[#5548D1] hover:underline flex items-center gap-1">
+                          <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+                        </button>
+                      )}
+                    </div>
+                    {notifs.length === 0 && <p className="px-4 py-8 text-center text-sm text-slate-400">No notifications yet</p>}
+                    {notifs.map((n) => (
+                      <div key={n.id} className={`px-4 py-3 border-b border-border/60 ${n.read ? "" : "bg-[#EEF0FF]/50"}`}>
+                        <div className="flex items-start gap-2">
+                          {!n.read && <span className="mt-1.5 h-2 w-2 rounded-full bg-[#5548D1] shrink-0" />}
+                          <div className={n.read ? "pl-4" : ""}>
+                            <p className="text-[13px] font-semibold text-brand-navy leading-tight">{n.title}</p>
+                            <p className="text-xs text-slate-500 mt-0.5 leading-snug">{n.body}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
 
             <div className="flex items-center gap-2 pl-2 md:pl-3 border-l border-border">
               <div className="h-9 w-9 rounded-full bg-[#5548D1] text-white flex items-center justify-center text-sm font-bold">

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { ParentLayout } from "@/components/ParentLayout";
-import api, { inr } from "@/lib/api";
+import api, { inr, downloadFile } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Receipt, ShieldCheck, CalendarClock, Calendar, ChevronDown, ChevronUp, CheckCircle2, Clock,
+  Receipt, ShieldCheck, CalendarClock, Calendar, ChevronDown, ChevronUp, CheckCircle2, Clock, Download, FileText,
 } from "lucide-react";
 
 export default function PaymentHistory() {
@@ -14,6 +16,27 @@ export default function PaymentHistory() {
   const [active, setActive] = useState(null);
   const [payments, setPayments] = useState([]);
   const [expanded, setExpanded] = useState({});
+  const [dl, setDl] = useState(null);
+
+  const activeChild = children.find((c) => c.id === active);
+
+  const downloadReceipt = async (p) => {
+    setDl(p.id);
+    try {
+      await downloadFile(`/parent/receipt/${p.id}`, `receipt-${p.receipt_no || p.id}.pdf`);
+    } catch { toast.error("Could not download receipt"); }
+    finally { setDl(null); }
+  };
+
+  const downloadCertificate = async () => {
+    if (!active) return;
+    setDl("cert");
+    try {
+      await downloadFile(`/parent/fee-certificate/${active}`, `fee-certificate-${activeChild?.name || "student"}.pdf`);
+      toast.success("Fee certificate downloaded");
+    } catch { toast.error("Could not download certificate"); }
+    finally { setDl(null); }
+  };
 
   useEffect(() => {
     api.get("/parent/children").then(({ data }) => {
@@ -53,12 +76,18 @@ export default function PaymentHistory() {
           <p className="text-xs tracking-[0.2em] uppercase text-[#5548D1] font-semibold">Payment History</p>
           <h1 className="font-head text-3xl font-black tracking-tight text-brand-navy mt-1">Transactions &amp; Schedule</h1>
         </div>
-        {children.length > 1 && (
-          <Select value={active || ""} onValueChange={setActive}>
-            <SelectTrigger className="w-56 rounded-lg"><SelectValue /></SelectTrigger>
-            <SelectContent>{children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-          </Select>
-        )}
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={downloadCertificate} disabled={dl === "cert"} data-testid="download-certificate"
+            className="rounded-lg border-[#5548D1] text-[#5548D1] hover:bg-[#EEF0FF]">
+            <FileText className="h-4 w-4 mr-2" /> Fee Certificate
+          </Button>
+          {children.length > 1 && (
+            <Select value={active || ""} onValueChange={setActive}>
+              <SelectTrigger className="w-56 rounded-lg"><SelectValue /></SelectTrigger>
+              <SelectContent>{children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+            </Select>
+          )}
+        </div>
       </div>
 
       {/* Upcoming schedule summary */}
@@ -97,6 +126,15 @@ export default function PaymentHistory() {
                   <p className="font-head font-bold text-brand-navy">{inr(p.amount)}</p>
                   <Badge variant="secondary" className="rounded-full text-[10px] mt-1">{planLabel(p)}</Badge>
                 </div>
+                <button
+                  onClick={() => downloadReceipt(p)}
+                  disabled={dl === p.id}
+                  data-testid={`download-receipt-${p.id}`}
+                  className="ml-1 h-9 w-9 rounded-lg flex items-center justify-center text-[#5548D1] hover:bg-[#EEF0FF] transition-colors disabled:opacity-40"
+                  title="Download receipt"
+                >
+                  <Download className="h-[18px] w-[18px]" />
+                </button>
                 {hasSchedule ? (
                   <button
                     onClick={() => toggle(p.id)}
