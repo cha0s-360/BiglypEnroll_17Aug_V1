@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import {
   Wallet, CheckCircle2, CreditCard, ShieldCheck, Download, Calendar,
   GraduationCap, Zap, Bus, Plane, ArrowRight, Sparkles, Star, RefreshCw,
-  UtensilsCrossed, Shirt, Trophy, Music, MapPin,
+  UtensilsCrossed, Shirt, Trophy, Music, MapPin, Check,
 } from "lucide-react";
 import { FinancingWizard } from "./FinancingWizard";
 
@@ -484,26 +484,118 @@ export default function ParentDashboard() {
         onSuccess={onFinancingSuccess}
       />
 
-      {/* Receipt dialog */}
+      {/* Receipt dialog — Approval Timeline for financing, simple receipt otherwise */}
       <Dialog open={!!receipt} onOpenChange={() => setReceipt(null)}>
-        <DialogContent className="rounded-2xl">
-          <DialogHeader className="sr-only"><DialogTitle>Payment receipt</DialogTitle></DialogHeader>
-          <div className="text-center py-4">
-            <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
+        <DialogContent className="rounded-2xl max-w-lg">
+          <DialogHeader className="sr-only"><DialogTitle>Payment confirmation</DialogTitle></DialogHeader>
+          {receipt?.financing ? (
+            <div className="py-2" data-testid="approval-timeline">
+              <div className="flex items-center justify-center">
+                <div className="relative">
+                  <div className="h-16 w-16 rounded-full bg-[#EEF0FF] flex items-center justify-center">
+                    <ShieldCheck className="h-8 w-8 text-[#5548D1]" />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-emerald-500 flex items-center justify-center border-2 border-white">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-center font-head font-black text-brand-navy text-xl mt-4 tracking-tight">
+                Application received
+              </h3>
+              <p className="text-center text-sm text-slate-500 mt-1">
+                {receipt?.student_name}&apos;s 0% EMI plan · Receipt {receipt?.receipt_no}
+              </p>
+
+              {/* Quick summary chips */}
+              <div className="mt-5 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg bg-slate-50 border border-slate-100 py-2">
+                  <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Financed</p>
+                  <p className="font-head text-sm font-black text-brand-navy mt-0.5">{inr(receipt?.amount || 0)}</p>
+                </div>
+                <div className="rounded-lg bg-slate-50 border border-slate-100 py-2">
+                  <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Tenure</p>
+                  <p className="font-head text-sm font-black text-brand-navy mt-0.5">{receipt?.tenure || 12} mo</p>
+                </div>
+                <div className="rounded-lg bg-slate-50 border border-slate-100 py-2">
+                  <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Monthly EMI</p>
+                  <p className="font-head text-sm font-black text-[#5548D1] mt-0.5">{inr(receipt?.emi || 0)}</p>
+                </div>
+              </div>
+
+              {/* Timeline */}
+              <div className="mt-6 relative">
+                <p className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mb-3">What happens next</p>
+                <div className="absolute left-3.5 top-8 bottom-1 w-0.5 bg-slate-100" />
+                <div className="space-y-4 relative">
+                  {[
+                    { t: "Application received", s: "Just now", state: "done", d: "Your KYC, e-mandate and consent are recorded." },
+                    { t: "NBFC underwriting", s: "Under 2 minutes", state: "active", d: "Our RBI-regulated partner runs a final policy check on your soft-pull profile." },
+                    { t: "e-Mandate activation", s: "Same day", state: "upcoming", d: "UPI AutoPay or eNACH is armed for your monthly EMIs. Cancel anytime." },
+                    { t: "School settled — full year", s: "T+1 working day", state: "upcoming", d: "The school gets 100% of the year&apos;s fees credited by Biglyp." },
+                    { t: "First EMI scheduled", s: "Next month · 10th", state: "upcoming", d: "You&apos;ll get a pre-debit WhatsApp + SMS reminder 5 days before every EMI." },
+                  ].map((row) => {
+                    const done = row.state === "done";
+                    const active = row.state === "active";
+                    return (
+                      <div key={row.t} className="flex items-start gap-3">
+                        <span className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 border-2 border-white ring-2 ${
+                          done ? "bg-emerald-500 text-white ring-emerald-100"
+                            : active ? "bg-[#5548D1] text-white ring-[#EEF0FF] animate-pulse"
+                            : "bg-white text-slate-400 ring-slate-100 border-slate-200"
+                        }`}>
+                          {done ? <Check className="h-3.5 w-3.5" /> : active ? <Zap className="h-3.5 w-3.5" /> : <Calendar className="h-3.5 w-3.5" />}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className={`font-head font-bold text-sm ${done || active ? "text-brand-navy" : "text-slate-500"}`}>{row.t}</p>
+                            <span className={`text-[10px] font-bold uppercase tracking-widest rounded-full px-2 py-0.5 ${
+                              done ? "bg-emerald-100 text-emerald-700" : active ? "bg-[#EEF0FF] text-[#5548D1]" : "bg-slate-100 text-slate-500"
+                            }`}>{row.s}</span>
+                          </div>
+                          <p className="text-[12px] text-slate-500 mt-0.5 leading-relaxed" dangerouslySetInnerHTML={{ __html: row.d }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-lg bg-[#EEF0FF] border border-[#5548D1]/15 p-3 flex items-start gap-2.5">
+                <Sparkles className="h-4 w-4 text-[#5548D1] shrink-0 mt-0.5" />
+                <p className="text-[12px] text-brand-navy leading-relaxed">
+                  Track every EMI, download tax receipts and prepay any month early from your <b>Active Financing Schedule</b> tab.
+                </p>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <Button variant="outline" onClick={() => setReceipt(null)} className="h-11 rounded-lg border-border text-slate-600 font-semibold" data-testid="receipt-close">
+                  Close
+                </Button>
+                <Button onClick={() => { setReceipt(null); navigate("/app/financing"); }}
+                  className="h-11 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] font-semibold" data-testid="view-schedule-btn">
+                  View schedule <ArrowRight className="h-4 w-4 ml-1.5" />
+                </Button>
+              </div>
             </div>
-            <h3 className="font-head font-bold text-brand-navy text-xl mt-4">Payment successful</h3>
-            <p className="text-sm text-slate-500 mt-1">Receipt {receipt?.receipt_no}</p>
-            <div className="bg-slate-50 rounded-xl p-4 mt-5 text-left text-sm space-y-1.5">
-              <div className="flex justify-between"><span className="text-slate-500">Student</span><span className="font-medium">{receipt?.student_name}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">Mode</span><span className="font-medium">{receipt?.mode}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">Amount</span><span className="font-medium">{inr(receipt?.amount)}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">GST</span><span className="font-medium">{inr(receipt?.gst)}</span></div>
+          ) : (
+            <div className="text-center py-4">
+              <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="font-head font-bold text-brand-navy text-xl mt-4">Payment successful</h3>
+              <p className="text-sm text-slate-500 mt-1">Receipt {receipt?.receipt_no}</p>
+              <div className="bg-slate-50 rounded-xl p-4 mt-5 text-left text-sm space-y-1.5">
+                <div className="flex justify-between"><span className="text-slate-500">Student</span><span className="font-medium">{receipt?.student_name}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">Mode</span><span className="font-medium">{receipt?.mode}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">Amount</span><span className="font-medium">{inr(receipt?.amount)}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">GST</span><span className="font-medium">{inr(receipt?.gst)}</span></div>
+              </div>
+              <Button onClick={() => setReceipt(null)} className="w-full mt-5 h-11 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8]" data-testid="receipt-close">
+                <Download className="h-4 w-4 mr-2" /> Done
+              </Button>
             </div>
-            <Button onClick={() => setReceipt(null)} className="w-full mt-5 h-11 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8]" data-testid="receipt-close">
-              <Download className="h-4 w-4 mr-2" /> Done
-            </Button>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
     </ParentLayout>

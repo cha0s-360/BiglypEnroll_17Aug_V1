@@ -17,7 +17,7 @@ import {
   ShieldCheck, Check, ArrowRight, ArrowLeft, Fingerprint, ScanFace,
   Camera, Landmark, Smartphone, CreditCard, Lock, BadgeCheck, Zap,
   CheckCircle2, Loader2, Calendar, FileSignature, ShieldQuestion,
-  Gauge, TrendingUp, XCircle, RefreshCw,
+  Gauge, TrendingUp, XCircle, RefreshCw, BookOpen, Sparkle,
 } from "lucide-react";
 
 const STEPS = [
@@ -110,7 +110,9 @@ export function FinancingWizard({ open, onOpenChange, studentId, studentName, st
 
   const [processing, setProcessing] = useState(false);
 
-  // reset on open
+  const draftKey = studentId ? `biglyp_wiz_draft_${studentId}` : null;
+
+  // reset on open + hydrate from local draft
   useEffect(() => {
     if (open) {
       setStep(1); setPayMode("emi"); setDown(0); setTenure(12); setPreview(null);
@@ -120,7 +122,6 @@ export function FinancingWizard({ open, onOpenChange, studentId, studentName, st
       setPan(""); setDob("");
       setResidenceType(""); setAddressLine1(""); setLocality(""); setPincode(""); setCity(""); setAddrState("");
       setIncome(""); setEmployment("Salaried"); setCompanyName(""); setWorkExperience("");
-      // Prefill student first/last from parent-provided name
       const parts = (studentName || "").trim().split(/\s+/);
       setStudFirstName(parts[0] || "");
       setStudLastName(parts.slice(1).join(" ") || "");
@@ -128,8 +129,65 @@ export function FinancingWizard({ open, onOpenChange, studentId, studentName, st
       setOtpSent(false); setOtp(""); setAadhaarVerified(false); setLiveness("idle");
       setRail("UPI AutoPay"); setBankName(""); setHolder(""); setAccount(""); setIfsc("");
       setEsignSent(false); setEsignOtp(""); setAgree(false); setProcessing(false);
+
+      // Restore locally-cached draft (auto-save)
+      try {
+        if (draftKey) {
+          const raw = localStorage.getItem(draftKey);
+          if (raw) {
+            const d = JSON.parse(raw);
+            d.tenure && setTenure(d.tenure);
+            d.down && setDown(d.down);
+            d.firstName && setFirstName(d.firstName);
+            d.lastName && setLastName(d.lastName);
+            d.fatherName && setFatherName(d.fatherName);
+            d.gender && setGender(d.gender);
+            d.maritalStatus && setMaritalStatus(d.maritalStatus);
+            d.email && setEmail(d.email);
+            d.pan && setPan(d.pan);
+            d.dob && setDob(d.dob);
+            d.residenceType && setResidenceType(d.residenceType);
+            d.addressLine1 && setAddressLine1(d.addressLine1);
+            d.locality && setLocality(d.locality);
+            d.pincode && setPincode(d.pincode);
+            d.city && setCity(d.city);
+            d.addrState && setAddrState(d.addrState);
+            d.income && setIncome(d.income);
+            d.employment && setEmployment(d.employment);
+            d.companyName && setCompanyName(d.companyName);
+            d.workExperience && setWorkExperience(d.workExperience);
+            d.studFirstName && setStudFirstName(d.studFirstName);
+            d.studLastName && setStudLastName(d.studLastName);
+            d.studType && setStudType(d.studType);
+            d.studClass && setStudClass(d.studClass);
+            if (d.hasDraft) toast.info("Restored your saved progress");
+          }
+        }
+      } catch { /* ignore parse errors */ }
     }
   }, [open]);
+
+  // Auto-save draft (throttled by React re-renders — persists non-sensitive form data)
+  useEffect(() => {
+    if (!open || !draftKey) return;
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({
+          hasDraft: true,
+          tenure, down,
+          firstName, lastName, fatherName, gender, maritalStatus, email, pan, dob,
+          residenceType, addressLine1, locality, pincode, city, addrState,
+          income, employment, companyName, workExperience,
+          studFirstName, studLastName, studType, studClass,
+          savedAt: Date.now(),
+        }));
+      } catch { /* quota / private mode — ignore */ }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [open, draftKey, tenure, down, firstName, lastName, fatherName, gender, maritalStatus, email, pan, dob,
+      residenceType, addressLine1, locality, pincode, city, addrState,
+      income, employment, companyName, workExperience,
+      studFirstName, studLastName, studType, studClass]);
 
   // plan preview
   useEffect(() => {
@@ -263,6 +321,8 @@ export function FinancingWizard({ open, onOpenChange, studentId, studentName, st
       const { data } = await api.post("/parent/pay-financing", {
         student_id: studentId, fee_head_ids: feeHeadIds, tenure, down_payment: down,
       });
+      // Clear the auto-saved draft on successful submission
+      try { if (draftKey) localStorage.removeItem(draftKey); } catch { /* ignore */ }
       onOpenChange(false);
       onSuccess?.(data);
     } catch (err) {
@@ -442,15 +502,13 @@ export function FinancingWizard({ open, onOpenChange, studentId, studentName, st
                 </label>
               </div>
 
-              {/* CIBIL Result */}
+              {/* CIBIL Result — with delightful trivia while fetching */}
               {cibilChecking && !cibilResult && (
-                <div className="rounded-xl border border-dashed border-[#5548D1]/40 p-6 flex items-center gap-4" data-testid="cibil-checking">
-                  <Loader2 className="h-8 w-8 text-[#5548D1] animate-spin" />
-                  <div>
-                    <p className="font-head font-bold text-brand-navy text-sm">Fetching your CIBIL score…</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Securely connecting to CIBIL (TransUnion) via RBI-regulated NBFC rails.</p>
-                  </div>
-                </div>
+                <TriviaLoader
+                  title="Fetching your CIBIL score…"
+                  subtitle="Securely connecting to CIBIL (TransUnion) via RBI-regulated NBFC rails."
+                  data-testid="cibil-checking"
+                />
               )}
 
               {cibilResult && (
@@ -537,7 +595,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, studentName, st
                   </div>
                   <div>
                     <Label className="text-sm text-brand-navy">Date of Birth</Label>
-                    <Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="rounded-lg mt-1.5" data-testid="kyc-dob" />
+                    <DobPicker value={dob} onChange={setDob} data-testid="kyc-dob" />
                   </div>
                   <div>
                     <Label className="text-sm text-brand-navy">Gender</Label>
@@ -949,7 +1007,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, studentName, st
 }
 
 
-/* -------- CIBIL Score Gauge (SVG semi-circle meter) -------- */
+/* -------- Sectioned Confirm-Details panel (used in Step 5) -------- */
 function ConfirmSection({ title, rows, onEdit, testid, last = false }) {
   return (
     <div className={`px-4 py-3 ${last ? "" : "border-b border-border"}`} data-testid={testid}>
@@ -971,6 +1029,107 @@ function ConfirmSection({ title, rows, onEdit, testid, last = false }) {
   );
 }
 
+/* -------- Delightful "Did you know?" loader (shown during CIBIL soft-pull) -------- */
+const TRIVIA = [
+  "The first rupee in India was introduced by Sher Shah Suri in the 16th century.",
+  "A soft pull check never impacts your credit score — banks do it thousands of times a day.",
+  "0% EMI = the school gets 100% of the fee upfront; you just spread your payments — no interest.",
+  "Your CIBIL score updates once every 30-45 days, so back-to-back checks show the same number.",
+  "eNACH mandates take under 60 seconds to set up — nothing like the paper mandates of 2015.",
+  "India's UPI processes more transactions per day than Visa in most weeks.",
+];
+
+function TriviaLoader({ title, subtitle, ...rest }) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIdx((i) => (i + 1) % TRIVIA.length), 3200);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div className="rounded-2xl border border-dashed border-[#5548D1]/40 bg-white p-6 flex items-center gap-5" {...rest}>
+      <div className="relative h-16 w-16 shrink-0">
+        <div className="absolute inset-0 rounded-2xl bg-[#EEF0FF] flex items-center justify-center">
+          <BookOpen className="h-8 w-8 text-[#5548D1]" />
+        </div>
+        <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[#5548D1] text-white flex items-center justify-center animate-pulse">
+          <Sparkle className="h-3 w-3" />
+        </div>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="font-head font-bold text-brand-navy text-sm flex items-center gap-2">
+          {title || "Just a moment…"}
+          <Loader2 className="h-3.5 w-3.5 text-[#5548D1] animate-spin" />
+        </p>
+        {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+        <div className="mt-3 rounded-lg bg-slate-50 border border-slate-100 p-3">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-[#5548D1] flex items-center gap-1.5">
+            <Sparkle className="h-3 w-3" /> Did you know?
+          </p>
+          <p key={idx} className="mt-1 text-[13px] text-slate-700 leading-relaxed animate-in fade-in duration-500">
+            {TRIVIA[idx]}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------- Grandparent-friendly Date-of-Birth picker (Day / Month / Year) -------- */
+const DOB_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function DobPicker({ value, onChange, ...rest }) {
+  // value is ISO 'YYYY-MM-DD' — parse to parts
+  const parseParts = (v) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || "");
+    return m ? { y: m[1], mo: m[2], d: m[3] } : { y: "", mo: "", d: "" };
+  };
+  const [parts, setParts] = useState(parseParts(value));
+  useEffect(() => { setParts(parseParts(value)); }, [value]);
+
+  const now = new Date();
+  const years = useMemo(() => {
+    const arr = [];
+    for (let y = now.getFullYear(); y >= 1930; y--) arr.push(String(y));
+    return arr;
+  }, [now]);
+  const daysInMonth = useMemo(() => {
+    const y = parseInt(parts.y || "2000", 10);
+    const mo = parseInt(parts.mo || "1", 10);
+    return new Date(y, mo, 0).getDate();
+  }, [parts.y, parts.mo]);
+  const days = Array.from({ length: daysInMonth }, (_, i) => String(i + 1).padStart(2, "0"));
+
+  const commit = (p) => {
+    setParts(p);
+    if (p.y && p.mo && p.d) onChange(`${p.y}-${p.mo}-${p.d}`);
+  };
+
+  return (
+    <div className="grid grid-cols-3 gap-2 mt-1.5" {...rest}>
+      <Select value={parts.d} onValueChange={(v) => commit({ ...parts, d: v })}>
+        <SelectTrigger className="rounded-lg" data-testid="dob-day"><SelectValue placeholder="Day" /></SelectTrigger>
+        <SelectContent className="max-h-64">
+          {days.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={parts.mo} onValueChange={(v) => commit({ ...parts, mo: v })}>
+        <SelectTrigger className="rounded-lg" data-testid="dob-month"><SelectValue placeholder="Month" /></SelectTrigger>
+        <SelectContent className="max-h-64">
+          {DOB_MONTHS.map((mo, i) => (
+            <SelectItem key={mo} value={String(i + 1).padStart(2, "0")}>{mo}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={parts.y} onValueChange={(v) => commit({ ...parts, y: v })}>
+        <SelectTrigger className="rounded-lg" data-testid="dob-year"><SelectValue placeholder="Year" /></SelectTrigger>
+        <SelectContent className="max-h-64">
+          {years.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+/* -------- CIBIL Score Gauge (SVG semi-circle meter) -------- */
 function CibilGauge({ score, target, band, color = "blue" }) {
   // Score band 300..900 -> 0..1
   const min = 300, max = 900;
