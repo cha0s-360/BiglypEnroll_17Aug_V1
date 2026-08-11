@@ -39,8 +39,9 @@ export default function ParentDashboard() {
   const [activeChild, setActiveChild] = useState(null);
   const [feeData, setFeeData] = useState(null);
 
-  // academic frequency selection
-  const [freq, setFreq] = useState("yearly");
+  // academic payment option selection: 'a' (EMI) | 'b' (auto-debit) | 'c' (full)
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [autoFreq, setAutoFreq] = useState("quarterly"); // quarterly | semi
   const [clubbed, setClubbed] = useState([]); // quarterly "other fee" ids clubbed with tuition
 
   // pay dialog
@@ -99,12 +100,45 @@ export default function ParentDashboard() {
   const toggleClub = (id) =>
     setClubbed((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
 
-  const freqOptions = useMemo(() => ([
-    { key: "yearly", label: "Full Payment", amount: academicTotal, unit: "one-time" },
-    { key: "semi", label: "Semi-Annual", amount: Math.round(installTotal / 2), unit: "/term" },
-    { key: "quarterly", label: "Quarterly", amount: Math.round(installTotal / 4), unit: "/qtr" },
-    { key: "monthly", label: "Monthly", amount: Math.ceil(installTotal / 12), unit: "/mo", financing: true },
-  ]), [academicTotal, installTotal]);
+  // installment amounts
+  const emiAmount = Math.ceil(installTotal / 12);
+  const quarterlyAmount = Math.round(installTotal / 4);
+  const semiAmount = Math.round(installTotal / 2);
+  const autoAmount = autoFreq === "semi" ? semiAmount : quarterlyAmount;
+
+  // school-enabled payment options (Option A / B / C)
+  const paymentOptions = feeData?.payment_options || { emi: true, auto_debit: true, full: true };
+  const optionDefs = useMemo(() => ([
+    {
+      key: "a", flag: "emi", icon: Zap,
+      title: "Pay full-year fees in EMIs",
+      highlight: (<span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#5548D1]"><Star className="h-3 w-3 fill-[#5548D1]" /> No Cost EMI</span>),
+      amount: emiAmount, unit: "/mo", primary: true, badge: "0% Interest",
+    },
+    {
+      key: "b", flag: "auto_debit", icon: RefreshCw,
+      title: "Set up Auto-Debit",
+      highlight: <span className="text-[11px] font-bold text-[#5548D1]">No more late fees</span>,
+      amount: autoAmount, unit: autoFreq === "semi" ? "/term" : "/qtr",
+    },
+    {
+      key: "c", flag: "full", icon: CreditCard,
+      title: "Pay full amount instantly",
+      highlight: <span className="text-[11px] font-medium text-slate-400">UPI · Card · Net Banking</span>,
+      amount: academicTotal, unit: "one-time",
+    },
+  ]), [emiAmount, autoAmount, autoFreq, academicTotal]);
+
+  const enabledOptions = optionDefs.filter((o) => paymentOptions[o.flag]);
+
+  // default the selected option to the first enabled one when fees load
+  useEffect(() => {
+    if (!feeData) return;
+    const po = feeData.payment_options || { emi: true, auto_debit: true, full: true };
+    const order = [["a", "emi"], ["b", "auto_debit"], ["c", "full"]];
+    const firstEnabled = order.find(([, f]) => po[f]);
+    setSelectedOption(firstEnabled ? firstEnabled[0] : null);
+  }, [feeData]);
 
   const dueDate = useMemo(() => {
     const yr = (feeData?.academic_year || "2026-27").slice(0, 4);
@@ -159,16 +193,16 @@ export default function ParentDashboard() {
 
 
   const proceedAcademic = () => {
-    if (freq === "yearly") { startPay(fullIds); return; }
-    if (freq === "monthly") { startFinancing(installIds); return; }
-    // quarterly / semi -> auto-debit mandate setup (one-time fees excluded)
+    if (selectedOption === "c") { startPay(fullIds); return; }
+    if (selectedOption === "a") { startFinancing(installIds); return; }
+    // option b -> auto-debit mandate setup (one-time fees excluded)
     navigate("/app/mandate", {
       state: {
         studentId: activeChild,
         studentName: child?.name,
         feeHeadIds: installIds,
         academicTotal: installTotal,
-        frequency: freq,
+        frequency: autoFreq === "semi" ? "semi" : "quarterly",
       },
     });
   };
@@ -194,36 +228,17 @@ export default function ParentDashboard() {
         )}
       </div>
 
-      {/* Payment-mode quick selector (Easy Monthly / Auto-Debit / Instant) */}
-      {child && academicTotal > 0 && (
-        <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="mode-quickpick">
-          {[
-            {
-              key: "monthly", freq: "monthly",
-              title: "Easy Monthly Payments",
-              highlight: <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#5548D1]"><Star className="h-3 w-3 fill-[#5548D1]" /> No Cost EMI</span>,
-              icon: Zap,
-            },
-            {
-              key: "auto", freq: "quarterly",
-              title: "Auto-Debit Fees",
-              highlight: <span className="text-[11px] font-bold text-[#5548D1]">No more late fees</span>,
-              icon: RefreshCw,
-            },
-            {
-              key: "instant", freq: "yearly",
-              title: "Instant Fee Payment",
-              highlight: <span className="text-[11px] font-medium text-slate-400">Pay full &amp; done</span>,
-              icon: CreditCard,
-            },
-          ].map((m) => {
-            const active = freq === m.freq;
-            const Icon = m.icon;
+      {/* Payment-option selector (Option A / B / C — school-configurable) */}
+      {child && academicTotal > 0 && enabledOptions.length > 0 && (
+        <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="option-cards">
+          {enabledOptions.map((o) => {
+            const active = selectedOption === o.key;
+            const Icon = o.icon;
             return (
               <button
-                key={m.key}
-                data-testid={`mode-quick-${m.key}`}
-                onClick={() => setFreq(m.freq)}
+                key={o.key}
+                data-testid={`option-${o.key}`}
+                onClick={() => setSelectedOption(o.key)}
                 className={`text-left rounded-xl border px-4 py-3 transition-colors ${
                   active
                     ? "border-[#5548D1] bg-[#EEF0FF] ring-1 ring-[#5548D1]"
@@ -231,14 +246,21 @@ export default function ParentDashboard() {
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <p className={`font-head text-[15px] font-black tracking-tight leading-tight ${active ? "text-brand-navy" : "text-brand-navy"}`}>
-                    {m.title}
-                  </p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-[#5548D1]">Option {o.key.toUpperCase()}</p>
+                    <p className="font-head text-[15px] font-black tracking-tight leading-tight text-brand-navy mt-0.5">
+                      {o.title}
+                    </p>
+                  </div>
                   <span className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${active ? "bg-white text-[#5548D1]" : "bg-[#EEF0FF] text-[#5548D1]"}`}>
                     <Icon className="h-4 w-4" />
                   </span>
                 </div>
-                <div className="mt-1.5">{m.highlight}</div>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className={`font-head text-xl font-black ${o.primary ? "text-[#5548D1]" : "text-brand-navy"}`}>{inr(o.amount)}</span>
+                  <span className="text-[10px] text-slate-400">{o.unit}</span>
+                </div>
+                <div className="mt-1.5">{o.highlight}</div>
               </button>
             );
           })}
@@ -290,38 +312,41 @@ export default function ParentDashboard() {
                   ))}
                 </div>
 
-                {/* compact payment options */}
-                <p className="mt-5 text-xs uppercase tracking-[0.14em] text-slate-500 font-semibold">Choose how to pay</p>
-                <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2" data-testid="freq-pill-bar">
-                  {freqOptions.map((o) => {
-                    const active = freq === o.key;
-                    return (
-                      <button key={o.key} data-testid={`freq-${o.key}`} onClick={() => setFreq(o.key)}
-                        className={`text-left rounded-xl border px-3 py-2.5 transition-colors ${
-                          active ? "border-[#5548D1] bg-[#EEF0FF] ring-1 ring-[#5548D1]" : "border-border bg-white hover:border-[#5548D1]/40"
-                        }`}>
-                        <div className="flex items-center gap-1">
-                          <span className={`text-xs font-semibold ${o.financing ? "text-[#5548D1]" : "text-brand-navy"}`}>{o.label}</span>
-                          {o.financing && <Zap className="h-3 w-3 text-[#5548D1]" />}
-                        </div>
-                        <div className="mt-1 flex items-baseline gap-1">
-                          <span className={`font-head text-lg font-black ${o.financing ? "text-[#5548D1]" : "text-brand-navy"}`}>{inr(o.amount)}</span>
-                          <span className="text-[10px] text-slate-400">{o.unit}</span>
-                        </div>
-                        {o.financing && <span className="text-[9px] font-bold text-[#5548D1]">0% EMI</span>}
-                      </button>
-                    );
-                  })}
-                </div>
+                {/* Choose how to pay — only for Auto-Debit (Option B): Quarterly / Half-Yearly */}
+                {selectedOption === "b" && (
+                  <>
+                    <p className="mt-5 text-xs uppercase tracking-[0.14em] text-slate-500 font-semibold">Choose how to pay</p>
+                    <div className="mt-2 grid grid-cols-2 gap-2" data-testid="autofreq-bar">
+                      {[
+                        { key: "quarterly", label: "Quarterly", amount: quarterlyAmount, unit: "/qtr" },
+                        { key: "semi", label: "Half-Yearly", amount: semiAmount, unit: "/term" },
+                      ].map((o) => {
+                        const active = autoFreq === o.key;
+                        return (
+                          <button key={o.key} data-testid={`autofreq-${o.key}`} onClick={() => setAutoFreq(o.key)}
+                            className={`text-left rounded-xl border px-3 py-2.5 transition-colors ${
+                              active ? "border-[#5548D1] bg-[#EEF0FF] ring-1 ring-[#5548D1]" : "border-border bg-white hover:border-[#5548D1]/40"
+                            }`}>
+                            <span className="text-xs font-semibold text-brand-navy">{o.label}</span>
+                            <div className="mt-1 flex items-baseline gap-1">
+                              <span className="font-head text-lg font-black text-brand-navy">{inr(o.amount)}</span>
+                              <span className="text-[10px] text-slate-400">{o.unit}</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
 
-                {freq === "monthly" && (
+                {selectedOption === "a" && (
                   <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-[#EEF0FF] border border-[#5548D1]/15 p-3" data-testid="emi-callout">
                     <Zap className="h-4 w-4 text-[#5548D1] shrink-0 mt-0.5" />
                     <p className="text-xs text-brand-navy leading-relaxed">Convert bulky academic fees into zero-interest monthly EMIs. School is paid 100% upfront.</p>
                   </div>
                 )}
 
-                {freq !== "yearly" && hasOneTimeInAcademic && (
+                {selectedOption === "b" && hasOneTimeInAcademic && (
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-50 border border-amber-200 p-3" data-testid="onetime-note">
                     <p className="text-xs text-amber-800 leading-relaxed">
                       One-time fees ({academicOneTime.map((i) => i.name).join(", ")}) can&apos;t be auto-debited — pay them in full separately.
@@ -333,9 +358,9 @@ export default function ParentDashboard() {
                   </div>
                 )}
 
-                <Button onClick={proceedAcademic} data-testid="proceed-breakdown-btn"
+                <Button onClick={proceedAcademic} disabled={!selectedOption} data-testid="proceed-breakdown-btn"
                   className="mt-5 h-11 px-6 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] text-white font-semibold">
-                  {freq === "monthly" ? "Start 0% EMI Application" : freq === "yearly" ? "Pay Full Amount" : "Set Up Auto-Debit Plan"}
+                  {selectedOption === "a" ? "Start 0% EMI Application" : selectedOption === "c" ? "Pay Full Amount" : "Set Up Auto-Debit Plan"}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
 

@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import {
   Building2, GraduationCap, Landmark, Check, Plus, Trash2, ArrowRight, ArrowLeft, PartyPopper, BadgeCheck, Loader2,
+  Wallet, Zap, RefreshCw, CreditCard,
 } from "lucide-react";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -19,6 +20,7 @@ const STEPS = [
   { key: "campuses", label: "Campuses", icon: Building2 },
   { key: "courses", label: "Courses", icon: GraduationCap },
   { key: "accounts", label: "Settlement", icon: Landmark },
+  { key: "fees", label: "Fee Collection", icon: Wallet },
 ];
 
 export default function Onboarding() {
@@ -30,6 +32,7 @@ export default function Onboarding() {
   const [multi, setMulti] = useState(false);
   const [accounts, setAccounts] = useState([]);
   const [feeHeads, setFeeHeads] = useState([]);
+  const [paymentOptions, setPaymentOptions] = useState({ emi: true, auto_debit: true, full: true });
 
   useEffect(() => {
     api.get("/fees/structure").then(({ data }) => setFeeHeads(data?.fee_heads || [])).catch(() => {});
@@ -42,6 +45,7 @@ export default function Onboarding() {
         setCourses(data.courses || []);
         setMulti(data.multi_account_enabled || false);
         setAccounts(data.settlement_accounts || []);
+        if (data.payment_options) setPaymentOptions({ emi: true, auto_debit: true, full: true, ...data.payment_options });
       }
     }).catch(() => {});
   }, []);
@@ -58,12 +62,25 @@ export default function Onboarding() {
     try {
       await api.post("/school/onboarding", {
         campuses, courses, team: school?.team || [],
-        multi_account_enabled: multi, settlement_accounts: accounts, complete,
+        multi_account_enabled: multi, settlement_accounts: accounts,
+        payment_options: paymentOptions, complete,
       });
       toast.success(complete ? "🎉 Your institute is live!" : "Progress saved");
     } catch {
       toast.error("Save failed");
     }
+  };
+
+  const enabledCount = Object.values(paymentOptions).filter(Boolean).length;
+  const togglePaymentOption = (key) => {
+    setPaymentOptions((po) => {
+      const next = { ...po, [key]: !po[key] };
+      if (!Object.values(next).some(Boolean)) {
+        toast.error("At least one payment option must stay enabled");
+        return po;
+      }
+      return next;
+    });
   };
 
   const StepIcon = STEPS[step].icon;
@@ -173,6 +190,50 @@ export default function Onboarding() {
             )}
             <div className="flex justify-between pt-2">
               <Button variant="outline" onClick={() => setStep(2)} className="rounded-sm">
+                <ArrowLeft className="h-4 w-4 mr-2" /> Back
+              </Button>
+              <Button onClick={() => { saveRest(false); setStep(4); }} className="rounded-sm bg-brand-blue hover:bg-brand-navy" data-testid="onb-to-fees">
+                Continue <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: fee collection (parent payment options) */}
+        {step === 4 && (
+          <div className="space-y-5">
+            <p className="text-sm text-muted-foreground -mt-2">
+              Choose which payment options parents can use to clear academic fees. At least one must stay on.
+            </p>
+            {[
+              { key: "emi", tag: "Option A", icon: Zap, title: "Pay full-year fees in EMIs",
+                desc: "Zero-cost monthly EMIs via our RBI-regulated lending partner. School is paid 100% upfront." },
+              { key: "auto_debit", tag: "Option B", icon: RefreshCw, title: "Auto-Debit (Quarterly / Half-Yearly)",
+                desc: "Parents set up an e-mandate and fees are auto-debited each term — no more late fees." },
+              { key: "full", tag: "Option C", icon: CreditCard, title: "Pay full amount instantly",
+                desc: "One-time full payment via UPI, Credit/Debit Card or Net Banking." },
+            ].map((o) => {
+              const Icon = o.icon;
+              const on = !!paymentOptions[o.key];
+              const isLastOn = on && enabledCount === 1;
+              return (
+                <div key={o.key} className="flex items-start justify-between gap-4 border border-border rounded-sm p-4" data-testid={`payopt-${o.key}`}>
+                  <div className="flex items-start gap-3">
+                    <div className={`h-10 w-10 rounded-sm flex items-center justify-center shrink-0 ${on ? "bg-brand-blue text-white" : "bg-muted text-muted-foreground"}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest font-bold text-brand-blue">{o.tag}</p>
+                      <p className="font-medium text-brand-navy leading-tight">{o.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1 max-w-md">{o.desc}</p>
+                    </div>
+                  </div>
+                  <Switch checked={on} disabled={isLastOn} onCheckedChange={() => togglePaymentOption(o.key)} data-testid={`payopt-switch-${o.key}`} />
+                </div>
+              );
+            })}
+            <div className="flex justify-between pt-2">
+              <Button variant="outline" onClick={() => setStep(3)} className="rounded-sm">
                 <ArrowLeft className="h-4 w-4 mr-2" /> Back
               </Button>
               <Button onClick={() => saveRest(true)} className="rounded-sm bg-brand-blue hover:bg-brand-navy" data-testid="onb-golive">

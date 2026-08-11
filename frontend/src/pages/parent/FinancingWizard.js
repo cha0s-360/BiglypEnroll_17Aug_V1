@@ -49,7 +49,6 @@ export function FinancingWizard({ open, onOpenChange, studentId, studentName, st
   const [step, setStep] = useState(1);
 
   // Step 1 — plan
-  const [payMode, setPayMode] = useState("emi"); // emi | lump
   const [down, setDown] = useState(0);
   const [tenure, setTenure] = useState(12);
   const [preview, setPreview] = useState(null);
@@ -115,7 +114,7 @@ export function FinancingWizard({ open, onOpenChange, studentId, studentName, st
   // reset on open + hydrate from local draft
   useEffect(() => {
     if (open) {
-      setStep(1); setPayMode("emi"); setDown(0); setTenure(12); setPreview(null);
+      setStep(1); setDown(0); setTenure(12); setPreview(null);
       setEligConsent(false);
       setCibilPan(""); setCibilChecking(false); setCibilResult(null); setScoreAnim(0);
       setFirstName(""); setLastName(""); setFatherName(""); setGender(""); setMaritalStatus(""); setEmail("");
@@ -374,46 +373,24 @@ export function FinancingWizard({ open, onOpenChange, studentId, studentName, st
           {/* ---------- Step 1: Plan ---------- */}
           {step === 1 && (
             <div className="space-y-5" data-testid="step-plan">
-              <p className="text-sm text-slate-500">Choose how you want to pay <b className="text-brand-navy">{inr(academicTotal)}</b>. Your school is paid 100% upfront either way.</p>
+              <p className="text-sm text-slate-500">Set up your 0% EMI plan for <b className="text-brand-navy">{inr(academicTotal)}</b>. Your school is paid 100% upfront.</p>
 
-              {/* EMI vs Lumpsum plan chooser (GrayQuest parity) */}
-              <div className="grid sm:grid-cols-2 gap-3" data-testid="plan-mode-chooser">
-                <button type="button" onClick={() => setPayMode("emi")} data-testid="plan-mode-emi"
-                  className={`text-left rounded-xl border p-4 transition-colors ${payMode === "emi" ? "border-[#5548D1] bg-[#EEF0FF] ring-1 ring-[#5548D1]" : "border-border bg-white hover:border-[#5548D1]/40"}`}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest font-bold text-[#5548D1]">Option A</p>
-                      <p className="font-head text-[15px] font-black text-brand-navy leading-tight mt-1">Pay full-year fees in EMIs</p>
-                      <p className="text-[11.5px] text-slate-500 mt-1">Small, convenient monthly payments</p>
-                    </div>
-                    <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest">0% Interest</span>
-                  </div>
-                  {preview && (
-                    <p className="mt-3 font-head text-2xl font-black text-brand-navy">
-                      {inr(preview.emi)}
-                      <span className="text-[11px] font-semibold text-slate-500 ml-1">/ month</span>
-                    </p>
-                  )}
-                </button>
-                <button type="button" onClick={() => setPayMode("lump")} data-testid="plan-mode-lump"
-                  className={`text-left rounded-xl border p-4 transition-colors ${payMode === "lump" ? "border-[#5548D1] bg-[#EEF0FF] ring-1 ring-[#5548D1]" : "border-border bg-white hover:border-[#5548D1]/40"}`}>
+              {/* 0% EMI summary banner */}
+              <div className="rounded-xl border border-[#5548D1]/20 bg-[#EEF0FF] p-4" data-testid="plan-emi-banner">
+                <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest font-bold text-[#5548D1]">Option B</p>
-                    <p className="font-head text-[15px] font-black text-brand-navy leading-tight mt-1">Pay full year upfront</p>
-                    <p className="text-[11.5px] text-slate-500 mt-1">UPI, Credit/Debit Card or Net Banking</p>
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-[#5548D1]">Pay full-year fees in EMIs</p>
+                    <p className="text-[11.5px] text-slate-500 mt-1">Small, convenient monthly payments</p>
                   </div>
-                  <p className="mt-3 font-head text-2xl font-black text-brand-navy">
-                    {inr(academicTotal)}
-                    <span className="text-[11px] font-semibold text-slate-500 ml-1">today</span>
-                  </p>
-                </button>
-              </div>
-              {payMode === "lump" && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 flex items-start gap-2.5 text-xs text-amber-800" data-testid="plan-lump-note">
-                  <Zap className="h-4 w-4 shrink-0 mt-0.5" />
-                  <span>Full upfront pay is available on the standard checkout. Close this wizard and use the &quot;Pay Full Amount&quot; option to continue via UPI / Card / Net Banking.</span>
+                  <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest">0% Interest</span>
                 </div>
-              )}
+                {preview && (
+                  <p className="mt-3 font-head text-2xl font-black text-brand-navy">
+                    {inr(preview.emi)}
+                    <span className="text-[11px] font-semibold text-slate-500 ml-1">/ month</span>
+                  </p>
+                )}
+              </div>
 
               <div>
                 <Label className="text-sm text-brand-navy">Down payment (optional)</Label>

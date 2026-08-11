@@ -135,12 +135,26 @@ class SchoolIn(BaseModel):
     address: str = ""
 
 
+PAYMENT_OPTIONS_DEFAULT = {"emi": True, "auto_debit": True, "full": True}
+
+
+def normalize_payment_options(po) -> dict:
+    """Coerce to the 3 known flags; if none are enabled fall back to defaults."""
+    if not isinstance(po, dict):
+        return dict(PAYMENT_OPTIONS_DEFAULT)
+    out = {k: bool(po.get(k, True)) for k in PAYMENT_OPTIONS_DEFAULT}
+    if not any(out.values()):
+        return dict(PAYMENT_OPTIONS_DEFAULT)
+    return out
+
+
 class OnboardingIn(BaseModel):
     campuses: List[dict] = []
     courses: List[dict] = []
     team: List[dict] = []
     multi_account_enabled: bool = False
     settlement_accounts: List[dict] = []
+    payment_options: Optional[dict] = None
     complete: bool = False
 
 
@@ -307,6 +321,7 @@ async def upsert_school(body: SchoolIn, user: dict = Depends(require_roles("supe
         data.update({
             "campuses": [], "courses": [], "team": [],
             "multi_account_enabled": False, "settlement_accounts": [],
+            "payment_options": dict(PAYMENT_OPTIONS_DEFAULT),
             "onboarding_complete": False,
             "created_at": datetime.now(timezone.utc).isoformat(),
         })
@@ -324,6 +339,10 @@ async def save_onboarding(body: OnboardingIn, user: dict = Depends(require_roles
     upd = body.model_dump()
     upd["onboarding_complete"] = body.complete
     upd.pop("complete", None)
+    if upd.get("payment_options") is None:
+        upd.pop("payment_options", None)
+    else:
+        upd["payment_options"] = normalize_payment_options(upd["payment_options"])
     await db.schools.update_one({"_id": ObjectId(sid)}, {"$set": upd})
     school = await db.schools.find_one({"_id": ObjectId(sid)})
     school["id"] = str(school.pop("_id"))
@@ -552,8 +571,10 @@ async def parent_fees(student_id: str, user: dict = Depends(get_current_user)):
     pending = await compute_pending(student["school_id"], student)
     fs = await db.fee_structures.find_one({"school_id": student["school_id"]})
     scholarships = fs.get("scholarships", []) if fs else []
+    school = await db.schools.find_one({"_id": ObjectId(student["school_id"])})
+    payment_options = normalize_payment_options((school or {}).get("payment_options"))
     return {"student": student, "items": pending, "academic_year": ACADEMIC_YEAR,
-            "scholarships": scholarships}
+            "scholarships": scholarships, "payment_options": payment_options}
 
 
 @api.post("/parent/pay")

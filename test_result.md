@@ -105,7 +105,21 @@
 user_problem_statement: "Add CIBIL check in the parent's fee financing journey — in Step 2 (Eligibility)."
 
 backend:
-  - task: "CIBIL soft-pull eligibility check (POST /api/parent/cibil-check)"
+  - task: "School payment options (Option A/B/C) persistence + parent exposure"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Added payment_options {emi, auto_debit, full} stored on the SCHOOL doc. OnboardingIn now accepts optional payment_options; save_onboarding normalizes via normalize_payment_options (coerces the 3 flags; if none enabled falls back to all-true default). upsert_school seeds default all-true on new school creation. GET /api/parent/fees/{student_id} now returns payment_options (normalized, default all-true if school has none). Tests: (1) POST /api/school/onboarding as school@biglyp.com with payment_options {emi:true, auto_debit:false, full:true} persists; GET /api/school reflects it. (2) GET /api/parent/fees/{aarav_id} as parent@biglyp.com returns payment_options matching. (3) Sending payment_options with all-false should fall back to all-true default (at-least-one enforced). (4) Omitting payment_options in onboarding payload must NOT wipe existing value."
+        -working: true
+        -agent: "testing"
+        -comment: "Comprehensive testing completed. All 7 test steps passed: (1) GET /api/parent/children successfully retrieved Aarav Sharma with student_id=6a7b6f119298f997c162b525; (2) POST /api/school/onboarding with payment_options {emi:true, auto_debit:false, full:true} and complete:true returned HTTP 200 (captured existing campuses, courses, team, multi_account_enabled, settlement_accounts and echoed them back to avoid wiping); (3) GET /api/school confirmed payment_options persisted correctly as {emi:true, auto_debit:false, full:true}; (4) GET /api/parent/fees/{student_id} as parent returned payment_options {emi:true, auto_debit:false, full:true} - correctly exposed to parent; (5) POST /api/school/onboarding with payment_options {emi:false, auto_debit:false, full:false} correctly fell back to all-true {emi:true, auto_debit:true, full:true} (at-least-one-enabled rule enforced); (6) POST /api/school/onboarding WITHOUT payment_options key correctly preserved existing value {emi:false, auto_debit:true, full:false} - did NOT wipe or reset; (7) CLEANUP: restored payment_options to all-true {emi:true, auto_debit:true, full:true} so parent UI shows all 3 options. All persistence, normalization, and parent exposure requirements verified. Feature working correctly."
+
     implemented: true
     working: true
     file: "backend/server.py"
@@ -197,8 +211,8 @@ backend:
 
 metadata:
   created_by: "main_agent"
-  version: "1.6"
-  test_sequence: 6
+  version: "1.7"
+  test_sequence: 7
   run_ui: false
 
 test_plan:
@@ -220,3 +234,7 @@ agent_communication:
     -message: "Round 5 testing completed successfully. BiglypEnroll backend changes fully tested and verified: (A) POST /api/school/verify-account (simulated penny-drop) - valid account returns HTTP 200 with account_name (non-empty string), bank, verified=true; deterministic (same input returns same account_name); invalid account (<6 char) returns HTTP 400. (B) Grade migration integrity - GET /api/parent/children returns children with 'Class N' format (NOT 'Grade N'); GET /api/parent/fees/{sara_id} returns 5 fee items (compute_pending works with migrated grades); GET /api/school returns 14 courses (LKG, UKG, Class 1..12). (C) Settlement persistence - POST /api/school/onboarding with settlement_accounts persists correctly; GET /api/school confirms settlement_accounts with fee_head_id and account_name. All 10 test cases passed. All endpoints working correctly with proper validation. No issues found."
     -agent: "testing"
     -message: "Round 6 testing completed successfully. CIBIL soft-pull endpoint (POST /api/parent/cibil-check) fully tested and verified. All 7 test cases passed: (1) Valid PAN 'ABCDE1234F' with consent=true returns HTTP 200 with all required fields (score=801, band=Excellent, approved=true, max_eligible=250000, pan_masked, bureau, pull_type, factors array with 4 items, decision, checked_at); (2) Deterministic check: same PAN returns identical score 801 on multiple calls; (3) Excellent hook: PAN 'AAAAA1234A' returns score=831 (>= 800), band=Excellent, approved=true, max_eligible=250000; (4) Poor hook: PAN 'ZZZZZ9999Z' returns score=568 (in 540-579 range), band=Poor, approved=false, max_eligible=0; (5) Consent=false correctly returns HTTP 400 with error mentioning 'consent'; (6) Invalid PAN '123' correctly returns HTTP 400 with error mentioning 'PAN'; (7) No Authorization header correctly returns HTTP 401. All response fields validated with correct types and values. CIBIL endpoint is production-ready. No issues found."
+    -agent: "main"
+    -message: "New feature: school-configurable parent payment options (Option A=EMI, B=Auto-Debit, C=Full). Please test ONLY the backend task 'School payment options (Option A/B/C) persistence + parent exposure'. Auth: school_admin school@biglyp.com/school123; parent parent@biglyp.com/parent123. Steps: (1) GET /api/parent/children as parent to get Aarav's student_id. (2) POST /api/school/onboarding as school_admin with body including payment_options {emi:true, auto_debit:false, full:true} and complete:true (also pass campuses/courses/settlement_accounts as-is from GET /api/school to avoid wiping — but note onboarding overwrites those fields, so read them first and echo back). (3) GET /api/school confirms payment_options persisted. (4) GET /api/parent/fees/{student_id} returns payment_options {emi:true, auto_debit:false, full:true}. (5) POST onboarding with payment_options all-false -> GET should show all-true (fallback). (6) POST onboarding WITHOUT payment_options key -> existing payment_options must be unchanged (not wiped). IMPORTANT: after tests, restore payment_options to all-true so the parent UI shows all 3 options."
+    -agent: "testing"
+    -message: "Round 7 testing completed successfully. School payment options (Option A/B/C) persistence + parent exposure fully tested and verified. All 7 test steps passed: (1) GET /api/parent/children successfully retrieved Aarav Sharma with student_id; (2) POST /api/school/onboarding with payment_options {emi:true, auto_debit:false, full:true} returned HTTP 200 (captured and echoed back existing campuses, courses, team, multi_account_enabled, settlement_accounts to avoid wiping); (3) GET /api/school confirmed payment_options persisted correctly; (4) GET /api/parent/fees/{student_id} confirmed payment_options exposed to parent; (5) POST with all-false correctly fell back to all-true (at-least-one-enabled rule enforced); (6) POST without payment_options key correctly preserved existing value (did NOT wipe); (7) CLEANUP: restored payment_options to all-true. All persistence, normalization, and parent exposure requirements verified. Feature working correctly. No issues found."
