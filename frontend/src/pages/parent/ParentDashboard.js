@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
   Wallet, CheckCircle2, CreditCard, ShieldCheck, Download, Calendar,
-  GraduationCap, Zap, Bus, Plane, ArrowRight, Sparkles,
+  GraduationCap, Zap, Bus, Plane, ArrowRight, Sparkles, Star, RefreshCw,
 } from "lucide-react";
 import { FinancingWizard } from "./FinancingWizard";
 
@@ -164,7 +164,7 @@ export default function ParentDashboard() {
   return (
     <ParentLayout>
       {/* page heading + child selector */}
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-[#5548D1] font-semibold">Fee Payment</p>
           <h1 className="font-head text-3xl font-black tracking-tight text-brand-navy mt-1">
@@ -181,6 +181,57 @@ export default function ParentDashboard() {
           </Select>
         )}
       </div>
+
+      {/* Payment-mode quick selector (Easy Monthly / Auto-Debit / Instant) */}
+      {child && academicTotal > 0 && (
+        <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="mode-quickpick">
+          {[
+            {
+              key: "monthly", freq: "monthly",
+              title: "Easy Monthly Payments",
+              highlight: <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#5548D1]"><Star className="h-3 w-3 fill-[#5548D1]" /> No Cost EMI</span>,
+              icon: Zap,
+            },
+            {
+              key: "auto", freq: "quarterly",
+              title: "Auto-Debit Fees",
+              highlight: <span className="text-[11px] font-bold text-[#5548D1]">No more late fees</span>,
+              icon: RefreshCw,
+            },
+            {
+              key: "instant", freq: "yearly",
+              title: "Instant Fee Payment",
+              highlight: <span className="text-[11px] font-medium text-slate-400">Pay full &amp; done</span>,
+              icon: CreditCard,
+            },
+          ].map((m) => {
+            const active = freq === m.freq;
+            const Icon = m.icon;
+            return (
+              <button
+                key={m.key}
+                data-testid={`mode-quick-${m.key}`}
+                onClick={() => setFreq(m.freq)}
+                className={`text-left rounded-xl border px-4 py-3 transition-colors ${
+                  active
+                    ? "border-[#5548D1] bg-[#EEF0FF] ring-1 ring-[#5548D1]"
+                    : "border-border bg-white hover:border-[#5548D1]/40"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className={`font-head text-[15px] font-black tracking-tight leading-tight ${active ? "text-brand-navy" : "text-brand-navy"}`}>
+                    {m.title}
+                  </p>
+                  <span className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${active ? "bg-white text-[#5548D1]" : "bg-[#EEF0FF] text-[#5548D1]"}`}>
+                    <Icon className="h-4 w-4" />
+                  </span>
+                </div>
+                <div className="mt-1.5">{m.highlight}</div>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {children.length === 0 && (
         <div className="bg-white border border-border rounded-2xl p-12 text-center">

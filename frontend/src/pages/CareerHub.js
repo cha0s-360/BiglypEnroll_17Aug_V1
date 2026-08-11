@@ -30,106 +30,208 @@ const STATS = [
   { icon: Award, value: "6,500+", label: "Partner schools", color: "#10B981" },
 ];
 
-/* --------- Hero ---------- */
+/* --------- Hero (Career Hub · editorial mosaic) ---------- */
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${INDIGO} 0%, ${INDIGO_DEEP} 55%, ${INDIGO_DEEP} 100%)` }} />
-      <div className="absolute inset-0 opacity-[0.09]" style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
-      <div className="relative max-w-7xl mx-auto px-6 pt-14 pb-24 grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
-        <motion.div initial="hidden" animate="show" variants={fade}>
-          <span className="inline-flex items-center gap-2 text-[11px] tracking-widest uppercase font-bold rounded-full px-3 py-1.5 text-white" style={{ background: "rgba(255,255,255,0.14)" }}>
-            <GraduationCap className="h-3.5 w-3.5" /> Biglyp Career Hub
+    <section className="relative overflow-hidden" style={{ background: "#FFF7ED" }}>
+      {/* Soft warm gradient tiles */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: `radial-gradient(circle at 15% 20%, #FDE68A55 0%, transparent 45%), radial-gradient(circle at 85% 80%, ${INDIGO}22 0%, transparent 45%)`,
+      }} />
+
+      <div className="relative max-w-7xl mx-auto px-6 pt-14 pb-24">
+        {/* Overline row */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: NAVY }}>
+            <GraduationCap className="h-3.5 w-3.5" style={{ color: INDIGO }} /> Biglyp Career Hub · Issue No. 01
           </span>
+          <div className="hidden md:flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: SUBTLE }}>
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Discovery · Psychometrics · Applications
+          </div>
+        </div>
+
+        {/* Big editorial headline — centered magazine cover style */}
+        <motion.div initial="hidden" animate="show" variants={fade} className="mt-10 text-center max-w-5xl mx-auto">
           <motion.h1 custom={1} variants={fade}
-            className="font-head mt-5 text-4xl md:text-5xl lg:text-[52px] font-black text-white leading-[1.05] tracking-tight">
-            Scientific career guidance<br />&amp; global{" "}
+            className="font-head text-[44px] md:text-[70px] lg:text-[96px] leading-[0.92] font-black tracking-tight"
+            style={{ color: NAVY }}>
+            Discover the{" "}
             <span className="relative inline-block">
-              <span className="relative z-10">university discovery</span>
-              <span className="absolute left-0 right-0 bottom-1 h-3 rounded-sm" style={{ background: "#FBBF24", opacity: 0.85 }} />
+              <span className="italic font-light" style={{ color: INDIGO }}>right</span>
             </span>{" "}
-            for every student.
+            <br className="hidden md:block" />
+            career.{" "}
+            <span className="relative inline-block">
+              <span className="relative z-10">Then the</span>
+              <span className="absolute inset-x-0 bottom-2 h-3" style={{ background: "#FBBF24", opacity: 0.75, zIndex: 0 }} />
+            </span>{" "}
+            right{" "}
+            <span className="underline decoration-[6px] underline-offset-[10px]" style={{ textDecorationColor: INDIGO }}>university</span>.
           </motion.h1>
           <motion.p custom={2} variants={fade}
-            className="mt-5 text-white/85 text-[16px] md:text-[17px] max-w-xl leading-relaxed">
-            Equip your counsellors and students with AI-driven psychometrics and a global
-            database of <b>2,50,000+ courses</b> across <b>42 countries</b>.
+            className="mt-6 max-w-2xl mx-auto text-[16px] md:text-[17px] leading-relaxed" style={{ color: SUBTLE }}>
+            AI-driven 4-dimensional psychometrics paired with a live index of <b style={{ color: NAVY }}>2,50,000+ courses</b> across <b style={{ color: NAVY }}>42 countries</b> — built for counsellors, loved by students.
           </motion.p>
-          <motion.div custom={3} variants={fade} className="mt-8 flex flex-wrap gap-3">
+          <motion.div custom={3} variants={fade} className="mt-8 inline-flex items-center gap-3 flex-wrap justify-center">
             <a href="#demo">
-              <Button className="h-12 px-6 rounded-full font-semibold text-sm shadow-lg" style={{ background: "#FFFFFF", color: INDIGO }}>
+              <Button className="h-12 px-6 rounded-full font-bold text-white text-[13px] tracking-wide shadow-lg"
+                style={{ background: NAVY }}>
                 See it in action <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </a>
             <a href="#pillars">
-              <Button variant="outline" className="h-12 px-6 rounded-full font-semibold text-sm border-white/60 text-white hover:bg-white/10 bg-transparent">
+              <Button variant="outline" className="h-12 px-6 rounded-full font-bold text-[13px] border-2 bg-white"
+                style={{ borderColor: NAVY, color: NAVY }}>
                 Explore capabilities
               </Button>
             </a>
           </motion.div>
         </motion.div>
 
-        {/* Right — Interactive discovery mockup */}
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative">
-          <div className="rounded-3xl bg-white shadow-2xl p-5 max-w-md mx-auto">
-            <div className="flex items-center gap-2 text-slate-400 text-[11px] font-semibold">
-              <div className="h-2 w-2 rounded-full bg-red-400" />
-              <div className="h-2 w-2 rounded-full bg-amber-400" />
-              <div className="h-2 w-2 rounded-full bg-emerald-400" />
-              <span className="ml-2">career-hub.biglypenroll.com</span>
+        {/* Mosaic — 3 asymmetric editorial cards */}
+        <div className="mt-14 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
+          {/* Card 1: Psychometric radar (tall) */}
+          <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.1 }}
+            className="md:col-span-5 md:row-span-2 rounded-3xl bg-white border border-slate-200 p-6 relative overflow-hidden"
+            style={{ boxShadow: "0 30px 60px -35px rgba(15,26,91,0.35)" }}>
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 text-amber-800 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest">
+                <Brain className="h-3 w-3" /> Psychometrics
+              </span>
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>Live scan</span>
             </div>
-            {/* Search bar */}
+            <h3 className="font-head mt-4 text-2xl font-black tracking-tight" style={{ color: NAVY }}>
+              Ananya&apos;s profile
+            </h3>
+            <p className="text-[12px] mt-1" style={{ color: SUBTLE }}>Class 11 · Science stream</p>
+
+            {/* Radar visual — simple polygon rings */}
+            <div className="mt-5 relative h-56 flex items-center justify-center">
+              <svg viewBox="-110 -110 220 220" className="h-full">
+                {[100, 75, 50, 25].map((r) => (
+                  <polygon key={r}
+                    points={[0,1,2,3,4].map((i) => {
+                      const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
+                      return `${Math.cos(a) * r},${Math.sin(a) * r}`;
+                    }).join(" ")}
+                    fill="none" stroke="#E2E8F0" strokeWidth="1" />
+                ))}
+                <polygon
+                  points={[85, 70, 92, 60, 78].map((r, i) => {
+                    const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
+                    return `${Math.cos(a) * r},${Math.sin(a) * r}`;
+                  }).join(" ")}
+                  fill={INDIGO} fillOpacity="0.25" stroke={INDIGO} strokeWidth="2" />
+                {[85, 70, 92, 60, 78].map((r, i) => {
+                  const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
+                  return <circle key={i} cx={Math.cos(a) * r} cy={Math.sin(a) * r} r="3.5" fill={INDIGO} />;
+                })}
+              </svg>
+              {["Aptitude","Interests","Personality","Values","Skills"].map((l, i) => {
+                const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
+                const R = 118;
+                const style = { left: `calc(50% + ${Math.cos(a) * R}px)`, top: `calc(50% + ${Math.sin(a) * R}px)` };
+                return (
+                  <span key={l} className="absolute text-[10px] font-bold uppercase tracking-widest -translate-x-1/2 -translate-y-1/2"
+                    style={{ ...style, color: NAVY }}>{l}</span>
+                );
+              })}
+            </div>
+
+            <div className="mt-2 rounded-xl bg-slate-50 border border-slate-100 p-3">
+              <p className="text-[11px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>Top recommendation</p>
+              <p className="font-head text-[15px] font-black tracking-tight mt-0.5" style={{ color: NAVY }}>
+                Design &amp; Product Engineering
+              </p>
+              <p className="text-[11.5px] mt-0.5" style={{ color: SUBTLE }}>92% fit · 14 matching programs</p>
+            </div>
+          </motion.div>
+
+          {/* Card 2: Course search */}
+          <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.2 }}
+            className="md:col-span-7 rounded-3xl bg-white border border-slate-200 p-6 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white"
+                style={{ background: INDIGO }}>
+                <Globe className="h-3 w-3" /> Course discovery
+              </span>
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>2.5L+ programs</span>
+            </div>
+
             <div className="mt-4 flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2">
               <Search className="h-4 w-4 text-slate-400" />
               <span className="text-[13px] text-slate-500">Computer Science · Canada · 2026 intake</span>
             </div>
-            {/* Filter chips */}
             <div className="mt-3 flex flex-wrap gap-1.5">
               {["🇨🇦 Canada", "IELTS 7.0", "≤ ₹25L tuition", "Sep 2026", "QS Top 200"].map((c) => (
-                <span key={c} className="rounded-full bg-brand-tint text-[10.5px] font-semibold px-2 py-1" style={{ color: INDIGO }}>{c}</span>
+                <span key={c} className="rounded-full text-[10.5px] font-semibold px-2 py-1"
+                  style={{ background: INDIGO_TINT, color: INDIGO }}>{c}</span>
               ))}
             </div>
-            {/* Course results */}
+            <div className="mt-4 grid sm:grid-cols-3 gap-2">
+              {[
+                { n: "U of Toronto", p: "B.Sc. Computer Science", fee: "₹32L / yr", rank: "#21", flag: "🇨🇦" },
+                { n: "UBC Vancouver", p: "B.Sc. Data Science", fee: "₹28L / yr", rank: "#38", flag: "🇨🇦" },
+                { n: "McGill", p: "B.Eng. Software", fee: "₹24L / yr", rank: "#42", flag: "🇨🇦" },
+              ].map((r) => (
+                <div key={r.n} className="rounded-xl border border-slate-100 p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="h-8 w-8 rounded-lg flex items-center justify-center text-lg"
+                      style={{ background: INDIGO_TINT }}>{r.flag}</div>
+                    <span className="text-[10px] font-bold" style={{ color: INDIGO }}>{r.rank}</span>
+                  </div>
+                  <p className="mt-2 text-[12px] font-head font-black truncate" style={{ color: NAVY }}>{r.n}</p>
+                  <p className="text-[10.5px] text-slate-500 truncate">{r.p}</p>
+                  <p className="mt-1 text-[11px] font-bold" style={{ color: NAVY }}>{r.fee}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Card 3: Readiness meter */}
+          <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.3 }}
+            className="md:col-span-4 rounded-3xl p-6 relative overflow-hidden text-white"
+            style={{ background: `linear-gradient(160deg, ${NAVY} 0%, ${INDIGO_DEEP} 100%)` }}>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest">
+              <Radar className="h-3 w-3" /> Readiness Radar
+            </span>
+            <p className="mt-4 font-head text-[42px] leading-none font-black tracking-tight">72<span className="text-lg align-top">/100</span></p>
+            <p className="text-[12px] text-white/80 mt-1">Application readiness score</p>
             <div className="mt-4 space-y-2">
               {[
-                { n: "University of Toronto", p: "B.Sc. Computer Science", fee: "₹32L / yr", rank: "#21", flag: "🇨🇦" },
-                { n: "UBC Vancouver", p: "B.Sc. Data Science", fee: "₹28L / yr", rank: "#38", flag: "🇨🇦" },
-                { n: "McGill University", p: "B.Eng. Software Engineering", fee: "₹24L / yr", rank: "#42", flag: "🇨🇦" },
+                { k: "Grades", v: 88 },
+                { k: "SoP", v: 60 },
+                { k: "LORs", v: 55 },
               ].map((r) => (
-                <div key={r.n} className="rounded-xl border border-slate-100 p-3 flex items-center gap-3 hover:border-brand-blue transition-colors">
-                  <div className="h-10 w-10 rounded-lg flex items-center justify-center text-xl" style={{ background: INDIGO_TINT }}>{r.flag}</div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-head font-bold truncate" style={{ color: NAVY }}>{r.n}</p>
-                    <p className="text-[11px] text-slate-500 truncate">{r.p}</p>
+                <div key={r.k}>
+                  <div className="flex items-center justify-between text-[11px] font-semibold">
+                    <span className="text-white/85">{r.k}</span><span>{r.v}%</span>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-[11px] font-bold" style={{ color: NAVY }}>{r.fee}</p>
-                    <p className="text-[10px] font-bold" style={{ color: INDIGO }}>{r.rank}</p>
+                  <div className="mt-1 h-1.5 rounded-full bg-white/15 overflow-hidden">
+                    <div className="h-full bg-white" style={{ width: `${r.v}%` }} />
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-3 text-center">
-              <span className="text-[11px] text-slate-400">1,842 more programs match your filters</span>
-            </div>
-          </div>
-          {/* Floating chip */}
-          <div className="hidden md:flex absolute -left-4 top-6 rounded-2xl bg-white shadow-xl p-3 pr-4 items-center gap-3">
-            <div className="h-9 w-9 rounded-lg flex items-center justify-center" style={{ background: INDIGO_TINT, color: INDIGO }}>
-              <Brain className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500">AI Psychometrics</p>
-              <p className="text-sm font-head font-bold" style={{ color: NAVY }}>4-dimensional</p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
 
-      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" className="block w-full h-[46px] relative -mb-px" aria-hidden>
-        <path d="M0 60 L1440 60 L1440 0 C 1080 60, 360 60, 0 0 Z" fill="#ffffff" />
-      </svg>
+          {/* Card 4: Counsellor summary */}
+          <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.4 }}
+            className="md:col-span-3 rounded-3xl bg-white border border-slate-200 p-5 relative overflow-hidden">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest">
+              <ShieldCheck className="h-3 w-3" /> Counsellor
+            </span>
+            <p className="mt-3 font-head text-lg font-black tracking-tight" style={{ color: NAVY }}>28 students</p>
+            <p className="text-[11.5px]" style={{ color: SUBTLE }}>on track this quarter</p>
+            <div className="mt-3 flex -space-x-2">
+              {["#F59E0B", "#EC4899", "#10B981", "#38BDF8", "#5548D1"].map((c) => (
+                <span key={c} className="h-7 w-7 rounded-full border-2 border-white" style={{ background: c }} />
+              ))}
+              <span className="h-7 w-7 rounded-full bg-slate-100 border-2 border-white text-[10px] font-bold flex items-center justify-center" style={{ color: NAVY }}>+23</span>
+            </div>
+          </motion.div>
+        </div>
+      </div>
     </section>
   );
 }

@@ -146,105 +146,178 @@ function TopNav() {
   );
 }
 
-/* --------- Hero ---------- */
+/* --------- Hero (Fee Collection · editorial light-mode) ---------- */
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(180deg, ${INDIGO} 0%, ${INDIGO_DEEP} 55%, ${INDIGO_DEEP} 100%)`,
-        }}
-      />
-      {/* soft grid */}
-      <div className="absolute inset-0 opacity-[0.09]" style={{
-        backgroundImage: "radial-gradient(#fff 1px, transparent 1px)",
-        backgroundSize: "22px 22px",
+    <section className="relative overflow-hidden bg-white">
+      {/* subtle grid pattern */}
+      <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
+        backgroundImage: `linear-gradient(${INDIGO_TINT} 1px, transparent 1px), linear-gradient(90deg, ${INDIGO_TINT} 1px, transparent 1px)`,
+        backgroundSize: "44px 44px",
+        maskImage: "linear-gradient(180deg, black 0%, transparent 85%)",
+        WebkitMaskImage: "linear-gradient(180deg, black 0%, transparent 85%)",
       }} />
-      <div className="relative max-w-7xl mx-auto px-6 pt-14 pb-24 grid lg:grid-cols-2 gap-12 items-center">
-        <motion.div initial="hidden" animate="show" variants={fade}>
-          <span className="inline-flex items-center gap-2 text-[11px] tracking-widest uppercase font-bold rounded-full px-3 py-1.5 text-white"
-            style={{ background: "rgba(255,255,255,0.14)" }}>
+      {/* color splash blob */}
+      <div className="absolute -top-24 -right-24 h-[420px] w-[420px] rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle at center, ${INDIGO}22 0%, transparent 65%)` }} />
+
+      <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-24">
+        {/* Overline chip */}
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em]"
+            style={{ borderColor: INDIGO + "40", color: INDIGO, background: "#FFFFFF" }}>
             <Sparkle className="h-3.5 w-3.5" /> BiglypEnroll · Fees made effortless
           </span>
-          <motion.h1 custom={1} variants={fade}
-            className="font-head mt-5 text-4xl md:text-5xl lg:text-[54px] font-black text-white leading-[1.05] tracking-tight">
-            India&apos;s most advanced <br />
-            <span className="relative inline-block">
-              <span className="relative z-10">fee payment platform</span>
-              <span className="absolute left-0 right-0 bottom-1 h-3 rounded-sm" style={{ background: "#FBBF24", opacity: 0.85 }} />
-            </span>{" "}
-            for your institute.
-          </motion.h1>
-          <motion.p custom={2} variants={fade}
-            className="mt-5 text-white/85 text-[17px] max-w-lg leading-relaxed">
-            From admissions to analytics — collect fees on 8+ rails, offer 0% EMIs and
-            reconcile every rupee live. All in one platform loved by 6,500+ institutions.
-          </motion.p>
-          <motion.div custom={3} variants={fade} className="mt-8 flex flex-wrap gap-3">
-            <a href="#demo">
-              <Button className="h-12 px-6 rounded-full font-semibold text-white text-sm shadow-lg" style={{ background: "#FFFFFF", color: INDIGO }}>
-                Schedule a demo <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </a>
-            <a href="#products">
-              <Button variant="outline" className="h-12 px-6 rounded-full font-semibold text-sm border-white/60 text-white hover:bg-white/10 bg-transparent">
-                Explore products
-              </Button>
-            </a>
-          </motion.div>
-          {/* trust chip */}
-          <motion.div custom={4} variants={fade} className="mt-8 inline-flex items-center gap-3 rounded-full pl-1 pr-4 py-1 bg-white/10 border border-white/15">
-            <div className="flex -space-x-2">
-              {["#F59E0B", "#EC4899", "#10B981", "#38BDF8"].map((c, i) => (
-                <div key={i} className="h-7 w-7 rounded-full border-2 border-[color:var(--b)]" style={{ background: c, ["--b"]: INDIGO_DEEP }} />
+          <span className="hidden md:inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-100 px-3 py-1.5 text-[11px] font-bold text-emerald-700">
+            <BadgeCheck className="h-3.5 w-3.5" /> RBI-regulated NBFC partners
+          </span>
+        </div>
+
+        {/* Editorial split: BIG type left, live simulator right */}
+        <div className="mt-8 grid lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
+          {/* LEFT — Big editorial headline */}
+          <motion.div initial="hidden" animate="show" variants={fade}>
+            <motion.h1 custom={1} variants={fade}
+              className="font-head text-[44px] md:text-6xl lg:text-[76px] leading-[0.95] font-black tracking-tight"
+              style={{ color: NAVY }}>
+              Fees{" "}
+              <span className="relative inline-block px-1">
+                <span className="relative z-10" style={{ color: INDIGO }}>upfront.</span>
+                <span className="absolute inset-x-1 bottom-2 h-2.5" style={{ background: "#FBBF24", opacity: 0.7, zIndex: 0 }} />
+              </span>
+              <br />
+              EMIs{" "}
+              <span className="italic font-light tracking-tight">for parents.</span>
+              <br />
+              <span className="text-slate-400">Reconciled live.</span>
+            </motion.h1>
+
+            <motion.p custom={2} variants={fade}
+              className="mt-6 max-w-xl text-[16px] md:text-[17px] leading-relaxed" style={{ color: SUBTLE }}>
+              India&apos;s most advanced <b style={{ color: NAVY }}>fee payment platform</b> for schools, colleges and skilling institutes — 8+ payment rails, 0% EMIs and live analytics in one place.
+            </motion.p>
+
+            <motion.div custom={3} variants={fade} className="mt-8 flex flex-wrap items-center gap-3">
+              <a href="#demo">
+                <Button className="h-12 px-6 rounded-none font-bold text-white text-[13px] tracking-wide"
+                  style={{ background: INDIGO, boxShadow: `4px 4px 0px ${NAVY}` }}>
+                  Schedule a demo <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </a>
+              <a href="#how-it-works" className="inline-flex items-center gap-2 text-[13px] font-bold" style={{ color: NAVY }}>
+                <span className="h-8 w-8 rounded-full border-2 flex items-center justify-center" style={{ borderColor: NAVY }}>
+                  <PlayCircle className="h-4 w-4" />
+                </span>
+                Watch 2-min explainer
+              </a>
+            </motion.div>
+
+            {/* Inline trust row */}
+            <motion.div custom={4} variants={fade}
+              className="mt-10 grid grid-cols-3 max-w-lg gap-6 pt-6 border-t border-slate-100">
+              {[
+                { k: "6,500+", v: "Institutions" },
+                { k: "50L+", v: "Parents" },
+                { k: "₹4,200 Cr+", v: "Fees processed" },
+              ].map((t) => (
+                <div key={t.v}>
+                  <p className="font-head text-2xl md:text-3xl font-black tracking-tight" style={{ color: NAVY }}>{t.k}</p>
+                  <p className="text-[11px] mt-0.5 uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>{t.v}</p>
+                </div>
               ))}
-            </div>
-            <span className="text-xs text-white/85 font-medium">
-              50 Lakh+ parents · pay 0% EMI in minutes
-            </span>
+            </motion.div>
           </motion.div>
-        </motion.div>
 
-        {/* Hero image + floating cards */}
-        <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative">
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/5] max-w-[440px] mx-auto"
-            style={{ boxShadow: "0 40px 80px -30px rgba(0,0,0,0.45)" }}>
-            <img src={HERO_IMG} alt="Parent and child" className="w-full h-full object-cover" />
-            <div className="absolute inset-0" style={{
-              background: "linear-gradient(180deg, transparent 60%, rgba(15,26,91,0.35) 100%)",
-            }} />
-          </div>
-          {/* floating card left */}
-          <div className="hidden md:block absolute -left-6 top-16 rounded-2xl bg-white shadow-xl p-3 pr-4 flex items-center gap-3 min-w-[210px]"
-            style={{ boxShadow: "0 20px 40px -15px rgba(0,0,0,0.25)" }}>
-            <div className="h-9 w-9 rounded-lg flex items-center justify-center" style={{ background: "#DCFCE7", color: "#16A34A" }}>
-              <BadgeCheck className="h-5 w-5" />
+          {/* RIGHT — Fee flow simulator card */}
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15 }}
+            className="relative">
+            {/* offset navy backdrop for GenZ hard-shadow effect */}
+            <div className="absolute inset-0 translate-x-2.5 translate-y-2.5 rounded-2xl" style={{ background: NAVY }} />
+
+            <div className="relative rounded-2xl bg-white border-2 p-6" style={{ borderColor: NAVY }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="h-8 w-8 rounded-lg flex items-center justify-center"
+                    style={{ background: INDIGO, color: "#fff" }}>
+                    <IndianRupee className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>Live simulator</p>
+                    <p className="font-head font-black text-[15px]" style={{ color: NAVY }}>Fee → EMI flow</p>
+                  </div>
+                </div>
+                <span className="rounded-full bg-emerald-50 border border-emerald-100 px-2.5 py-1 text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
+                  0% Interest
+                </span>
+              </div>
+
+              {/* Annual fee bar */}
+              <div className="mt-6">
+                <p className="text-[11px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>Annual fee</p>
+                <p className="font-head text-4xl font-black tracking-tight mt-1" style={{ color: NAVY }}>₹1,00,000</p>
+                <div className="mt-3 h-2.5 rounded-full overflow-hidden" style={{ background: INDIGO_TINT }}>
+                  <div className="h-full" style={{ width: "100%", background: `linear-gradient(90deg, ${INDIGO}, ${INDIGO_DEEP})` }} />
+                </div>
+              </div>
+
+              {/* Split into EMI ticks */}
+              <div className="mt-6">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>Split into 10 monthly EMIs</p>
+                  <p className="text-[11px] font-bold" style={{ color: INDIGO }}>₹10,000/mo</p>
+                </div>
+                <div className="mt-3 grid grid-cols-10 gap-1">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div key={i} className="h-8 rounded-sm relative overflow-hidden" style={{ background: INDIGO_TINT }}>
+                      <motion.div
+                        className="absolute inset-0"
+                        style={{ background: `linear-gradient(180deg, ${INDIGO}, ${INDIGO_DEEP})` }}
+                        initial={{ y: "100%" }}
+                        animate={{ y: "0%" }}
+                        transition={{ delay: 0.4 + i * 0.06, duration: 0.35, ease: "easeOut" }}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-1.5 flex justify-between text-[9px] font-bold" style={{ color: SUBTLE }}>
+                  <span>Apr</span><span>Jan</span>
+                </div>
+              </div>
+
+              {/* Recipient row */}
+              <div className="mt-6 rounded-lg border p-3 flex items-center gap-3" style={{ borderColor: INDIGO_TINT, background: "#FCFCFF" }}>
+                <span className="h-9 w-9 rounded-lg flex items-center justify-center" style={{ background: "#DCFCE7", color: "#16A34A" }}>
+                  <BadgeCheck className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>School settlement</p>
+                  <p className="font-head font-black text-[13.5px]" style={{ color: NAVY }}>₹1,00,000 credited · T+1</p>
+                </div>
+                <span className="ml-auto text-[10px] font-bold rounded-md px-2 py-1"
+                  style={{ background: INDIGO_TINT, color: INDIGO }}>Upfront</span>
+              </div>
             </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500">Pre-approved</p>
-              <p className="text-sm font-head font-bold" style={{ color: NAVY }}>0% EMI · ₹1,20,000</p>
+
+            {/* Floating "Pre-approved" pill */}
+            <div className="hidden md:flex absolute -left-6 -top-4 items-center gap-2 rounded-full bg-white px-3 py-1.5 shadow-lg border-2"
+              style={{ borderColor: NAVY }}>
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[11px] font-bold" style={{ color: NAVY }}>Pre-approved · 0% EMI</span>
             </div>
-          </div>
-          {/* floating card right */}
-          <div className="hidden md:flex absolute -right-4 bottom-14 rounded-2xl bg-white shadow-xl p-3 pr-4 items-center gap-3 min-w-[210px]"
-            style={{ boxShadow: "0 20px 40px -15px rgba(0,0,0,0.25)" }}>
-            <div className="h-9 w-9 rounded-lg flex items-center justify-center" style={{ background: INDIGO_TINT, color: INDIGO }}>
-              <MessageCircle className="h-5 w-5" />
+
+            {/* Floating WhatsApp reminder chip */}
+            <div className="hidden md:flex absolute -right-4 bottom-8 items-center gap-2 rounded-xl bg-white p-2.5 pr-3 border border-slate-200 shadow-lg">
+              <span className="h-8 w-8 rounded-lg flex items-center justify-center" style={{ background: INDIGO_TINT, color: INDIGO }}>
+                <MessageCircle className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-[9px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>WhatsApp</p>
+                <p className="text-[11.5px] font-head font-bold" style={{ color: NAVY }}>Reminder sent · Class 10</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500">WhatsApp</p>
-              <p className="text-sm font-head font-bold" style={{ color: NAVY }}>Reminder sent · Class 10</p>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
-
-      {/* curved bottom */}
-      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" className="block w-full h-[46px] relative -mb-px" aria-hidden>
-        <path d="M0 60 L1440 60 L1440 0 C 1080 60, 360 60, 0 0 Z" fill="#ffffff" />
-      </svg>
     </section>
   );
 }
@@ -373,7 +446,7 @@ function FlexCard() {
           <div className="h-8 w-8 rounded-full flex items-center justify-center" style={{ background: INDIGO_TINT, color: INDIGO }}>
             <RefreshCw className="h-4 w-4" />
           </div>
-          <span className="text-[11px] font-bold tracking-widest uppercase" style={{ color: NAVY }}>FLEX</span>
+          <span className="text-[15px] font-head font-black" style={{ color: NAVY }}>Sync</span>
         </div>
         <div className="flex items-center gap-2 text-slate-400">
           <Calendar className="h-3.5 w-3.5" />
@@ -428,11 +501,19 @@ function ScanPayCard() {
   return (
     <div className="rounded-2xl bg-white text-slate-800 w-full p-4 shadow-xl">
       <div className="flex items-center justify-between">
-        <p className="font-head font-black text-[16px]" style={{ color: NAVY }}>Scan &amp; pay</p>
-        <span className="text-[11px] font-bold tracking-widest" style={{ color: INDIGO }}>PAY</span>
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full flex items-center justify-center" style={{ background: INDIGO_TINT, color: INDIGO }}>
+            <Zap className="h-4 w-4" />
+          </div>
+          <span className="text-[15px] font-head font-black" style={{ color: NAVY }}>Zap</span>
+        </div>
+        <div className="flex items-center gap-2 text-slate-400">
+          <Calendar className="h-3.5 w-3.5" />
+          <Bell className="h-3.5 w-3.5" />
+        </div>
       </div>
       <div className="mt-4 flex flex-col items-center">
-        <div className="rounded-lg border-2 border-slate-800 p-2.5 bg-white">
+        <div className="rounded-lg border-2 border-slate-800 p-2.5 bg-white relative">
           <div className="grid grid-cols-15 gap-[1.5px]" style={{ gridTemplateColumns: "repeat(15, 8px)" }}>
             {cells.map((on, i) => (
               <div
@@ -442,6 +523,9 @@ function ScanPayCard() {
               />
             ))}
           </div>
+          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-md bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1">
+            Scan and Pay
+          </span>
         </div>
         <p className="mt-2 text-[11px] text-slate-400">Scan the QR with any UPI app</p>
       </div>
@@ -469,7 +553,7 @@ function CredCard() {
           <div className="h-8 w-8 rounded-full flex items-center justify-center" style={{ background: INDIGO_TINT, color: INDIGO }}>
             <BadgePercent className="h-4 w-4" />
           </div>
-          <span className="text-[11px] font-bold tracking-widest uppercase" style={{ color: NAVY }}>CRED</span>
+          <span className="text-[15px] font-head font-black" style={{ color: NAVY }}>Split</span>
         </div>
         <div className="flex items-center gap-2 text-slate-400">
           <Calendar className="h-3.5 w-3.5" />
