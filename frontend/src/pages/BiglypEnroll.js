@@ -57,9 +57,10 @@ const LIVE_FEATURES = [
 ];
 
 const PARENT_FEATURES = [
-  { icon: WalletIcon, title: "Convenient & Flexible EMIs", desc: "Split annual fees into 3-12 monthly instalments — pay comfortably as you earn." },
+  { icon: WalletIcon, title: "Pay in Monthly Payments at Zero Extra Cost", desc: "Split annual fees into 3-12 monthly instalments — pay comfortably as you earn." },
   { icon: Sparkles, title: "0% Interest, No Hidden Charges", desc: "True no-cost EMI. What you owe is what you pay — never a rupee more." },
-  { icon: Bell, title: "Auto-Debit Subscriptions", desc: "Set it once, never miss a deadline. Full control, cancel anytime." },
+  { icon: ShieldCheck, title: "Insurance Protection", desc: "Ensure lasting protection for your child's education — bundled cover included with every plan." },
+  { icon: Bell, title: "Hassle-Free Fee Management", desc: "Auto-debit, timely WhatsApp reminders, and personalised payment links keep every due on track." },
   { icon: Gift, title: "Upfront Discounts", desc: "Pay full year in one shot and unlock exclusive early-bird savings." },
 ];
 
@@ -1038,6 +1039,470 @@ function Footer() {
   );
 }
 
+/* --------- EMI How It Works (4-step process) ---------- */
+function EMIHowItWorks() {
+  const steps = [
+    {
+      n: "01",
+      icon: Building2,
+      title: "Institute & Biglyp partner",
+      desc: "Your institution partners with Biglyp to offer the No-Cost EMI facility to every parent — configured in under an hour.",
+      accent: "#F59E0B",
+    },
+    {
+      n: "02",
+      icon: UserCheck,
+      title: "Parents sign up in 2 minutes",
+      desc: "Parents complete a fully-digital signup — PAN, KYC, mandate — with instant CIBIL soft pre-check and no impact on credit score.",
+      accent: "#EC4899",
+    },
+    {
+      n: "03",
+      icon: Landmark,
+      title: "Institute gets full-year fees upfront",
+      desc: "Biglyp settles the entire annual fee directly to your school's account on behalf of the parent — as a single lump-sum.",
+      accent: "#10B981",
+    },
+    {
+      n: "04",
+      icon: RefreshCw,
+      title: "Parents repay in easy EMIs",
+      desc: "Parents pay Biglyp back in 3–12 monthly instalments via UPI AutoPay or eNACH — at 0% interest, throughout the year.",
+      accent: INDIGO,
+    },
+  ];
+  return (
+    <section id="how-it-works" className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center max-w-3xl mx-auto">
+          <span className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest"
+            style={{ background: INDIGO_TINT, color: INDIGO }}>
+            <RefreshCw className="h-3.5 w-3.5" /> How the EMI facility works
+          </span>
+          <h2 className="font-head mt-5 text-4xl md:text-5xl font-black tracking-tight leading-[1.05]" style={{ color: NAVY }}>
+            Full-year fees upfront for you.<br className="hidden md:block" />
+            Monthly EMIs for your parents.
+          </h2>
+          <p className="mt-5 text-[15px] md:text-base" style={{ color: SUBTLE }}>
+            A simple 4-step flow — no code, no capex, no risk. Go live in 24 hours.
+          </p>
+        </div>
+
+        <div className="mt-14 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {steps.map((s, i) => {
+            const Icon = s.icon;
+            return (
+              <motion.div
+                key={s.n}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="relative rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-[0_20px_50px_-30px_rgba(15,26,91,0.35)] transition-shadow"
+              >
+                <div className="flex items-start justify-between">
+                  <span className="font-head text-4xl font-black tracking-tight" style={{ color: s.accent }}>{s.n}</span>
+                  <div className="h-11 w-11 rounded-xl flex items-center justify-center"
+                    style={{ background: s.accent + "1A", color: s.accent }}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                </div>
+                <h3 className="font-head mt-6 text-[19px] font-black tracking-tight leading-tight" style={{ color: NAVY }}>
+                  {s.title}
+                </h3>
+                <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: SUBTLE }}>
+                  {s.desc}
+                </p>
+                {i < steps.length - 1 && (
+                  <ArrowRight className="hidden lg:block absolute -right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* --------- Sample Illustration (Quarterly vs Monthly EMI) ---------- */
+function SampleIllustration() {
+  const typical = [
+    { m: "April", a: 30000 }, { m: "May", a: null }, { m: "June", a: null },
+    { m: "July", a: 25000 }, { m: "August", a: null }, { m: "September", a: 25000 },
+    { m: "October", a: null }, { m: "November", a: null }, { m: "December", a: null },
+    { m: "January", a: 25000 },
+  ];
+  const monthly = [
+    "April","May","June","July","August","September","October","November","December","January",
+  ].map((m) => ({ m, a: 10000 }));
+  const fmt = (n) => n == null ? "" : `₹${n.toLocaleString("en-IN")}`;
+
+  return (
+    <section id="illustration" className="py-20" style={{ background: INDIGO_TINT }}>
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center max-w-3xl mx-auto">
+          <span className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest"
+            style={{ color: INDIGO }}>
+            <BadgePercent className="h-3.5 w-3.5" /> Sample illustration
+          </span>
+          <h2 className="font-head mt-5 text-4xl md:text-5xl font-black tracking-tight leading-[1.05]" style={{ color: NAVY }}>
+            Pay ₹1,00,000 in easy<br className="hidden md:block" /> monthly payments
+          </h2>
+          <p className="mt-5 text-[15px] md:text-base" style={{ color: SUBTLE }}>
+            Same annual fee. Better cash-flow for parents. Full amount upfront for the school.
+          </p>
+        </div>
+
+        <div className="mt-14 grid md:grid-cols-2 gap-6">
+          {/* Typical (Quarterly, lumpy) */}
+          <div className="rounded-2xl bg-white border border-slate-200 p-6 md:p-8">
+            <div className="flex items-center gap-3">
+              <span className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
+                <Calendar className="h-4.5 w-4.5 text-slate-500" />
+              </span>
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-slate-500">Without Biglyp</p>
+                <h3 className="font-head text-xl font-black" style={{ color: NAVY }}>Typical Quarterly Structure</h3>
+              </div>
+            </div>
+            <p className="mt-3 text-[13px]" style={{ color: SUBTLE }}>
+              Parent pays in 4 large quarterly instalments directly to the school.
+            </p>
+            <div className="mt-5 overflow-hidden rounded-xl border border-slate-100">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 text-slate-500">
+                    <th className="text-left px-4 py-2.5 font-bold text-[11px] uppercase tracking-widest">Month</th>
+                    <th className="text-right px-4 py-2.5 font-bold text-[11px] uppercase tracking-widest">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {typical.map((r) => (
+                    <tr key={r.m} className="border-t border-slate-100">
+                      <td className="px-4 py-2 text-slate-700">{r.m}</td>
+                      <td className={`px-4 py-2 text-right font-semibold ${r.a ? "text-slate-900" : "text-slate-300"}`}>
+                        {r.a ? fmt(r.a) : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="border-t-2 border-slate-200 bg-slate-50">
+                    <td className="px-4 py-2.5 font-head font-black" style={{ color: NAVY }}>Total</td>
+                    <td className="px-4 py-2.5 text-right font-head font-black" style={{ color: NAVY }}>₹1,00,000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Biglyp (Monthly, even) */}
+          <div className="rounded-2xl border p-6 md:p-8 text-white relative overflow-hidden"
+            style={{ background: `linear-gradient(180deg, ${INDIGO} 0%, ${INDIGO_DEEP} 100%)`, borderColor: INDIGO_DEEP }}>
+            <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10" />
+            <div className="flex items-center gap-3 relative">
+              <span className="h-9 w-9 rounded-lg bg-white/20 flex items-center justify-center">
+                <Sparkles className="h-4.5 w-4.5 text-white" />
+              </span>
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-white/80">With Biglyp</p>
+                <h3 className="font-head text-xl font-black">Easy Monthly Payments</h3>
+              </div>
+              <span className="ml-auto rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest">0% Interest</span>
+            </div>
+            <p className="mt-3 text-[13px] text-white/85 relative">
+              Parent pays Biglyp in equal, predictable monthly EMIs — no bill-shock.
+            </p>
+            <div className="mt-5 overflow-hidden rounded-xl bg-white/10 border border-white/15 relative">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-white/10 text-white/75">
+                    <th className="text-left px-4 py-2.5 font-bold text-[11px] uppercase tracking-widest">Month</th>
+                    <th className="text-right px-4 py-2.5 font-bold text-[11px] uppercase tracking-widest">Monthly EMI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {monthly.map((r) => (
+                    <tr key={r.m} className="border-t border-white/10">
+                      <td className="px-4 py-2 text-white/90">{r.m}</td>
+                      <td className="px-4 py-2 text-right font-semibold">{fmt(r.a)}</td>
+                    </tr>
+                  ))}
+                  <tr className="border-t-2 border-white/25 bg-white/15">
+                    <td className="px-4 py-2.5 font-head font-black">Total</td>
+                    <td className="px-4 py-2.5 text-right font-head font-black">₹1,00,000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* --------- How would the school receive the annual fee? ---------- */
+function SchoolReceivesFee() {
+  const options = [
+    {
+      icon: Zap,
+      badge: "Preferred",
+      title: "Full-year fees upfront",
+      desc: "Biglyp settles the entire annual fee to your school account in one lump-sum on behalf of every enrolled parent — day one.",
+      bullets: [
+        "T+1 settlement to your existing bank account",
+        "Boost cash flow for infra & operations",
+        "No reconciliation with individual EMIs",
+      ],
+      dark: true,
+    },
+    {
+      icon: Calendar,
+      badge: "Flexible",
+      title: "Match your existing schedule",
+      desc: "Prefer term-wise or quarterly settlements? Receive fees from Biglyp aligned to your school's traditional collection calendar.",
+      bullets: [
+        "Term / quarterly / half-yearly options",
+        "Zero change to your accounting cadence",
+        "Parents still pay comfortably in monthly EMIs",
+      ],
+      dark: false,
+    },
+  ];
+  return (
+    <section id="settlement" className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center max-w-3xl mx-auto">
+          <span className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest"
+            style={{ background: INDIGO_TINT, color: INDIGO }}>
+            <Landmark className="h-3.5 w-3.5" /> Settlement to your school
+          </span>
+          <h2 className="font-head mt-5 text-4xl md:text-5xl font-black tracking-tight leading-[1.05]" style={{ color: NAVY }}>
+            How would the school receive<br className="hidden md:block" /> the annual fee?
+          </h2>
+          <p className="mt-5 text-[15px] md:text-base" style={{ color: SUBTLE }}>
+            Two clean options. You pick what suits your finance team best.
+          </p>
+        </div>
+
+        <div className="mt-14 grid md:grid-cols-2 gap-6">
+          {options.map((o, i) => {
+            const Icon = o.icon;
+            return (
+              <motion.div
+                key={o.title}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className={`relative rounded-2xl p-8 md:p-10 border ${o.dark ? "text-white" : "text-slate-800"}`}
+                style={o.dark
+                  ? { background: `linear-gradient(160deg, ${NAVY} 0%, ${INDIGO_DEEP} 100%)`, borderColor: INDIGO_DEEP }
+                  : { background: "#FFFFFF", borderColor: "#E2E8F0" }}
+              >
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest ${o.dark ? "bg-white/15 text-white" : "bg-slate-100 text-slate-600"}`}>
+                  <BadgeCheck className="h-3 w-3" /> {o.badge}
+                </span>
+                <div className="mt-5 flex items-center gap-3">
+                  <span className={`h-12 w-12 rounded-xl flex items-center justify-center ${o.dark ? "bg-white/15" : "bg-brand-tint"}`}
+                    style={o.dark ? {} : { color: INDIGO }}>
+                    <Icon className="h-6 w-6" />
+                  </span>
+                  <h3 className="font-head text-2xl md:text-[28px] font-black tracking-tight leading-tight" style={o.dark ? {} : { color: NAVY }}>
+                    {o.title}
+                  </h3>
+                </div>
+                <p className={`mt-4 text-[14.5px] leading-relaxed ${o.dark ? "text-white/85" : ""}`} style={o.dark ? {} : { color: SUBTLE }}>
+                  {o.desc}
+                </p>
+                <ul className="mt-6 space-y-2.5">
+                  {o.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-2.5 text-[13.5px]">
+                      <span className={`mt-0.5 h-5 w-5 rounded-full flex items-center justify-center shrink-0 ${o.dark ? "bg-white/20" : "bg-brand-tint"}`}>
+                        <Check className={`h-3 w-3 ${o.dark ? "text-white" : ""}`} style={o.dark ? {} : { color: INDIGO }} />
+                      </span>
+                      <span className={o.dark ? "text-white/90" : ""} style={o.dark ? {} : { color: TEXT }}>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* --------- Introducing Biglyp ARC (SaaS platform mock dashboard) ---------- */
+function BiglypARC() {
+  const kpis = [
+    { label: "Total Fee Received", value: "₹50,00,000", students: "2,100 students", tone: "emerald" },
+    { label: "Total Fee Unpaid", value: "₹50,00,000", students: "400 students", tone: "slate" },
+    { label: "Total Fee Due", value: "₹25,00,000", students: "100 students", tone: "amber" },
+    { label: "Total Fee Overdue", value: "₹25,00,000", students: "200 students", tone: "rose" },
+  ];
+  const toneMap = {
+    emerald: { bg: "#10B98115", text: "#059669", dot: "#10B981" },
+    slate:   { bg: "#64748B15", text: "#334155", dot: "#64748B" },
+    amber:   { bg: "#F59E0B15", text: "#B45309", dot: "#F59E0B" },
+    rose:    { bg: "#F43F5E15", text: "#BE123C", dot: "#F43F5E" },
+  };
+  const capabilities = [
+    { icon: Users, t: "Student management", d: "One roster across grades, sections and campuses." },
+    { icon: CreditCard, t: "Multiple payment choices", d: "Offer UPI, cards, netbanking, EMIs and cash from one link." },
+    { icon: MessageCircle, t: "Communication at a click", d: "Bulk WhatsApp, SMS and email reminders — templated." },
+    { icon: FileCheck2, t: "One-time configuration", d: "Set up fee heads once. Reuse for every batch." },
+    { icon: Receipt, t: "Online + offline collections", d: "Track counter-cash, cheques and gateway payments together." },
+    { icon: PieChart, t: "Data at your fingertips", d: "Live KPIs, aging buckets and reconciliation reports." },
+  ];
+  const reports = {
+    received: ["Class-wise", "Fee-head wise", "Payment-mode wise", "Custom report"],
+    due: ["Class-wise", "Fee-head wise", "Custom report"],
+  };
+  return (
+    <section id="arc" className="py-20" style={{ background: "#0A0F2C" }}>
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center max-w-3xl mx-auto">
+          <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-white">
+            <Sparkle className="h-3.5 w-3.5" /> Introducing Biglyp ARC
+          </span>
+          <h2 className="font-head mt-5 text-4xl md:text-5xl font-black tracking-tight leading-[1.05] text-white">
+            A finance command-centre<br className="hidden md:block" /> for modern institutes
+          </h2>
+          <p className="mt-5 text-[15px] md:text-base text-white/70">
+            Manage your institute&apos;s finances effortlessly with real-time reconciliation, live tracking, accounting made simple, and one-click fee reminders — used by <span className="font-bold text-white">2,000+ institutes</span>.
+          </p>
+        </div>
+
+        {/* Mock dashboard */}
+        <div className="mt-14 rounded-3xl bg-white p-4 md:p-6 shadow-[0_40px_100px_-40px_rgba(37,64,232,0.6)]">
+          {/* Dashboard header */}
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+              <p className="ml-4 text-[12px] font-bold uppercase tracking-widest text-slate-500">Biglyp ARC · Dashboard</p>
+            </div>
+            <div className="hidden md:flex items-center gap-2">
+              <button className="rounded-lg border border-slate-200 px-3 py-1.5 text-[12px] font-semibold text-slate-600 hover:bg-slate-50">
+                Download Reports
+              </button>
+              <span className="rounded-lg px-2.5 py-1 text-[11px] font-bold" style={{ background: INDIGO_TINT, color: INDIGO }}>
+                Fee total to collect · ₹1,50,00,000
+              </span>
+            </div>
+          </div>
+
+          {/* KPI Cards */}
+          <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {kpis.map((k) => {
+              const t = toneMap[k.tone];
+              return (
+                <div key={k.label} className="rounded-xl border border-slate-100 p-4">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full" style={{ background: t.dot }} />
+                    <p className="text-[11px] uppercase tracking-widest font-bold text-slate-500">{k.label}</p>
+                  </div>
+                  <p className="mt-2 font-head text-2xl font-black tracking-tight" style={{ color: NAVY }}>{k.value}</p>
+                  <p className="text-[12px] mt-0.5" style={{ color: SUBTLE }}>{k.students}</p>
+                  {(k.tone === "amber" || k.tone === "rose") && (
+                    <button className="mt-3 w-full rounded-lg text-[11px] font-bold py-1.5"
+                      style={{ background: t.bg, color: t.text }}>
+                      Send payment reminder
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Reports + Track fee panel */}
+          <div className="mt-5 grid md:grid-cols-3 gap-4">
+            <div className="md:col-span-2 rounded-xl border border-slate-100 p-5">
+              <div className="flex items-center justify-between">
+                <h4 className="font-head text-lg font-black tracking-tight" style={{ color: NAVY }}>Reports</h4>
+                <span className="text-[11px] uppercase tracking-widest font-bold text-slate-400">Auto-generated</span>
+              </div>
+              <div className="mt-4 grid sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[13px] font-bold" style={{ color: TEXT }}>Fee Received Report</p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {reports.received.map((r) => (
+                      <span key={r} className="rounded-md px-2.5 py-1 text-[11px] font-semibold border border-slate-200 text-slate-600 bg-slate-50">{r}</span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold" style={{ color: TEXT }}>Fee Due Report</p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {reports.due.map((r) => (
+                      <span key={r} className="rounded-md px-2.5 py-1 text-[11px] font-semibold border border-slate-200 text-slate-600 bg-slate-50">{r}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-xl p-5 text-white" style={{ background: `linear-gradient(160deg, ${INDIGO} 0%, ${INDIGO_DEEP} 100%)` }}>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                <p className="text-[11px] uppercase tracking-widest font-bold">Track fee</p>
+              </div>
+              <h4 className="font-head mt-2 text-lg font-black tracking-tight">Manage dues & paid fees</h4>
+              <p className="mt-2 text-[12.5px] text-white/85">One live view of every rupee owed and every rupee received — down to the student, class and payment mode.</p>
+              <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg bg-white/10 py-2">
+                  <p className="font-head text-lg font-black">2,000+</p>
+                  <p className="text-[10px] uppercase tracking-widest text-white/75">Institutes</p>
+                </div>
+                <div className="rounded-lg bg-white/10 py-2">
+                  <p className="font-head text-lg font-black">Live</p>
+                  <p className="text-[10px] uppercase tracking-widest text-white/75">Reconcile</p>
+                </div>
+                <div className="rounded-lg bg-white/10 py-2">
+                  <p className="font-head text-lg font-black">24h</p>
+                  <p className="text-[10px] uppercase tracking-widest text-white/75">Go-live</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Capabilities */}
+        <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {capabilities.map((c) => {
+            const Icon = c.icon;
+            return (
+              <div key={c.t} className="rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center">
+                    <Icon className="h-5 w-5 text-white" />
+                  </span>
+                  <h4 className="font-head text-[16px] font-black tracking-tight text-white">{c.t}</h4>
+                </div>
+                <p className="mt-3 text-[13px] leading-relaxed text-white/75">{c.d}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Contact strip (Scan to WhatsApp / mail) */}
+        <div className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-5 md:p-6 flex flex-col md:flex-row items-center gap-4 md:gap-6 justify-between">
+          <div className="flex items-center gap-4">
+            <div className="h-14 w-14 rounded-xl bg-white flex items-center justify-center">
+              <QrCode className="h-8 w-8" style={{ color: NAVY }} />
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-widest font-bold text-white/70">Scan to WhatsApp</p>
+              <p className="font-head text-lg font-black text-white">Talk to a Biglyp ARC specialist</p>
+            </div>
+          </div>
+          <a href="mailto:hello@biglyp.com" className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-[13px] font-bold tracking-tight" style={{ color: NAVY }}>
+            <Mail className="h-4 w-4" /> hello@biglyp.com <ArrowUpRight className="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* --------- Page shell ---------- */
 export default function BiglypEnroll() {
   return (
@@ -1046,8 +1511,12 @@ export default function BiglypEnroll() {
       <Hero />
       <StatStrip />
       <LogoWall />
+      <EMIHowItWorks />
       <PaymentOptions />
+      <SampleIllustration />
+      <SchoolReceivesFee />
       <AudienceTabs />
+      <BiglypARC />
       <WhyChoose />
       <Testimonials />
       <MediaStrip />
