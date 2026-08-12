@@ -12,7 +12,7 @@ import {
   ArrowRight, Sparkles, ChevronDown, Star, Check, GraduationCap, Wallet,
   Brain, Search, FileCheck2, BookOpenCheck, Award, Landmark, Calculator, ShieldCheck,
   Gauge, LineChart, Globe, Building2, Rocket, Mail, PlayCircle, Quote,
-  Users, TrendingUp, Bell, CreditCard, QrCode, Zap, Layers,
+  Users, TrendingUp, Bell, CreditCard, QrCode, Zap, Layers, X,
 } from 'lucide-react';
 
 /* ---- Indigo / violet palette (aligned with reference mockups) ---- */
@@ -62,13 +62,13 @@ function Hero() {
       <Box className="absolute top-52 -left-28 h-96 w-96 rounded-full blur-3xl opacity-50" style={{ background: 'radial-gradient(circle, #DDD6FE, transparent 70%)' }} />
       <Box className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: `radial-gradient(${INDIGO} 1px, transparent 1px)`, backgroundSize: '26px 26px' }} />
 
-      <Box className="relative max-w-7xl mx-auto px-5 pt-20 pb-20 grid lg:grid-cols-[1.08fr_0.92fr] gap-14 items-center">
+      <Box className="relative max-w-7xl mx-auto px-5 pt-12 pb-14 sm:pt-20 sm:pb-20 grid lg:grid-cols-[1.08fr_0.92fr] gap-10 lg:gap-14 items-center">
         <Box>
           <Box component="span" className="reveal inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-widest" style={{ background: 'white', color: INDIGO_DEEP, border: '1px solid #C7D2FE', boxShadow: '0 8px 24px -12px rgba(79,70,229,0.4)' }}>
             <Sparkles className="h-3.5 w-3.5" /> Biglyp · Student Success Platform
           </Box>
 
-          <Typography variant="inherit" component="h1" className="reveal-1 font-head mt-6 text-5xl md:text-6xl lg:text-[68px] font-black tracking-tight leading-[1.02]" style={{ color: NAVY }}>
+          <Typography variant="inherit" component="h1" className="reveal-1 font-head mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-[68px] font-black tracking-tight leading-[1.04] lg:leading-[1.02]" style={{ color: NAVY }}>
             Building{' '}
             <span className="italic bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(120deg, ${VIOLET}, ${INDIGO_DEEP})` }}>future-ready</span>{' '}
             <span className="relative inline-block">
@@ -124,7 +124,7 @@ function Hero() {
 }
 
 /* =================== STATS (animated counters) =================== */
-function CountUp({ end, suffix = '', duration = 1500 }: { end: number; suffix?: string; duration?: number }) {
+function CountUp({ end, prefix = '', suffix = '', decimals = 0, duration = 1500 }: { end: number; prefix?: string; suffix?: string; decimals?: number; duration?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [val, setVal] = useState(0);
   const started = useRef(false);
@@ -138,7 +138,7 @@ function CountUp({ end, suffix = '', duration = 1500 }: { end: number; suffix?: 
         const tick = (now: number) => {
           const p = Math.min((now - t0) / duration, 1);
           const eased = 1 - Math.pow(1 - p, 3);
-          setVal(Math.round(end * eased));
+          setVal(end * eased);
           if (p < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
@@ -147,7 +147,8 @@ function CountUp({ end, suffix = '', duration = 1500 }: { end: number; suffix?: 
     io.observe(el);
     return () => io.disconnect();
   }, [end, duration]);
-  return <span ref={ref} data-testid="stat-counter">{val.toLocaleString('en-IN')}{suffix}</span>;
+  const disp = val.toLocaleString('en-IN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  return <span ref={ref} data-testid="stat-counter">{prefix}{disp}{suffix}</span>;
 }
 
 const STATS = [
@@ -249,14 +250,19 @@ function EnrollVisual() {
 /* -- 02 · Career Hub: psychometrics radar + discovery -- */
 function CareerVisual() {
   const axes = ['APTITUDE', 'INTERESTS', 'PERSONALITY', 'VALUES', 'SKILLS'];
-  const vals = [0.72, 0.9, 0.85, 0.55, 0.68];
+  const PROFILES = [
+    { key: 'Ananya', name: "Ananya's profile", meta: 'Class 11 · Science stream', vals: [0.72, 0.9, 0.85, 0.55, 0.68], readiness: 72, rec: 'Design & Product Engineering', fit: '92% fit', color: INDIGO },
+    { key: 'Rahul', name: "Rahul's profile", meta: 'Class 12 · Science stream', vals: [0.92, 0.6, 0.7, 0.84, 0.9], readiness: 81, rec: 'Data Science & AI Research', fit: '95% fit', color: '#7C3AED' },
+  ];
+  const [pi, setPi] = useState(0);
+  const p = PROFILES[pi];
   const cx = 120, cy = 110, R = 82;
   const pt = (i: number, f: number) => {
     const a = (-90 + i * 72) * Math.PI / 180;
     return [cx + Math.cos(a) * R * f, cy + Math.sin(a) * R * f];
   };
   const ring = (f: number) => axes.map((_, i) => pt(i, f).join(',')).join(' ');
-  const data = vals.map((v, i) => pt(i, v).join(',')).join(' ');
+  const data = p.vals.map((v, i) => pt(i, v).join(',')).join(' ');
   const unis = [
     { n: 'U of Toronto', c: 'B.Sc. Computer Science', f: '#21', fee: '₹32L / yr' },
     { n: 'UBC Vancouver', c: 'B.Sc. Data Science', f: '#38', fee: '₹28L / yr' },
@@ -265,18 +271,27 @@ function CareerVisual() {
   return (
     <Box className="mockup-hover relative">
       {/* Radar profile card */}
-      <Box className="rounded-[26px] bg-white p-6 shadow-[0_36px_70px_-34px_rgba(79,70,229,0.5)] ring-1 ring-indigo-100/70">
-        <Box className="flex items-center justify-between">
+      <Box className="rounded-[26px] bg-white p-5 sm:p-6 shadow-[0_36px_70px_-34px_rgba(79,70,229,0.5)] ring-1 ring-indigo-100/70">
+        <Box className="flex items-center justify-between gap-2">
           <Box component="span" className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white" style={{ background: grad }}><Brain className="h-3.5 w-3.5" /> Psychometrics</Box>
-          <Box component="span" className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400"><Box className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live scan</Box>
+          {/* Compare toggle */}
+          <Box className="flex items-center gap-0.5 rounded-full bg-slate-100 p-0.5">
+            {PROFILES.map((pf, i) => (
+              <Box component="button" key={pf.key} onClick={() => setPi(i)} data-testid={`radar-profile-${i}`}
+                className="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all"
+                style={i === pi ? { background: '#fff', color: NAVY, boxShadow: '0 1px 3px rgba(15,23,42,0.15)' } : { color: '#94A3B8', background: 'transparent' }}>
+                {pf.key}
+              </Box>
+            ))}
+          </Box>
         </Box>
         <Box className="mt-4 flex items-end justify-between">
           <Box>
-            <Typography variant="inherit" component="p" className="font-head font-black text-[20px] leading-none" style={{ color: NAVY }}>Ananya&apos;s profile</Typography>
-            <Typography variant="inherit" component="p" className="text-[12px] text-slate-500 mt-1">Class 11 · Science stream</Typography>
+            <Typography variant="inherit" component="p" className="font-head font-black text-[20px] leading-none" style={{ color: NAVY }}>{p.name}</Typography>
+            <Typography variant="inherit" component="p" className="text-[12px] text-slate-500 mt-1">{p.meta}</Typography>
           </Box>
           <Box className="text-right">
-            <Typography variant="inherit" component="p" className="font-head font-black text-[22px] leading-none" style={{ color: INDIGO }}>72</Typography>
+            <Typography variant="inherit" component="p" className="font-head font-black text-[22px] leading-none" style={{ color: p.color }}><CountUp key={p.readiness} end={p.readiness} duration={900} /></Typography>
             <Typography variant="inherit" component="p" className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mt-0.5">Readiness</Typography>
           </Box>
         </Box>
@@ -284,15 +299,15 @@ function CareerVisual() {
           <Box component="svg" viewBox="0 0 240 210" className="w-full max-w-[260px]">
             <defs>
               <linearGradient id="radarFill" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor={VIOLET} stopOpacity="0.45" />
+                <stop offset="0%" stopColor={p.color} stopOpacity="0.45" />
                 <stop offset="100%" stopColor={INDIGO_DEEP} stopOpacity="0.28" />
               </linearGradient>
             </defs>
             {[0.4, 0.7, 1].map((f) => (<polygon key={f} points={ring(f)} fill="none" stroke="#E9E7FB" strokeWidth="1" />))}
             {axes.map((_, i) => { const [x, y] = pt(i, 1); return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#E9E7FB" strokeWidth="1" />; })}
-            <motion.g initial={{ opacity: 0, scale: 0.15 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }} style={{ transformOrigin: `${cx}px ${cy}px`, transformBox: 'view-box' as any }}>
-              <polygon points={data} fill="url(#radarFill)" stroke={INDIGO} strokeWidth="2.5" strokeLinejoin="round" />
-              {vals.map((v, i) => { const [x, y] = pt(i, v); return <circle key={i} cx={x} cy={y} r="3.5" fill="#fff" stroke={INDIGO_DEEP} strokeWidth="2" />; })}
+            <motion.g key={p.key} initial={{ opacity: 0, scale: 0.15 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0.5 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} style={{ transformOrigin: `${cx}px ${cy}px`, transformBox: 'view-box' as any }}>
+              <polygon points={data} fill="url(#radarFill)" stroke={p.color} strokeWidth="2.5" strokeLinejoin="round" />
+              {p.vals.map((v, i) => { const [x, y] = pt(i, v); return <circle key={i} cx={x} cy={y} r="3.5" fill="#fff" stroke={p.color} strokeWidth="2" />; })}
             </motion.g>
             {axes.map((ax, i) => { const [x, y] = pt(i, 1.18); return <text key={ax} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="8.5" fontWeight="700" fill="#94A3B8">{ax}</text>; })}
           </Box>
@@ -300,14 +315,14 @@ function CareerVisual() {
         <Box className="mt-2 rounded-2xl p-3.5 flex items-center justify-between gap-3" style={{ background: TINT }}>
           <Box className="min-w-0">
             <Typography variant="inherit" component="p" className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Top recommendation</Typography>
-            <Typography variant="inherit" component="p" className="font-head font-bold text-[13.5px] mt-0.5 truncate" style={{ color: NAVY }}>Design &amp; Product Engineering</Typography>
+            <Typography variant="inherit" component="p" className="font-head font-bold text-[13.5px] mt-0.5 truncate" style={{ color: NAVY }}>{p.rec}</Typography>
           </Box>
-          <Box component="span" className="rounded-full px-2.5 py-1 text-[11px] font-bold text-white shrink-0" style={{ background: '#10B981' }}>92% fit</Box>
+          <Box component="span" className="rounded-full px-2.5 py-1 text-[11px] font-bold text-white shrink-0" style={{ background: '#10B981' }}>{p.fit}</Box>
         </Box>
       </Box>
 
       {/* Course discovery card */}
-      <Box className="mt-4 rounded-[26px] bg-white p-6 shadow-[0_36px_70px_-34px_rgba(79,70,229,0.5)] ring-1 ring-indigo-100/70">
+      <Box className="mt-4 rounded-[26px] bg-white p-5 sm:p-6 shadow-[0_36px_70px_-34px_rgba(79,70,229,0.5)] ring-1 ring-indigo-100/70">
         <Box className="flex items-center justify-between">
           <Box component="span" className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest" style={{ background: TINT, color: INDIGO_DEEP }}><Globe className="h-3.5 w-3.5" /> Course discovery</Box>
           <Typography variant="inherit" component="p" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">2.5L+ programs</Typography>
@@ -469,7 +484,7 @@ function TabbedSection({ id, eyebrow, title, subtitle, tabs, footer, bg }: any) 
 }
 
 /* =================== PRODUCT SECTION (mockup visuals) =================== */
-function ProductSection({ theme = 'light', reverse = false, index, icon, tag, title, tagline, desc, points, href, accent, visual, note }: any) {
+function ProductSection({ theme = 'light', reverse = false, index, icon, tag, title, tagline, desc, points, href, accent, visual, note, stats }: any) {
   const Icon = icon;
   const dark = theme === 'dark';
   const bg = dark ? darkGrad : theme === 'tint' ? TINT : '#ffffff';
@@ -478,9 +493,9 @@ function ProductSection({ theme = 'light', reverse = false, index, icon, tag, ti
   const chipBg = dark ? 'rgba(255,255,255,0.12)' : TINT;
   const chipText = dark ? '#fff' : INDIGO_DEEP;
   return (
-    <Box component="section" className="py-20 relative overflow-hidden" style={{ background: bg }}>
+    <Box component="section" className="py-14 sm:py-20 relative overflow-hidden" style={{ background: bg }}>
       {dark && <Box className="absolute -top-24 -right-24 h-96 w-96 rounded-full blur-3xl opacity-30" style={{ background: 'radial-gradient(circle, #6366F1, transparent 70%)' }} />}
-      <Box className="relative max-w-7xl mx-auto px-5 grid lg:grid-cols-2 gap-12 items-center">
+      <Box className="relative max-w-7xl mx-auto px-5 grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
         {/* Media / mockup */}
         <Box className={`relative ${reverse ? 'lg:order-2' : ''}`}>{visual}</Box>
         {/* Copy */}
@@ -500,6 +515,18 @@ function ProductSection({ theme = 'light', reverse = false, index, icon, tag, ti
               </Box>
             ))}
           </Box>
+          {stats && (
+            <Box className="mt-7 grid grid-cols-3 gap-3 rounded-2xl p-4" style={{ background: dark ? 'rgba(255,255,255,0.08)' : accent + '0F', border: `1px solid ${dark ? 'rgba(255,255,255,0.12)' : accent + '22'}` }}>
+              {stats.map((st: any) => (
+                <Box key={st.label} className="text-center sm:text-left">
+                  <Typography variant="inherit" component="p" className="font-head font-black text-xl sm:text-2xl leading-none" style={{ color: dark ? '#fff' : accent }}>
+                    <CountUp end={st.end} prefix={st.prefix || ''} suffix={st.suffix || ''} decimals={st.decimals || 0} />
+                  </Typography>
+                  <Typography variant="inherit" component="p" className="text-[10.5px] font-medium mt-1 leading-tight" style={{ color: dark ? 'rgba(255,255,255,0.65)' : '#64748B' }}>{st.label}</Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
           <Box className="mt-7">
             <Link href={href}>
               <Button className="h-11 px-6 rounded-full font-semibold text-sm text-white shadow-lg" style={{ background: dark ? '#fff' : grad, color: dark ? NAVY : '#fff', boxShadow: '0 10px 30px -8px rgba(79,70,229,0.4)' }}>
@@ -519,7 +546,7 @@ function ProductSection({ theme = 'light', reverse = false, index, icon, tag, ti
 /* =================== DARK CTA BAND =================== */
 function DarkCta() {
   return (
-    <Box component="section" className="relative overflow-hidden" style={{ background: darkGrad }}>
+    <Box component="section" id="book-demo" className="relative overflow-hidden" style={{ background: darkGrad }}>
       <Box className="absolute -top-20 -left-16 h-72 w-72 rounded-full blur-3xl opacity-30" style={{ background: 'radial-gradient(circle, #6366F1, transparent 70%)' }} />
       <Box className="relative max-w-4xl mx-auto px-5 py-16 text-center text-white">
         <Box component="span" className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest bg-white/12"><Rocket className="h-3.5 w-3.5" /> Start today</Box>
@@ -654,6 +681,33 @@ function HomeFooter() {
   );
 }
 
+/* =================== STICKY DEMO BAR =================== */
+function DemoBar() {
+  const [show, setShow] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 700);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  if (dismissed) return null;
+  return (
+    <motion.div initial={{ y: 130, opacity: 0 }} animate={show ? { y: 0, opacity: 1 } : { y: 130, opacity: 0 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-x-0 bottom-4 z-50 px-4 pointer-events-none">
+      <Box className="pointer-events-auto max-w-3xl mx-auto rounded-2xl flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3" style={{ background: darkGrad, boxShadow: '0 24px 50px -18px rgba(30,27,75,0.65)' }} data-testid="demo-bar">
+        <Box className="hidden sm:flex h-10 w-10 rounded-xl items-center justify-center bg-white/12 text-white shrink-0"><Rocket className="h-5 w-5" /></Box>
+        <Box className="min-w-0 flex-1">
+          <Typography variant="inherit" component="p" className="font-head font-bold text-white text-[14px] leading-tight truncate">See Biglyp in action for your institution</Typography>
+          <Typography variant="inherit" component="p" className="text-white/60 text-[11.5px] leading-tight truncate">Career readiness + fee collection, in one 20-min demo.</Typography>
+        </Box>
+        <Box component="a" href="#book-demo" className="shrink-0"><Button data-testid="demo-bar-cta" className="h-10 px-4 sm:px-5 rounded-full font-semibold text-[13px]" style={{ background: '#fff', color: NAVY }}>Book a demo</Button></Box>
+        <Box component="button" onClick={() => setDismissed(true)} data-testid="demo-bar-close" className="shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors"><X className="h-4 w-4" /></Box>
+      </Box>
+    </motion.div>
+  );
+}
+
 /* =================== PAGE =================== */
 export default function Homepage() {
   return (
@@ -694,19 +748,22 @@ export default function Homepage() {
           tag="For Institutions" title="BiglypEnroll" tagline="Two powerful engines. One institutional platform." href="/biglypenroll"
           visual={<EnrollVisual />}
           desc="Career readiness and fee collection — the two things every parent cares about most — unified into a single OS for your institution, trusted by schools, colleges and skilling institutes."
-          points={['Admissions & enrolment, end-to-end', 'Career-readiness + fee-collection engines', 'Plug into your ERP or launch a white-labeled portal', 'ISO 27001 · DPDP · RBI-regulated']} />
+          points={['Admissions & enrolment, end-to-end', 'Career-readiness + fee-collection engines', 'Plug into your ERP or launch a white-labeled portal', 'ISO 27001 · DPDP · RBI-regulated']}
+          stats={[{ end: 6500, suffix: '+', label: 'Institutions' }, { end: 50, suffix: ' L+', label: 'Students' }, { end: 4200, prefix: '₹', suffix: ' Cr+', label: 'Fees processed' }]} />
 
         <ProductSection index={2} theme="dark" reverse={true} icon={Brain} accent="#A5B4FC"
           tag="For Students" title="Biglyp Career Hub" tagline="Discover the right career. Then the right university." href="/career-hub"
           visual={<CareerVisual />}
           desc="AI-driven 4-dimensional psychometrics paired with a live index of 2,50,000+ courses across 42 countries — built for counsellors, loved by students."
-          points={['4-D psychometrics: Aptitude · Interest · EQ · Personality', '2,50,000+ courses across 42 countries', 'Personalised career & university matches', 'Counsellor dashboards, workflows & reports']} />
+          points={['4-D psychometrics: Aptitude · Interest · EQ · Personality', '2,50,000+ courses across 42 countries', 'Personalised career & university matches', 'Counsellor dashboards, workflows & reports']}
+          stats={[{ end: 250000, suffix: '+', label: 'Courses' }, { end: 42, label: 'Countries' }, { end: 60, suffix: '+', label: 'Traits mapped' }]} />
 
         <ProductSection index={3} theme="tint" reverse={false} icon={Wallet} accent="#4F46E5"
           tag="For Parents" title="Biglyp Fee Collection" tagline="Fees upfront. EMIs for parents. Reconciled live." href="/fee-collection"
           visual={<FeeVisual />}
           desc="India's most advanced fee payment platform for schools, colleges and skilling institutes — 8+ payment rails, 0% EMIs for parents and live analytics, with schools paid 100% upfront."
           points={['8+ payment rails (UPI, cards, netbanking, NACH…)', '0% EMIs* for parents · 100% upfront to schools', 'Automated reconciliation & live dashboards', 'RBI-regulated NBFC lending partners']}
+          stats={[{ end: 8, suffix: '+', label: 'Payment rails' }, { end: 0, suffix: '%', label: 'EMI interest' }, { end: 100, suffix: '%', label: 'Upfront to schools' }]}
           note="* 0% EMI subject to partnership." />
       </Box>
 
@@ -714,6 +771,7 @@ export default function Homepage() {
       <Testimonials />
       <Faq />
       <HomeFooter />
+      <DemoBar />
     </Box>
   );
 }

@@ -500,6 +500,9 @@
   .bottom-2 {
     bottom: calc(var(--spacing) * 2);
   }
+  .bottom-4 {
+    bottom: calc(var(--spacing) * 4);
+  }
   .bottom-8 {
     bottom: calc(var(--spacing) * 8);
   }
@@ -2158,6 +2161,9 @@
   .p-0 {
     padding: 0px;
   }
+  .p-0\.5 {
+    padding: calc(var(--spacing) * 0.5);
+  }
   .p-1 {
     padding: var(--spacing);
   }
@@ -2298,6 +2304,9 @@
   }
   .pt-6 {
     padding-top: calc(var(--spacing) * 6);
+  }
+  .pt-12 {
+    padding-top: calc(var(--spacing) * 12);
   }
   .pt-14 {
     padding-top: calc(var(--spacing) * 14);
@@ -2519,6 +2528,10 @@
   .leading-\[1\.02\] {
     --tw-leading: 1.02;
     line-height: 1.02;
+  }
+  .leading-\[1\.04\] {
+    --tw-leading: 1.04;
+    line-height: 1.04;
   }
   .leading-\[1\.05\] {
     --tw-leading: 1.05;
@@ -3806,6 +3819,9 @@
     .sm\:gap-2\.5 {
       gap: calc(var(--spacing) * 2.5);
     }
+    .sm\:gap-4 {
+      gap: calc(var(--spacing) * 4);
+    }
     :where(.sm\:space-y-0 > :not(:last-child)) {
       --tw-space-y-reverse: 0;
       margin-block-start: 0;
@@ -3824,8 +3840,31 @@
     .sm\:rounded-lg {
       border-radius: var(--radius-lg);
     }
+    .sm\:p-6 {
+      padding: calc(var(--spacing) * 6);
+    }
+    .sm\:px-5 {
+      padding-inline: calc(var(--spacing) * 5);
+    }
+    .sm\:py-20 {
+      padding-block: calc(var(--spacing) * 20);
+    }
+    .sm\:pt-20 {
+      padding-top: calc(var(--spacing) * 20);
+    }
+    .sm\:pb-20 {
+      padding-bottom: calc(var(--spacing) * 20);
+    }
     .sm\:text-left {
       text-align: left;
+    }
+    .sm\:text-2xl {
+      font-size: var(--text-2xl);
+      line-height: var(--tw-leading, var(--text-2xl--line-height));
+    }
+    .sm\:text-5xl {
+      font-size: var(--text-5xl);
+      line-height: var(--tw-leading, var(--text-5xl--line-height));
     }
   }
   @media (width >= 48rem) {
@@ -4027,6 +4066,12 @@
     .lg\:flex-col {
       flex-direction: column;
     }
+    .lg\:gap-12 {
+      gap: calc(var(--spacing) * 12);
+    }
+    .lg\:gap-14 {
+      gap: calc(var(--spacing) * 14);
+    }
     .lg\:gap-16 {
       gap: calc(var(--spacing) * 16);
     }
@@ -4049,6 +4094,10 @@
     }
     .lg\:text-\[96px\] {
       font-size: 96px;
+    }
+    .lg\:leading-\[1\.02\] {
+      --tw-leading: 1.02;
+      line-height: 1.02;
     }
   }
   @media (width >= 80rem) {

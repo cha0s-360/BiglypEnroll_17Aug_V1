@@ -81,3 +81,12 @@ GrayQuest-inspired school fee-financing credit platform at `/credit` (staff + cr
 - Section CTAs already wired via <Link href> to /biglypenroll, /career-hub, /fee-collection (routes exist).
 - Hero background darkened to a deeper lavender wash; Career Hub mockup made sleeker (gradient pill, live-scan dot, readiness=72 stat, larger radar, softer ring shadows); Fee Collection mockup fonts enlarged/bolder.
 - Added footnote "* 0% EMI subject to partnership." under the Fee Collection CTA (ProductSection `note` prop) + `*` on the "0% EMIs*" bullet.
+
+## Update (2026-06c) — Homepage engagement features (tested 100%)
+- Counter Everywhere: CountUp extended (prefix/suffix/decimals); added animated mini-stat rows to all 3 ProductSections (Enroll: 6,500+/50L+/₹4,200Cr+; Career: 2,50,000+/42/60+; Fee: 8+/0%/100%).
+- Radar Compare: Career Hub radar has an Ananya/Rahul toggle (data-testid radar-profile-0/1) that morphs the polygon + updates name, class, readiness, recommendation & fit.
+- Demo Booking: sticky bottom "Book a demo" bar (data-testid demo-bar / demo-bar-cta / demo-bar-close) appears after scrollY>700, dismissible, scrolls to DarkCta (id='book-demo').
+- Mobile Pass: tightened hero spacing (pt-12/pb-14 on mobile, text-4xl headline), reduced product-section padding/gap, responsive mockup card padding.
+- Section CTAs confirmed wired to /biglypenroll, /career-hub, /fee-collection (all 200).
+- Verified by testing agent (iteration_4.json): frontend 100%, no blocking issues.
+- PENDING user decision: hero tagline choice (options a–e presented); not yet applied to copy.

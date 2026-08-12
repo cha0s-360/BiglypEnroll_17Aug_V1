@@ -1,0 +1,31 @@
+{
+  "summary": "Frontend-only smoke + interaction testing of Biglyp marketing homepage (/) covering the 4 requested enhancements: Radar Compare toggle, Live counters, Sticky Demo bar, Section CTA navigation, Fee Collection footnote, plus general smoke. All features work as specified. No blocking issues found.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results_detail": {
+    "smoke_homepage_loads": "PASS - Hero 'Building future-ready students' visible; only console errors are Next.js HMR websocket 502 (dev preview infra, non-blocking).",
+    "radar_compare_toggle": "PASS - Initial shows Ananya (Class 11 · Science stream, Design & Product Engineering, 92% fit). Clicking radar-profile-1 switches to Rahul (Class 12 · Science stream, Data Science & AI Research, 95% fit). Clicking radar-profile-0 reverts to Ananya. Readiness values and metadata update correctly.",
+    "live_counters": "PASS - After scroll into view + ~2.5s wait, hero counters show 42+ / 1,200+ / 2,50,000+; BiglypEnroll row shows 6,500+ / 50 L+ / ₹4,200 Cr+; Career Hub row shows 2,50,000+ / 42 / 60+; Fee Collection row shows 8+ / 0% / 100%; radar readiness animates to 72 (Ananya) and 81 (Rahul). Counters remain 0 only when never scrolled into view.",
+    "demo_bar": "PASS - At scrollY=0, demo-bar rendered at y=1130 (below 1080 viewport, effectively hidden - not visible to user). At scrollY=750 slides in to y=1000 (visible). At scrollY=400 (<700) it is at y=1130 (hidden). demo-bar-close hides it. demo-bar-cta scrolls to #book-demo (verified element is in view after click).",
+    "section_cta_navigation": "PASS - Explore BiglypEnroll → href=/biglypenroll (200), Explore Biglyp Career Hub → href=/career-hub (200), Explore Biglyp Fee Collection → href=/fee-collection (200).",
+    "fee_footnote": "PASS - data-testid='fee-emi-footnote' present with exact text '* 0% EMI subject to partnership.'"
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Minor: Counters use IntersectionObserver per-section; if a user scrolls very fast (or jumps via anchor) past a stats row, observed animation may not complete and the number can remain at 0 until the row re-enters viewport. Not blocking, but consider triggering the count-up on any threshold crossing or setting a final-value fallback if user prefers reduced motion.",
+    "Info: demo-bar uses translateY/positioning at y=1130 offscreen initially rather than display:none. This is fine visually, but note that Playwright's is_visible() reports True at scrollY=0; automated tests should assert bbox.y vs viewport height, not is_visible().",
+    "Info: Next.js dev HMR websocket errors (wss://.../_next/webpack-hmr 502) appear in console; harmless in preview but noisy — expected in dev mode."
+  ],
+  "updated_files": [],
+  "success_rate": { "backend": "N/A (skipped)", "frontend": "100%" },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 4 requested enhancements + footnote + smoke pass on the live preview URL. Radar toggle, live counters (hero + all 3 product rows), sticky demo bar with close + CTA to #book-demo, and /biglypenroll, /career-hub, /fee-collection routes all return 200 with correct content wired. No code changes were made by the testing agent.",
+  "rca of the issue": "N/A - no bugs found"
+}
