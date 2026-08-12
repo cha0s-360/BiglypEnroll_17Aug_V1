@@ -1,6 +1,4 @@
 {
   "/page": "app/page.js",
-  "/biglypenroll/page": "app/biglypenroll/page.js",
-  "/career-hub/page": "app/career-hub/page.js",
-  "/fee-collection/page": "app/fee-collection/page.js"
+  "/biglypenroll/page": "app/biglypenroll/page.js"
 }
