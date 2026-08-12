@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Figtree:wght@400;500;600;700&display=swap');
+
+/* Declare the MUI layer first so it has the lowest priority; Tailwind's
+   utilities (emitted after) always win -> pixel-perfect parity. */
+@layer mui;
+
+@import 'tailwindcss';
+
+@theme {
+  --font-head: 'Outfit', sans-serif;
+  --font-sans: 'Figtree', sans-serif;
+
+  --color-brand-navy: #0F1A5B;
+  --color-brand-blue: #5548D1;
+  --color-brand-indigo: #5548D1;
+  --color-brand-indigo-deep: #3F35A8;
+  --color-brand-sky: #7C6FF5;
+  --color-brand-tint: #EEF0FF;
+  --color-brand-accent: #FBBF24;
+
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(230 71% 21%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(230 71% 21%);
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(230 71% 21%);
+  --color-primary: hsl(247 62% 55%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(230 71% 21%);
+  --color-secondary-foreground: hsl(0 0% 100%);
+  --color-muted: hsl(234 100% 97%);
+  --color-muted-foreground: hsl(220 15% 47%);
+  --color-accent: hsl(234 100% 96%);
+  --color-accent-foreground: hsl(247 62% 55%);
+  --color-destructive: hsl(0 72% 51%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border: hsl(220 30% 92%);
+  --color-input: hsl(220 30% 92%);
+  --color-ring: hsl(247 62% 55%);
+  --color-chart-1: hsl(247 62% 55%);
+  --color-chart-2: hsl(230 71% 21%);
+  --color-chart-3: hsl(45 96% 56%);
+  --color-chart-4: hsl(262 83% 58%);
+  --color-chart-5: hsl(156 72% 40%);
+
+  --radius-lg: 0.75rem;
+  --radius-md: calc(0.75rem - 2px);
+  --radius-sm: calc(0.75rem - 4px);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    margin: 0;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: 'Figtree', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5, h6, .font-head {
+    font-family: 'Outfit', sans-serif;
+  }
+  ::selection {
+    background: #5548D1;
+    color: #fff;
+  }
+}
+
+.App {
+  min-height: 100vh;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(85,72,209,0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(85,72,209,0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.hard-shadow { box-shadow: 4px 4px 0px #0F1A5B; }
+.hard-shadow-sm { box-shadow: 2px 2px 0px #0F1A5B; }
+.hard-shadow:hover { box-shadow: 6px 6px 0px #0F1A5B; }
+
+@keyframes float-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-float-up { animation: float-up 0.6s ease forwards; }
+
+/* MUI + Tailwind interop fixes (unlayered => always win). Keep the hidden
+   native <input> of MUI Select invisible so its value never shows through. */
+.MuiSelect-nativeInput {
+  opacity: 0 !important;
+}
