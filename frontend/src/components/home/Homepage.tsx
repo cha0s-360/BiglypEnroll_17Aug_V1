@@ -503,7 +503,7 @@ function ProductSection({ theme = 'light', reverse = false, index, icon, tag, ti
           <Box className="flex items-center gap-3">
             <Box className="h-12 w-12 rounded-2xl flex items-center justify-center" style={{ background: dark ? 'rgba(255,255,255,0.14)' : accent + '16', color: dark ? '#fff' : accent }}><Icon className="h-6 w-6" /></Box>
             <Box component="span" className="text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1" style={{ background: chipBg, color: chipText }}>{tag}</Box>
-            <Box component="span" className="ml-auto text-[11px] font-bold" style={{ color: dark ? 'rgba(255,255,255,0.4)' : '#94A3B8' }}>0{index} / 03</Box>
+            <Box component="span" className="ml-auto text-[11px] font-bold" style={{ color: dark ? 'rgba(255,255,255,0.4)' : '#94A3B8' }}>0{index} / 02</Box>
           </Box>
           <Typography variant="inherit" component="h2" className="font-head mt-5 text-3xl md:text-4xl font-black tracking-tight leading-tight" style={{ color: titleColor }}>{title}</Typography>
           <Typography variant="inherit" component="p" className="mt-1.5 font-head text-lg font-bold" style={{ color: dark ? '#A5B4FC' : accent }}>{tagline}</Typography>
@@ -742,7 +742,7 @@ export default function Homepage() {
         ]}
       />
 
-      {/* Platform anchor + 3 dedicated engine sections with custom mockups */}
+      {/* Platform anchor + 2 dedicated engine sections with custom mockups */}
       <Box id="platform">
         <ProductSection index={1} theme="light" reverse={false} icon={GraduationCap} accent={INDIGO_DEEP}
           tag="For Institutions" title="BiglypEnroll" tagline="Two powerful engines. One institutional platform." href="/biglypenroll"
@@ -751,14 +751,7 @@ export default function Homepage() {
           points={['Admissions & enrolment, end-to-end', 'Career-readiness + fee-collection engines', 'Plug into your ERP or launch a white-labeled portal', 'ISO 27001 · DPDP · RBI-regulated']}
           stats={[{ end: 6500, suffix: '+', label: 'Institutions' }, { end: 50, suffix: ' L+', label: 'Students' }, { end: 4200, prefix: '₹', suffix: ' Cr+', label: 'Fees processed' }]} />
 
-        <ProductSection index={2} theme="dark" reverse={true} icon={Brain} accent="#A5B4FC"
-          tag="For Students" title="Biglyp Career Hub" tagline="Discover the right career. Then the right university." href="/career-hub"
-          visual={<CareerVisual />}
-          desc="AI-driven 4-dimensional psychometrics paired with a live index of 2,50,000+ courses across 42 countries — built for counsellors, loved by students."
-          points={['4-D psychometrics: Aptitude · Interest · EQ · Personality', '2,50,000+ courses across 42 countries', 'Personalised career & university matches', 'Counsellor dashboards, workflows & reports']}
-          stats={[{ end: 250000, suffix: '+', label: 'Courses' }, { end: 42, label: 'Countries' }, { end: 60, suffix: '+', label: 'Traits mapped' }]} />
-
-        <ProductSection index={3} theme="tint" reverse={false} icon={Wallet} accent="#4F46E5"
+        <ProductSection index={2} theme="tint" reverse={false} icon={Wallet} accent="#4F46E5"
           tag="For Parents" title="Biglyp Fee Collection" tagline="Fees upfront. EMIs for parents. Reconciled live." href="/fee-collection"
           visual={<FeeVisual />}
           desc="India's most advanced fee payment platform for schools, colleges and skilling institutes — 8+ payment rails, 0% EMIs for parents and live analytics, with schools paid 100% upfront."
