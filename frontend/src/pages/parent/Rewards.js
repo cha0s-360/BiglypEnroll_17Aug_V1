@@ -11,6 +11,8 @@ import {
 import { toast } from "sonner";
 import {
   Gift, Wallet, Sparkles, Ticket, GraduationCap, Star, Copy, CheckCircle2,
+  LifeBuoy, MessageCircle, TrendingUp, FileCheck, Clock, BadgeCheck, UserCheck,
+  Lock, Timer,
 } from "lucide-react";
 
 const TIER_STYLE = {
@@ -19,6 +21,34 @@ const TIER_STYLE = {
   Gold: "from-yellow-500 to-amber-400",
   Platinum: "from-indigo-600 to-[#5548D1]",
 };
+
+const PERK_ICONS = {
+  "life-buoy": LifeBuoy,
+  "message-circle": MessageCircle,
+  "trending-up": TrendingUp,
+  "file-check": FileCheck,
+  "clock": Clock,
+  "badge-check": BadgeCheck,
+  "user-check": UserCheck,
+  "sparkles": Sparkles,
+};
+
+const TIER_ACCENT = {
+  Bronze: "text-amber-600 bg-amber-50 border-amber-200",
+  Silver: "text-slate-600 bg-slate-100 border-slate-200",
+  Gold: "text-yellow-700 bg-yellow-50 border-yellow-200",
+  Platinum: "text-[#5548D1] bg-[#EEF0FF] border-[#5548D1]/30",
+};
+
+function daysBetween(a, b) {
+  return Math.round((b.getTime() - a.getTime()) / 86400000);
+}
+
+function formatDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
 
 export default function Rewards() {
   const [data, setData] = useState(null);
@@ -83,7 +113,7 @@ export default function Rewards() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className={`rounded-2xl p-5 text-white bg-gradient-to-br ${TIER_STYLE[data?.tier] || TIER_STYLE.Bronze}`} data-testid="rewards-points">
           <div className="flex items-center justify-between">
             <p className="text-[11px] uppercase tracking-widest font-bold opacity-90">Reward Points</p>
@@ -91,6 +121,19 @@ export default function Rewards() {
           </div>
           <p className="font-head text-4xl font-black mt-2">{points.toLocaleString("en-IN")}</p>
           <p className="text-xs mt-1 opacity-90 flex items-center gap-1"><Star className="h-3 w-3 fill-white" /> {data?.tier || "Bronze"} tier</p>
+          {data?.next_tier && (
+            <div className="mt-3">
+              <div className="h-1.5 bg-white/25 rounded-full overflow-hidden">
+                <div className="h-full bg-white/90 rounded-full transition-all" style={{ width: `${data.progress_pct || 0}%` }} />
+              </div>
+              <p className="text-[11px] mt-1.5 opacity-90">
+                {data.points_to_next?.toLocaleString("en-IN")} pts to <b>{data.next_tier}</b>
+              </p>
+            </div>
+          )}
+          {!data?.next_tier && (
+            <p className="text-[11px] mt-3 opacity-90">Highest tier unlocked ✨</p>
+          )}
         </div>
         <div className="rounded-2xl p-5 border-2 border-emerald-200 bg-emerald-50" data-testid="rewards-wallet">
           <div className="flex items-center justify-between">
@@ -109,6 +152,46 @@ export default function Rewards() {
           <p className="text-xs mt-1 text-slate-500">coupons & courses claimed</p>
         </div>
       </div>
+
+      {/* Tier perks */}
+      {data?.perks && data.perks.length > 0 && (
+        <div className="mb-8" data-testid="tier-perks">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="font-head text-lg font-black text-brand-navy">Your Tier Perks</p>
+              <p className="text-xs text-slate-500">
+                Unlocked at your current <b className="text-[#5548D1]">{data.tier}</b> tier
+                {data.next_tier ? <> · more unlock at <b>{data.next_tier}</b> ({data.points_to_next?.toLocaleString("en-IN")} pts away)</> : <> · you&apos;ve reached the top!</>}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {data.perks.map((p, i) => {
+              const Icon = PERK_ICONS[p.icon] || Sparkles;
+              const accent = TIER_ACCENT[p.tier] || TIER_ACCENT.Bronze;
+              return (
+                <div key={`${p.tier}-${i}`}
+                  data-testid={`perk-${p.tier.toLowerCase()}-${i}`}
+                  className={`rounded-xl border-2 p-4 flex gap-3 transition-opacity ${p.unlocked ? "bg-white border-border" : "bg-slate-50 border-dashed border-slate-200 opacity-60"}`}>
+                  <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center border ${accent}`}>
+                    {p.unlocked ? <Icon className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-brand-navy text-sm">{p.title}</p>
+                      <span className={`text-[10px] uppercase tracking-widest font-bold rounded-full px-2 py-0.5 border ${accent}`}>{p.tier}</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">{p.desc}</p>
+                    {!p.unlocked && (
+                      <p className="text-[10.5px] mt-1.5 font-semibold text-slate-400">Locked · reach {p.tier} to unlock</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex items-center gap-2 mb-5">
@@ -188,20 +271,50 @@ export default function Rewards() {
             <p className="font-head text-lg font-black text-brand-navy mb-3">Redemptions</p>
             {redemptions.length === 0 && <p className="text-sm text-slate-400">No redemptions yet. Redeem a coupon or enroll in a course!</p>}
             <div className="space-y-2">
-              {redemptions.map((r) => (
-                <div key={r.id} className="flex items-center justify-between rounded-xl border border-border bg-white px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    {r.kind === "coupon" ? <Ticket className="h-4 w-4 text-[#5548D1]" /> : <GraduationCap className="h-4 w-4 text-emerald-600" />}
-                    <div>
-                      <p className="text-sm font-semibold text-brand-navy">{r.title}</p>
-                      <p className="text-xs text-slate-500">
-                        {r.kind === "coupon" ? `Code: ${r.code}` : `For ${r.student_name} · ${r.status}`}
-                      </p>
+              {redemptions.map((r) => {
+                const now = new Date();
+                const created = r.created_at ? new Date(r.created_at) : null;
+                const expires = r.expires_at ? new Date(r.expires_at) : null;
+                const isCoupon = r.kind === "coupon";
+                const isRecent = isCoupon && created && daysBetween(created, now) <= 7;
+                const isExpired = isCoupon && expires && expires < now;
+                const isExpiringSoon = isCoupon && expires && !isExpired && daysBetween(now, expires) <= 14;
+                return (
+                  <div key={r.id} data-testid={`redemption-${r.id}`}
+                    className={`flex items-center justify-between rounded-xl border px-4 py-3 ${isExpired ? "bg-slate-50 border-slate-200 opacity-70" : "bg-white border-border"}`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      {isCoupon ? <Ticket className={`h-4 w-4 ${isExpired ? "text-slate-400" : "text-[#5548D1]"}`} />
+                        : <GraduationCap className="h-4 w-4 text-emerald-600" />}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className={`text-sm font-semibold ${isExpired ? "text-slate-500 line-through" : "text-brand-navy"}`}>{r.title}</p>
+                          {isRecent && !isExpired && (
+                            <span data-testid={`recent-${r.id}`}
+                              className="text-[10px] uppercase tracking-widest font-bold rounded-full px-2 py-0.5 bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                              <Sparkles className="h-2.5 w-2.5" /> Recently redeemed
+                            </span>
+                          )}
+                          {isExpired && (
+                            <span className="text-[10px] uppercase tracking-widest font-bold rounded-full px-2 py-0.5 bg-slate-200 text-slate-600">Expired</span>
+                          )}
+                          {isExpiringSoon && !isExpired && (
+                            <span className="text-[10px] uppercase tracking-widest font-bold rounded-full px-2 py-0.5 bg-amber-100 text-amber-700 border border-amber-200">Use soon</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {isCoupon ? <>Code: <span className={`font-mono font-semibold ${isExpired ? "text-slate-400" : "text-brand-navy"}`}>{r.code}</span></> : <>For {r.student_name} · {r.status}</>}
+                          {isCoupon && expires && (
+                            <span className={`inline-flex items-center gap-1 ml-2 ${isExpired ? "text-slate-400" : isExpiringSoon ? "text-amber-600" : "text-slate-500"}`}>
+                              <Timer className="h-3 w-3" /> {isExpired ? "Expired" : "Valid till"} {formatDate(r.expires_at)}
+                            </span>
+                          )}
+                        </p>
+                      </div>
                     </div>
+                    <span className="text-xs font-bold text-red-500 shrink-0">-{r.points_spent} pts</span>
                   </div>
-                  <span className="text-xs font-bold text-red-500">-{r.points_spent} pts</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
           <div>

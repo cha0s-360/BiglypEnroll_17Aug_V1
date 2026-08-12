@@ -3,7 +3,10 @@
 Wired into server.py via create_extras_router(db, deps). Uses a factory so we avoid
 circular imports (server.py owns the auth/helper functions and passes them in).
 """
+import asyncio
 import io
+import logging
+import os
 import uuid
 from datetime import datetime, timezone, timedelta
 
@@ -16,6 +19,62 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas as pdfcanvas
+
+logger = logging.getLogger("biglyp.extras")
+
+# ---------------------------------------------------------------- email (Resend)
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev").strip()
+
+_resend_ready = False
+try:
+    import resend as _resend_sdk
+    if RESEND_API_KEY:
+        _resend_sdk.api_key = RESEND_API_KEY
+        _resend_ready = True
+except Exception:  # pragma: no cover - defensive
+    _resend_sdk = None
+
+
+def _render_reminder_html(title: str, body: str, cta_label: str = "View in Biglyp") -> str:
+    return f"""<!doctype html>
+<html><body style="margin:0;padding:0;background:#F5F6FB;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F6FB;padding:24px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(20,20,50,0.06);">
+        <tr><td style="background:#5548D1;padding:20px 28px;color:#ffffff;">
+          <div style="font-size:20px;font-weight:800;letter-spacing:-0.02em;">BiglypEnroll</div>
+          <div style="font-size:12px;opacity:0.85;margin-top:2px;">Student Fee Reminder</div>
+        </td></tr>
+        <tr><td style="padding:28px;color:#1E2A44;">
+          <div style="font-size:18px;font-weight:800;margin-bottom:8px;">{title}</div>
+          <div style="font-size:14px;line-height:1.6;color:#4a5169;">{body}</div>
+          <div style="margin-top:20px;">
+            <span style="display:inline-block;background:#5548D1;color:#ffffff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;">{cta_label}</span>
+          </div>
+        </td></tr>
+        <tr><td style="padding:14px 28px;background:#F8F8FC;color:#9198a8;font-size:11px;">
+          You&apos;re receiving this because your child&apos;s school uses BiglypEnroll for fee management.
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>"""
+
+
+async def send_email_via_resend(to_email: str, subject: str, html: str):
+    """Send an email via Resend (non-blocking). Returns (status, provider_id_or_error)."""
+    if not _resend_ready or not _resend_sdk:
+        return ("queued", "resend_not_configured")
+    if not to_email:
+        return ("failed", "no_recipient")
+    params = {"from": SENDER_EMAIL, "to": [to_email], "subject": subject, "html": html}
+    try:
+        result = await asyncio.to_thread(_resend_sdk.Emails.send, params)
+        return ("sent", (result or {}).get("id") or "")
+    except Exception as e:  # pragma: no cover - network
+        logger.warning(f"Resend send failed to {to_email}: {e}")
+        return ("failed", str(e)[:240])
 
 # ---------------------------------------------------------------- defaults ----
 DEFAULT_REMINDER_SETTINGS = {
@@ -55,6 +114,64 @@ def tier_for(points: int) -> str:
     if points >= 1000:
         return "Silver"
     return "Bronze"
+
+
+# --------------------------------------------------------- tier perks catalog --
+TIER_PERKS = [
+    {"tier": "Bronze", "icon": "life-buoy", "title": "Standard Support",
+     "desc": "Email + chat support during business hours."},
+    {"tier": "Bronze", "icon": "sparkles", "title": "Welcome Bonus",
+     "desc": "Kick off with a Rs 100 wallet credit on first upfront payment."},
+
+    {"tier": "Silver", "icon": "trending-up", "title": "5% Bonus Points",
+     "desc": "Earn 5% extra reward points on every fee payment."},
+    {"tier": "Silver", "icon": "message-circle", "title": "Priority Support",
+     "desc": "Skip the queue with priority chat support."},
+
+    {"tier": "Gold", "icon": "trending-up", "title": "10% Bonus Points",
+     "desc": "Earn 10% extra reward points on every fee payment."},
+    {"tier": "Gold", "icon": "file-check", "title": "Free Fee Certificates",
+     "desc": "Download annual fee certificates anytime, no charges."},
+    {"tier": "Gold", "icon": "clock", "title": "Early-bird EMI Slots",
+     "desc": "Access premium 0% EMI slots before general release."},
+
+    {"tier": "Platinum", "icon": "trending-up", "title": "20% Bonus Points",
+     "desc": "Earn 20% extra reward points on every fee payment."},
+    {"tier": "Platinum", "icon": "badge-check", "title": "Zero Processing Fee",
+     "desc": "All financing plans processed with waived fees."},
+    {"tier": "Platinum", "icon": "user-check", "title": "Dedicated Relationship Manager",
+     "desc": "A personal RM handles queries within 4 business hours."},
+]
+
+TIER_ORDER = ["Bronze", "Silver", "Gold", "Platinum"]
+TIER_THRESHOLDS = {"Bronze": 0, "Silver": 1000, "Gold": 3000, "Platinum": 6000}
+COUPON_VALIDITY_DAYS = 90
+RECENT_REDEMPTION_DAYS = 7
+
+
+def tier_summary(points: int):
+    """Return the current tier + progress info + which perks are unlocked/upcoming."""
+    current = tier_for(points)
+    cur_idx = TIER_ORDER.index(current)
+    next_tier = TIER_ORDER[cur_idx + 1] if cur_idx < len(TIER_ORDER) - 1 else None
+    next_at = TIER_THRESHOLDS[next_tier] if next_tier else None
+    unlocked_tiers = set(TIER_ORDER[: cur_idx + 1])
+    perks = [
+        {**p, "unlocked": p["tier"] in unlocked_tiers}
+        for p in TIER_PERKS
+    ]
+    return {
+        "tier": current,
+        "next_tier": next_tier,
+        "next_at_points": next_at,
+        "points_to_next": (next_at - points) if next_at else 0,
+        "progress_pct": (
+            min(100, int((points - TIER_THRESHOLDS[current]) * 100 /
+                         max(1, (next_at - TIER_THRESHOLDS[current]))))
+            if next_at else 100
+        ),
+        "perks": perks,
+    }
 
 
 def inr(n) -> str:
@@ -213,8 +330,14 @@ def create_extras_router(db, deps):
         async for t in db.rewards_txns.find({"parent_id": user["id"]}).sort("created_at", -1).limit(30):
             t.pop("_id", None)
             txns.append(t)
+        summary = tier_summary(acc["points"])
         return {"points": acc["points"], "wallet": round(acc["wallet"], 2),
-                "tier": tier_for(acc["points"]), "transactions": txns}
+                "tier": summary["tier"], "next_tier": summary["next_tier"],
+                "next_at_points": summary["next_at_points"],
+                "points_to_next": summary["points_to_next"],
+                "progress_pct": summary["progress_pct"],
+                "perks": summary["perks"],
+                "transactions": txns}
 
     @router.get("/rewards/catalog")
     async def rewards_catalog(user: dict = Depends(get_current_user)):
@@ -253,10 +376,12 @@ def create_extras_router(db, deps):
             "kind": "redeem_coupon", "points_delta": -cost, "wallet_delta": 0,
             "description": f"Redeemed: {coupon['title']}", "created_at": datetime.now(timezone.utc).isoformat(),
         })
+        now = datetime.now(timezone.utc)
         red = {"id": str(uuid.uuid4()), "parent_id": user["id"], "kind": "coupon",
                "item_id": coupon["id"], "title": coupon["title"], "brand": coupon["brand"],
                "code": code, "points_spent": cost,
-               "created_at": datetime.now(timezone.utc).isoformat()}
+               "created_at": now.isoformat(),
+               "expires_at": (now + timedelta(days=COUPON_VALIDITY_DAYS)).isoformat()}
         await db.rewards_redemptions.insert_one(dict(red))
         red.pop("_id", None)
         return {"ok": True, "voucher_code": code, "redemption": red}
@@ -385,12 +510,18 @@ def create_extras_router(db, deps):
                         "amount": total, "due_date": due.isoformat(), "read": False,
                         "dedupe_key": dedupe, "created_at": datetime.now(timezone.utc).isoformat(),
                     })
-                    # queue an email (no real send — logged for later delivery)
+                    # send email via Resend (if configured); log status either way
                     parent = await db.users.find_one({"_id": ObjectId(stu["parent_id"])})
                     if parent:
+                        html = _render_reminder_html(title, body)
+                        status, provider_ref = await send_email_via_resend(
+                            parent.get("email") or "", title, html
+                        )
                         await db.email_log.insert_one({
                             "id": str(uuid.uuid4()), "to": parent.get("email"),
-                            "subject": title, "body": body, "status": "queued",
+                            "subject": title, "body": body, "status": status,
+                            "provider": "resend" if _resend_ready else "none",
+                            "provider_ref": provider_ref,
                             "school_id": sid, "created_at": datetime.now(timezone.utc).isoformat(),
                         })
                     created += 1

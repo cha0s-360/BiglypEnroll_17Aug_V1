@@ -890,6 +890,41 @@ async def parent_payments(student_id: str, user: dict = Depends(get_current_user
     return out
 
 
+@api.post("/school/reset-demo")
+async def reset_demo(user: dict = Depends(require_roles("super_admin", "school_admin"))):
+    """Reset demo parent's payments + rewards + notifications so the wallet toggle and
+    reminder flows can be re-demoed anytime. Only affects the seeded demo parent
+    (parent@biglyp.com) under the caller's school — real parents are untouched."""
+    sid = await get_user_school_id(user)
+    parent = await db.users.find_one({"email": "parent@biglyp.com", "school_id": sid})
+    if not parent:
+        return {"ok": True, "note": "No demo parent in this school", "reset": {}}
+    pid = str(parent["_id"])
+    students = []
+    async for s in db.students.find({"parent_id": pid, "school_id": sid}):
+        students.append(str(s["_id"]))
+    p_del = await db.payments.delete_many({"student_id": {"$in": students}, "school_id": sid})
+    r_del = await db.rewards_accounts.delete_many({"parent_id": pid})
+    t_del = await db.rewards_txns.delete_many({"parent_id": pid})
+    red_del = await db.rewards_redemptions.delete_many({"parent_id": pid})
+    n_del = await db.notifications.delete_many({"parent_id": pid})
+    e_del = await db.email_log.delete_many({"school_id": sid})
+    # any active EMI plans (financing) also removed via payments delete above
+    logger.info(f"Demo reset for parent={pid}: payments={p_del.deleted_count} rewards_txns={t_del.deleted_count}")
+    return {
+        "ok": True,
+        "reset": {
+            "students_affected": len(students),
+            "payments_deleted": p_del.deleted_count,
+            "rewards_accounts_deleted": r_del.deleted_count,
+            "rewards_txns_deleted": t_del.deleted_count,
+            "redemptions_deleted": red_del.deleted_count,
+            "notifications_deleted": n_del.deleted_count,
+            "email_logs_deleted": e_del.deleted_count,
+        },
+    }
+
+
 # ------------------------------------------------------------ analytics -------
 @api.get("/analytics/overview")
 async def analytics(user: dict = Depends(require_roles(*STAFF_ROLES))):

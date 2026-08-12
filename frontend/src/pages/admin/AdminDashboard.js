@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import api, { inr } from "@/lib/api";
+import api, { inr, formatApiErrorDetail } from "@/lib/api";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line,
 } from "recharts";
 import {
   Wallet, TrendingUp, AlertTriangle, Users, ArrowUpRight, Landmark, CalendarClock,
+  RotateCcw, Loader2, FlaskConical,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 const COLORS = ["#2540E8", "#1E2A78", "#3B82F6", "#8B5CF6", "#06B6D4"];
 
@@ -29,11 +36,30 @@ function Kpi({ icon: Icon, label, value, accent }) {
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [cf, setCf] = useState(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
-  useEffect(() => {
+  const loadAll = () => {
     api.get("/analytics/overview").then(({ data }) => setData(data)).catch(() => {});
     api.get("/analytics/cashflow").then(({ data }) => setCf(data)).catch(() => {});
-  }, []);
+  };
+
+  useEffect(() => { loadAll(); }, []);
+
+  const runReset = async () => {
+    setResetting(true);
+    try {
+      const { data: res } = await api.post("/school/reset-demo");
+      const r = res.reset || {};
+      toast.success(
+        `Demo reset · ${r.payments_deleted || 0} payment(s), ${r.rewards_txns_deleted || 0} reward txn(s) cleared`
+      );
+      setConfirmReset(false);
+      loadAll();
+    } catch (e) {
+      toast.error(formatApiErrorDetail(e?.response?.data?.detail));
+    } finally { setResetting(false); }
+  };
 
   if (!data) {
     return (
@@ -49,6 +75,23 @@ export default function AdminDashboard() {
 
   return (
     <DashboardLayout title="Analytics">
+      {/* Demo utilities — one-click reset for wallet/reminders/rewards demos */}
+      <div className="mb-4 flex items-center justify-between rounded-sm border border-dashed border-brand-blue/40 bg-brand-tint/40 px-5 py-3" data-testid="demo-utilities">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-sm bg-brand-blue/10 text-brand-blue flex items-center justify-center">
+            <FlaskConical className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-brand-navy">Demo utilities</p>
+            <p className="text-xs text-muted-foreground">Reset the demo parent so pending fees, cashback wallet toggle & reminder flows can be re-demoed.</p>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setConfirmReset(true)} data-testid="reset-demo-btn"
+          className="rounded-sm border-brand-blue text-brand-blue hover:bg-brand-tint">
+          <RotateCcw className="h-4 w-4 mr-2" /> Reset demo state
+        </Button>
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Kpi icon={Wallet} label="Total collected" value={inr(k.total_collected)} accent="bg-brand-blue" />
         <Kpi icon={Landmark} label="Financed disbursals" value={inr(k.financed_disbursals)} accent="bg-brand-navy" />
@@ -205,6 +248,26 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
+        <AlertDialogContent className="rounded-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset demo state?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This clears the demo parent&apos;s payments, cashback wallet, points, redemptions and notifications
+              — so pending fees appear again and the wallet toggle can be re-demoed. Real parents are not affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-sm" data-testid="reset-cancel">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={runReset} disabled={resetting} data-testid="reset-confirm"
+              className="rounded-sm bg-brand-blue hover:bg-brand-navy">
+              {resetting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RotateCcw className="h-4 w-4 mr-2" />}
+              Reset now
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }
