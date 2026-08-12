@@ -269,7 +269,7 @@ export default function ActiveFinancing() {
                     </Box>
                   ))}
                   {rows.length === 0 && (
-                    <Box component="tr"><td colSpan={6} className="px-4 py-10 text-center text-slate-500">No installments match your filters.</Box></Box>
+                    <Box component="tr"><Box component="td" colSpan={6} className="px-4 py-10 text-center text-slate-500">No installments match your filters.</Box></Box>
                   )}
                 </Box>
               </Box>
