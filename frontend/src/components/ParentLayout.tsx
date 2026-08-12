@@ -14,14 +14,18 @@ import {
 } from "@/components/ui/select";
 import {
   Wallet, LayoutGrid, Brain, Settings, LifeBuoy, Bell, LogOut, Gift, CheckCheck,
+  Briefcase, FileText, Wrench,
 } from "lucide-react";
 
 // Sidebar navigation — "Fee Payment" is the live screen; others are placeholders.
 const SIDEBAR = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutGrid, to: "/app/discover", active: true, testid: "snav-dashboard" },
+  { key: "psychometry", label: "Psychometry", icon: Brain, to: "/app/psychometry", active: true, testid: "snav-psychometry" },
+  { key: "career-goals", label: "Career goals", icon: Briefcase, to: "/app/programs", active: true, testid: "snav-programs" },
+  { key: "admissions", label: "Admissions", icon: FileText, testid: "snav-admissions" },
+  { key: "other-services", label: "Other services", icon: Wrench, testid: "snav-services" },
   { key: "fees", label: "Fee Payment", icon: Wallet, to: "/app", active: true, testid: "snav-fees" },
   { key: "rewards", label: "Rewards", icon: Gift, to: "/app/rewards", active: true, testid: "snav-rewards" },
-  { key: "dashboard", label: "Dashboard", icon: LayoutGrid, testid: "snav-dashboard" },
-  { key: "psychometry", label: "Psychometry", icon: Brain, testid: "snav-psychometry" },
   { key: "settings", label: "Settings", icon: Settings, testid: "snav-settings" },
   { key: "support", label: "Support", icon: LifeBuoy, testid: "snav-support" },
 ];
@@ -186,7 +190,8 @@ export function ParentLayout({ children }) {
           </Box>
         </Box>
 
-        {/* Sub-tab header bar */}
+        {/* Sub-tab header bar — only visible on fee-related routes */}
+        {(pathname === '/app' || pathname === '/app/history' || pathname === '/app/financing' || pathname === '/app/rewards' || pathname === '/app/mandate') && (
         <Box className="bg-white border-b border-border px-4 md:px-8">
           <Box component="nav" className="flex items-center gap-6">
             {subTabs.map((t) => {
@@ -207,8 +212,9 @@ export function ParentLayout({ children }) {
             })}
           </Box>
         </Box>
+        )}
 
-        <Box component="main" className="flex-1 px-4 md:px-8 py-8 max-w-5xl w-full">{children}</Box>
+        <Box component="main" className="flex-1 px-4 md:px-8 py-8 w-full">{children}</Box>
       </Box>
     </Box>
   );
