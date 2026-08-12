@@ -7,7 +7,7 @@ import requests
 import json
 
 # Backend URL from frontend/.env
-BASE_URL = "https://biglyp-refactor.preview.emergentagent.com/api"
+BASE_URL = "https://enroll-preview-1.preview.emergentagent.com/api"
 
 # Test credentials
 PARENT_EMAIL = "parent@biglyp.com"

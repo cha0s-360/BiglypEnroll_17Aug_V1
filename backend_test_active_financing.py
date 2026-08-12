@@ -10,7 +10,7 @@ import requests
 import math
 
 # Use the production URL from frontend/.env
-BASE_URL = "https://biglyp-refactor.preview.emergentagent.com"
+BASE_URL = "https://enroll-preview-1.preview.emergentagent.com"
 API = f"{BASE_URL}/api"
 
 # Test credentials from test_credentials.md
