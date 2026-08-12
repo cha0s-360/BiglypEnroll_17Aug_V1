@@ -543,6 +543,65 @@ function ProductSection({ theme = 'light', reverse = false, index, icon, tag, ti
   );
 }
 
+/* =================== CAREER HUB (split hero, matches /career-hub) =================== */
+function HomeCareerSplit() {
+  return (
+    <Box component="section" id="career-split" className="relative overflow-hidden" style={{ background: '#EFF6FF' }}>
+      {/* Soft blue gradient tiles */}
+      <Box className="absolute inset-0 pointer-events-none" style={{
+        background: `radial-gradient(circle at 15% 20%, #BFDBFE66 0%, transparent 45%), radial-gradient(circle at 85% 80%, ${INDIGO}22 0%, transparent 45%)`,
+      }} />
+      <Box className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-14 pb-16 md:pt-20 md:pb-24">
+        <Box className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
+          {/* Left */}
+          <Box className="text-left">
+            <Box component="span" className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-3 py-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: NAVY }}>
+              <Sparkles className="h-3.5 w-3.5" style={{ color: INDIGO }} /> AI-powered Career Discovery
+            </Box>
+            <Typography variant="inherit" component="h2"
+              className="font-head mt-5 md:mt-6 text-[34px] sm:text-[42px] md:text-[54px] lg:text-[60px] leading-[0.98] font-black tracking-tight"
+              style={{ color: NAVY }}>
+              Discover the{' '}
+              <Box component="span" className="italic font-light" style={{ color: INDIGO }}>right</Box>{' '}
+              <br className="hidden md:block" />
+              career.{' '}
+              <Box component="span" className="relative inline-block">
+                <Box component="span" className="relative z-10">Then the</Box>
+                <Box component="span" className="absolute inset-x-0 bottom-1 h-2 md:h-2.5" style={{ background: '#FBBF24', opacity: 0.75, zIndex: 0 }} />
+              </Box>{' '}
+              right{' '}
+              <Box component="span" className="underline decoration-[4px] md:decoration-[5px] underline-offset-[6px] md:underline-offset-[8px]" style={{ textDecorationColor: INDIGO }}>university</Box>.
+            </Typography>
+            <Typography variant="inherit" component="p"
+              className="mt-4 md:mt-5 max-w-lg text-[14px] md:text-[15.5px] leading-relaxed text-slate-600">
+              AI-driven 4-dimensional psychometrics paired with a live index of <b style={{ color: NAVY }}>2,50,000+ courses</b> across <b style={{ color: NAVY }}>42 countries</b> — built for counsellors, loved by students.
+            </Typography>
+            <Box className="mt-5 md:mt-6 flex items-center gap-3 flex-wrap">
+              <Box component={Link} href="/career-hub">
+                <Button data-testid="career-split-cta" className="h-11 md:h-12 px-5 md:px-6 rounded-full font-bold text-white text-[13px] tracking-wide shadow-lg"
+                  style={{ background: NAVY }}>
+                  See it in action <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Box>
+              <Box component={Link} href="/career-hub#pillars">
+                <Button variant="outline" className="h-11 md:h-12 px-5 md:px-6 rounded-full font-bold text-[13px] border-2 bg-white"
+                  style={{ borderColor: NAVY, color: NAVY }}>
+                  Explore capabilities
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Right — reuse existing CareerVisual mosaic */}
+          <Box className="relative">
+            <CareerVisual />
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
 /* =================== DARK CTA BAND =================== */
 function DarkCta() {
   return (
@@ -750,6 +809,8 @@ export default function Homepage() {
           desc="Career readiness and fee collection — the two things every parent cares about most — unified into a single OS for your institution, trusted by schools, colleges and skilling institutes."
           points={['Admissions & enrolment, end-to-end', 'Career-readiness + fee-collection engines', 'Plug into your ERP or launch a white-labeled portal', 'ISO 27001 · DPDP · RBI-regulated']}
           stats={[{ end: 6500, suffix: '+', label: 'Institutions' }, { end: 50, suffix: ' L+', label: 'Students' }, { end: 4200, prefix: '₹', suffix: ' Cr+', label: 'Fees processed' }]} />
+
+        <HomeCareerSplit />
 
         <ProductSection index={2} theme="tint" reverse={false} icon={Wallet} accent="#4F46E5"
           tag="For Parents" title="Biglyp Fee Collection" tagline="Fees upfront. EMIs for parents. Reconciled live." href="/fee-collection"
