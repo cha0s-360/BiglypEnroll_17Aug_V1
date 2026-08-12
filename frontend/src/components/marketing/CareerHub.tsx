@@ -35,7 +35,57 @@ const STATS = [
 ];
 
 /* --------- Hero (Career Hub · editorial mosaic) ---------- */
+const PROFILES = [
+  {
+    key: 'ananya',
+    name: "Ananya's profile",
+    meta: 'Class 11 · Science stream',
+    values: [85, 70, 92, 60, 78],
+    rec: 'Design & Product Engineering',
+    fit: '92% fit · 14 matching programs',
+  },
+  {
+    key: 'rahul',
+    name: "Rahul's profile",
+    meta: 'Class 12 · Commerce stream',
+    values: [72, 88, 65, 84, 76],
+    rec: 'FinTech & Business Analytics',
+    fit: '87% fit · 11 matching programs',
+  },
+];
+
+function DemoVideoDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  if (!open) return null;
+  return (
+    <Box className="fixed inset-0 z-[70] flex items-center justify-center p-4" role="dialog" aria-modal="true">
+      <Box onClick={onClose} className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" />
+      <Box className="relative w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl bg-slate-900" style={{ boxShadow: '0 40px 80px -20px rgba(15,26,91,0.5)' }}>
+        <Box className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+          <Box className="flex items-center gap-2 text-white text-[12px] font-bold uppercase tracking-[0.2em]">
+            <PlayCircle className="h-4 w-4" style={{ color: '#FBBF24' }} /> Biglyp Career Hub · 90-second demo
+          </Box>
+          <Box component="button" onClick={onClose} aria-label="Close" className="h-8 w-8 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors text-xl leading-none">×</Box>
+        </Box>
+        <Box className="relative w-full" style={{ paddingTop: '56.25%' }}>
+          <Box component="video"
+            controls
+            autoPlay
+            playsInline
+            preload="metadata"
+            poster="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=1200"
+            className="absolute inset-0 w-full h-full bg-black"
+            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+          />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
 function Hero() {
+  const [profileIdx, setProfileIdx] = useState(0);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const profile = PROFILES[profileIdx];
   return (
     <Box component="section" className="relative overflow-hidden" style={{ background: "#EFF6FF" }}>
       {/* Soft blue gradient tiles */}
@@ -43,10 +93,10 @@ function Hero() {
         background: `radial-gradient(circle at 15% 20%, #BFDBFE66 0%, transparent 45%), radial-gradient(circle at 85% 80%, ${INDIGO}22 0%, transparent 45%)`,
       }} />
 
-      <Box className="relative max-w-7xl mx-auto px-6 pt-8 pb-12">
+      <Box className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-8 md:pt-8 md:pb-12">
         {/* Overline row */}
-        <Box className="flex flex-wrap items-center justify-between gap-3">
-          <Box component="span" className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: NAVY }}>
+        <Box className="flex flex-wrap items-center justify-between gap-2">
+          <Box component="span" className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-2.5 py-1 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: NAVY }}>
             <GraduationCap className="h-3.5 w-3.5" style={{ color: INDIGO }} /> Biglyp Career Hub · Issue No. 01
           </Box>
           <Box className="hidden md:flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: SUBTLE }}>
@@ -55,9 +105,9 @@ function Hero() {
         </Box>
 
         {/* Big editorial headline — centered magazine cover style */}
-        <motion.div initial="hidden" animate="show" variants={fade} className="mt-6 text-center max-w-5xl mx-auto">
+        <motion.div initial="hidden" animate="show" variants={fade} className="mt-4 md:mt-6 text-center max-w-5xl mx-auto">
           <motion.h1 custom={1} variants={fade}
-            className="font-head text-[34px] md:text-[52px] lg:text-[64px] leading-[0.95] font-black tracking-tight"
+            className="font-head text-[28px] sm:text-[34px] md:text-[52px] lg:text-[64px] leading-[0.95] font-black tracking-tight"
             style={{ color: NAVY }}>
             Discover the{" "}
             <Box component="span" className="relative inline-block">
@@ -67,24 +117,22 @@ function Hero() {
             career.{" "}
             <Box component="span" className="relative inline-block">
               <Box component="span" className="relative z-10">Then the</Box>
-              <Box component="span" className="absolute inset-x-0 bottom-1 h-2.5" style={{ background: "#FBBF24", opacity: 0.75, zIndex: 0 }} />
+              <Box component="span" className="absolute inset-x-0 bottom-1 h-2 md:h-2.5" style={{ background: "#FBBF24", opacity: 0.75, zIndex: 0 }} />
             </Box>{" "}
             right{" "}
-            <Box component="span" className="underline decoration-[5px] underline-offset-[8px]" style={{ textDecorationColor: INDIGO }}>university</Box>.
+            <Box component="span" className="underline decoration-[4px] md:decoration-[5px] underline-offset-[6px] md:underline-offset-[8px]" style={{ textDecorationColor: INDIGO }}>university</Box>.
           </motion.h1>
           <motion.p custom={2} variants={fade}
-            className="mt-4 max-w-2xl mx-auto text-[14px] md:text-[15px] leading-relaxed" style={{ color: SUBTLE }}>
+            className="mt-3 md:mt-4 max-w-2xl mx-auto text-[13px] md:text-[15px] leading-relaxed" style={{ color: SUBTLE }}>
             AI-driven 4-dimensional psychometrics paired with a live index of <b style={{ color: NAVY }}>2,50,000+ courses</b> across <b style={{ color: NAVY }}>42 countries</b> — built for counsellors, loved by students.
           </motion.p>
-          <motion.div custom={3} variants={fade} className="mt-5 inline-flex items-center gap-3 flex-wrap justify-center">
-            <Box component="a" href="#demo">
-              <Button className="h-11 px-5 rounded-full font-bold text-white text-[13px] tracking-wide shadow-lg"
-                style={{ background: NAVY }}>
-                See it in action <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </Box>
+          <motion.div custom={3} variants={fade} className="mt-4 md:mt-5 inline-flex items-center gap-2.5 flex-wrap justify-center">
+            <Button onClick={() => setDemoOpen(true)} data-testid="hero-demo-open" className="h-10 md:h-11 px-4 md:px-5 rounded-full font-bold text-white text-[12.5px] md:text-[13px] tracking-wide shadow-lg"
+              style={{ background: NAVY }}>
+              See it in action <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
             <Box component="a" href="#pillars">
-              <Button variant="outline" className="h-11 px-5 rounded-full font-bold text-[13px] border-2 bg-white"
+              <Button variant="outline" className="h-10 md:h-11 px-4 md:px-5 rounded-full font-bold text-[12.5px] md:text-[13px] border-2 bg-white"
                 style={{ borderColor: NAVY, color: NAVY }}>
                 Explore capabilities
               </Button>
@@ -93,21 +141,35 @@ function Hero() {
         </motion.div>
 
         {/* Mosaic — 3 asymmetric editorial cards */}
-        <Box className="mt-8 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4">
+        <Box className="mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4">
           {/* Card 1: Psychometric radar (tall) */}
           <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.1 }}
             className="md:col-span-5 md:row-span-2 rounded-3xl bg-white border border-slate-200 p-4 md:p-5 relative overflow-hidden"
             style={{ boxShadow: "0 30px 60px -35px rgba(15,26,91,0.35)" }}>
-            <Box className="flex items-center justify-between">
+            <Box className="flex items-center justify-between gap-2">
               <Box component="span" className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 text-amber-800 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest">
                 <Brain className="h-3 w-3" /> Psychometrics
               </Box>
-              <Box component="span" className="text-[10px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>Live scan</Box>
+              {/* Ananya / Rahul toggle */}
+              <Box role="tablist" aria-label="Choose profile" className="inline-flex items-center rounded-full bg-slate-100 p-0.5">
+                {PROFILES.map((p, i) => {
+                  const on = i === profileIdx;
+                  return (
+                    <Box component="button" key={p.key} role="tab" aria-selected={on}
+                      data-testid={`radar-profile-${i}`}
+                      onClick={() => setProfileIdx(i)}
+                      className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold uppercase tracking-widest transition-colors ${on ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                      style={on ? { color: NAVY } : undefined}>
+                      {p.key === 'ananya' ? 'Ananya' : 'Rahul'}
+                    </Box>
+                  );
+                })}
+              </Box>
             </Box>
             <Typography variant="inherit" component="h3" className="font-head mt-3 text-xl md:text-2xl font-black tracking-tight" style={{ color: NAVY }}>
-              Ananya&apos;s profile
+              {profile.name}
             </Typography>
-            <Typography variant="inherit" component="p" className="text-[12px] mt-0.5" style={{ color: SUBTLE }}>Class 11 · Science stream</Typography>
+            <Typography variant="inherit" component="p" className="text-[12px] mt-0.5" style={{ color: SUBTLE }}>{profile.meta}</Typography>
 
             {/* Radar visual — simple polygon rings */}
             <Box className="mt-3 relative h-40 md:h-44 flex items-center justify-center">
@@ -120,13 +182,18 @@ function Hero() {
                     }).join(" ")}
                     fill="none" stroke="#E2E8F0" strokeWidth="1" />
                 ))}
-                <polygon
-                  points={[85, 70, 92, 60, 78].map((r, i) => {
+                <motion.polygon
+                  key={profile.key}
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ transformOrigin: '0 0' }}
+                  points={profile.values.map((r, i) => {
                     const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
                     return `${Math.cos(a) * r},${Math.sin(a) * r}`;
                   }).join(" ")}
                   fill={INDIGO} fillOpacity="0.25" stroke={INDIGO} strokeWidth="2" />
-                {[85, 70, 92, 60, 78].map((r, i) => {
+                {profile.values.map((r, i) => {
                   const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
                   return <circle key={i} cx={Math.cos(a) * r} cy={Math.sin(a) * r} r="3.5" fill={INDIGO} />;
                 })}
@@ -145,9 +212,9 @@ function Hero() {
             <Box className="mt-2 rounded-xl bg-slate-50 border border-slate-100 p-2.5">
               <Typography variant="inherit" component="p" className="text-[10.5px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>Top recommendation</Typography>
               <Typography variant="inherit" component="p" className="font-head text-[14px] font-black tracking-tight mt-0.5" style={{ color: NAVY }}>
-                Design &amp; Product Engineering
+                {profile.rec}
               </Typography>
-              <Typography variant="inherit" component="p" className="text-[11px] mt-0.5" style={{ color: SUBTLE }}>92% fit · 14 matching programs</Typography>
+              <Typography variant="inherit" component="p" className="text-[11px] mt-0.5" style={{ color: SUBTLE }}>{profile.fit}</Typography>
             </Box>
           </motion.div>
 
@@ -236,6 +303,7 @@ function Hero() {
           </motion.div>
         </Box>
       </Box>
+      <DemoVideoDialog open={demoOpen} onClose={() => setDemoOpen(false)} />
     </Box>
   );
 }
@@ -244,18 +312,18 @@ function Hero() {
 function StatStrip() {
   return (
     <Box component="section" className="bg-white">
-      <Box className="max-w-7xl mx-auto px-6 pt-6 pb-14">
-        <Box className="rounded-2xl bg-white border border-slate-100 shadow-[0_20px_50px_-30px_rgba(15,26,91,0.35)] px-6 py-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Box className="max-w-7xl mx-auto px-4 sm:px-6 pt-3 pb-6 md:pt-4 md:pb-10">
+        <Box className="rounded-2xl bg-white border border-slate-100 shadow-[0_20px_50px_-30px_rgba(15,26,91,0.35)] px-4 py-3 md:px-5 md:py-4 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {STATS.map((s) => {
             const Icon = s.icon;
             return (
-              <Box key={s.label} className="flex items-center gap-3">
-                <Box className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: s.color + "1A", color: s.color }}>
-                  <Icon className="h-5 w-5" />
+              <Box key={s.label} className="flex items-center gap-2.5">
+                <Box className="h-9 w-9 md:h-10 md:w-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: s.color + "1A", color: s.color }}>
+                  <Icon className="h-4 w-4 md:h-[18px] md:w-[18px]" />
                 </Box>
                 <Box>
-                  <Typography variant="inherit" component="p" className="font-head text-xl font-black" style={{ color: NAVY }}>{s.value}</Typography>
-                  <Typography variant="inherit" component="p" className="text-[11px] font-medium" style={{ color: SUBTLE }}>{s.label}</Typography>
+                  <Typography variant="inherit" component="p" className="font-head text-base md:text-lg font-black leading-tight" style={{ color: NAVY }}>{s.value}</Typography>
+                  <Typography variant="inherit" component="p" className="text-[10.5px] md:text-[11px] font-medium leading-tight" style={{ color: SUBTLE }}>{s.label}</Typography>
                 </Box>
               </Box>
             );
