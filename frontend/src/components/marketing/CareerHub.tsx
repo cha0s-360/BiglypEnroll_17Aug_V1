@@ -93,55 +93,57 @@ function Hero() {
         background: `radial-gradient(circle at 15% 20%, #BFDBFE66 0%, transparent 45%), radial-gradient(circle at 85% 80%, ${INDIGO}22 0%, transparent 45%)`,
       }} />
 
-      <Box className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-8 md:pt-8 md:pb-12">
-        {/* Overline row */}
-        <Box className="flex flex-wrap items-center justify-between gap-2">
-          <Box component="span" className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-2.5 py-1 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: NAVY }}>
-            <GraduationCap className="h-3.5 w-3.5" style={{ color: INDIGO }} /> Biglyp Career Hub · Issue No. 01
-          </Box>
-          <Box className="hidden md:flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: SUBTLE }}>
-            <Box component="span" className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Discovery · Psychometrics · Applications
-          </Box>
-        </Box>
-
-        {/* Big editorial headline — centered magazine cover style */}
-        <motion.div initial="hidden" animate="show" variants={fade} className="mt-4 md:mt-6 text-center max-w-5xl mx-auto">
-          <motion.h1 custom={1} variants={fade}
-            className="font-head text-[28px] sm:text-[34px] md:text-[52px] lg:text-[64px] leading-[0.95] font-black tracking-tight"
-            style={{ color: NAVY }}>
-            Discover the{" "}
-            <Box component="span" className="relative inline-block">
-              <Box component="span" className="italic font-light" style={{ color: INDIGO }}>right</Box>
-            </Box>{" "}
-            <br className="hidden md:block" />
-            career.{" "}
-            <Box component="span" className="relative inline-block">
-              <Box component="span" className="relative z-10">Then the</Box>
-              <Box component="span" className="absolute inset-x-0 bottom-1 h-2 md:h-2.5" style={{ background: "#FBBF24", opacity: 0.75, zIndex: 0 }} />
-            </Box>{" "}
-            right{" "}
-            <Box component="span" className="underline decoration-[4px] md:decoration-[5px] underline-offset-[6px] md:underline-offset-[8px]" style={{ textDecorationColor: INDIGO }}>university</Box>.
-          </motion.h1>
-          <motion.p custom={2} variants={fade}
-            className="mt-3 md:mt-4 max-w-2xl mx-auto text-[13px] md:text-[15px] leading-relaxed" style={{ color: SUBTLE }}>
-            AI-driven 4-dimensional psychometrics paired with a live index of <b style={{ color: NAVY }}>2,50,000+ courses</b> across <b style={{ color: NAVY }}>42 countries</b> — built for counsellors, loved by students.
-          </motion.p>
-          <motion.div custom={3} variants={fade} className="mt-4 md:mt-5 inline-flex items-center gap-2.5 flex-wrap justify-center">
-            <Button onClick={() => setDemoOpen(true)} data-testid="hero-demo-open" className="h-10 md:h-11 px-4 md:px-5 rounded-full font-bold text-white text-[12.5px] md:text-[13px] tracking-wide shadow-lg"
-              style={{ background: NAVY }}>
-              See it in action <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-            <Box component="a" href="#pillars">
-              <Button variant="outline" className="h-10 md:h-11 px-4 md:px-5 rounded-full font-bold text-[12.5px] md:text-[13px] border-2 bg-white"
-                style={{ borderColor: NAVY, color: NAVY }}>
-                Explore capabilities
-              </Button>
+      <Box className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-10 md:pt-10 md:pb-16">
+        {/* Split layout: left = editorial copy, right = mosaic */}
+        <Box className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
+          {/* ---- Left column ---- */}
+          <motion.div initial="hidden" animate="show" variants={fade} className="relative text-left">
+            <Box component="span" className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-3 py-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: NAVY }}>
+              <Sparkles className="h-3.5 w-3.5" style={{ color: INDIGO }} /> AI-powered Career Discovery
             </Box>
-          </motion.div>
-        </motion.div>
 
-        {/* Mosaic — 3 asymmetric editorial cards */}
-        <Box className="mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4">
+            <motion.h1 custom={1} variants={fade}
+              className="font-head mt-5 md:mt-6 text-[34px] sm:text-[42px] md:text-[54px] lg:text-[64px] leading-[0.98] font-black tracking-tight"
+              style={{ color: NAVY }}>
+              Discover the{" "}
+              <Box component="span" className="italic font-light" style={{ color: INDIGO }}>right</Box>{" "}
+              <br className="hidden md:block" />
+              career.{" "}
+              <Box component="span" className="relative inline-block">
+                <Box component="span" className="relative z-10">Then the</Box>
+                <Box component="span" className="absolute inset-x-0 bottom-1 h-2 md:h-2.5" style={{ background: "#FBBF24", opacity: 0.75, zIndex: 0 }} />
+              </Box>{" "}
+              right{" "}
+              <Box component="span" className="underline decoration-[4px] md:decoration-[5px] underline-offset-[6px] md:underline-offset-[8px]" style={{ textDecorationColor: INDIGO }}>university</Box>.
+            </motion.h1>
+
+            <motion.p custom={2} variants={fade}
+              className="mt-4 md:mt-5 max-w-lg text-[14px] md:text-[15.5px] leading-relaxed" style={{ color: SUBTLE }}>
+              AI-driven 4-dimensional psychometrics paired with a live index of <b style={{ color: NAVY }}>2,50,000+ courses</b> across <b style={{ color: NAVY }}>42 countries</b> — built for counsellors, loved by students.
+            </motion.p>
+
+            <motion.div custom={3} variants={fade} className="mt-5 md:mt-6 flex items-center gap-3 flex-wrap">
+              <Button onClick={() => setDemoOpen(true)} data-testid="hero-demo-open" className="h-11 md:h-12 px-5 md:px-6 rounded-full font-bold text-white text-[13px] tracking-wide shadow-lg"
+                style={{ background: NAVY }}>
+                See it in action <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+              <Box component="a" href="#pillars">
+                <Button variant="outline" className="h-11 md:h-12 px-5 md:px-6 rounded-full font-bold text-[13px] border-2 bg-white"
+                  style={{ borderColor: NAVY, color: NAVY }}>
+                  Explore capabilities
+                </Button>
+              </Box>
+            </motion.div>
+          </motion.div>
+
+          {/* ---- Right column: mosaic ---- */}
+          <Box className="relative">
+            {/* Decorative slider chevron on the far right */}
+            <Box component="button" aria-label="Next" className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white border border-slate-200 shadow-md items-center justify-center hover:bg-slate-50 transition-colors z-10" style={{ color: NAVY }}>
+              <ChevronRight className="h-5 w-5" />
+            </Box>
+
+            <Box className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4">
           {/* Card 1: Psychometric radar (tall) */}
           <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.1 }}
             className="md:col-span-5 md:row-span-2 rounded-3xl bg-white border border-slate-200 p-4 md:p-5 relative overflow-hidden"
@@ -301,6 +303,8 @@ function Hero() {
               <Box component="span" className="h-7 w-7 rounded-full bg-slate-100 border-2 border-white text-[10px] font-bold flex items-center justify-center" style={{ color: NAVY }}>+23</Box>
             </Box>
           </motion.div>
+            </Box>
+          </Box>
         </Box>
       </Box>
       <DemoVideoDialog open={demoOpen} onClose={() => setDemoOpen(false)} />

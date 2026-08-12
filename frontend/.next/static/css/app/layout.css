@@ -449,6 +449,9 @@
   .-right-2 {
     right: calc(var(--spacing) * -2);
   }
+  .-right-3 {
+    right: calc(var(--spacing) * -3);
+  }
   .-right-4 {
     right: calc(var(--spacing) * -4);
   }
@@ -2447,6 +2450,9 @@
   .pb-8 {
     padding-bottom: calc(var(--spacing) * 8);
   }
+  .pb-10 {
+    padding-bottom: calc(var(--spacing) * 10);
+  }
   .pb-12 {
     padding-bottom: calc(var(--spacing) * 12);
   }
@@ -2620,6 +2626,10 @@
   .leading-\[0\.95\] {
     --tw-leading: 0.95;
     line-height: 0.95;
+  }
+  .leading-\[0\.98\] {
+    --tw-leading: 0.98;
+    line-height: 0.98;
   }
   .leading-\[1\.1\] {
     --tw-leading: 1.1;
@@ -4067,6 +4077,9 @@
     .sm\:text-\[34px\] {
       font-size: 34px;
     }
+    .sm\:text-\[42px\] {
+      font-size: 42px;
+    }
   }
   @media (width >= 48rem) {
     .md\:absolute {
@@ -4122,6 +4135,9 @@
     }
     .md\:h-11 {
       height: calc(var(--spacing) * 11);
+    }
+    .md\:h-12 {
+      height: calc(var(--spacing) * 12);
     }
     .md\:h-44 {
       height: calc(var(--spacing) * 44);
@@ -4219,6 +4235,9 @@
     .md\:px-5 {
       padding-inline: calc(var(--spacing) * 5);
     }
+    .md\:px-6 {
+      padding-inline: calc(var(--spacing) * 6);
+    }
     .md\:px-8 {
       padding-inline: calc(var(--spacing) * 8);
     }
@@ -4231,11 +4250,17 @@
     .md\:pt-8 {
       padding-top: calc(var(--spacing) * 8);
     }
+    .md\:pt-10 {
+      padding-top: calc(var(--spacing) * 10);
+    }
     .md\:pb-10 {
       padding-bottom: calc(var(--spacing) * 10);
     }
     .md\:pb-12 {
       padding-bottom: calc(var(--spacing) * 12);
+    }
+    .md\:pb-16 {
+      padding-bottom: calc(var(--spacing) * 16);
     }
     .md\:pl-3 {
       padding-left: calc(var(--spacing) * 3);
@@ -4282,6 +4307,9 @@
     .md\:text-\[13px\] {
       font-size: 13px;
     }
+    .md\:text-\[15\.5px\] {
+      font-size: 15.5px;
+    }
     .md\:text-\[15px\] {
       font-size: 15px;
     }
@@ -4296,6 +4324,9 @@
     }
     .md\:text-\[52px\] {
       font-size: 52px;
+    }
+    .md\:text-\[54px\] {
+      font-size: 54px;
     }
     .md\:text-\[70px\] {
       font-size: 70px;
@@ -4376,6 +4407,9 @@
     }
     .lg\:flex-col {
       flex-direction: column;
+    }
+    .lg\:gap-10 {
+      gap: calc(var(--spacing) * 10);
     }
     .lg\:gap-12 {
       gap: calc(var(--spacing) * 12);

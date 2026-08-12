@@ -1,9 +1,3 @@
 {
-  "/page": "app/page.js",
-  "/login/page": "app/login/page.js",
-  "/app/page": "app/app/page.js",
-  "/app/discover/page": "app/app/discover/page.js",
-  "/app/financing/page": "app/app/financing/page.js",
-  "/app/psychometry/page": "app/app/psychometry/page.js",
-  "/app/programs/page": "app/app/programs/page.js"
+  "/career-hub/page": "app/career-hub/page.js"
 }
