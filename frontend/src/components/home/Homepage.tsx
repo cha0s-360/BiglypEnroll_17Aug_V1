@@ -447,25 +447,25 @@ function TabbedSection({ id, eyebrow, title, subtitle, tabs, footer, bg }: any) 
 
           <motion.div key={active} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
             className="rounded-3xl bg-white border border-indigo-100 overflow-hidden shadow-[0_24px_60px_-30px_rgba(79,70,229,0.4)] grid md:grid-cols-2 items-stretch">
-            <Box className="p-6 md:p-8 flex flex-col">
-              <Box className="h-12 w-12 rounded-2xl flex items-center justify-center" style={{ background: TINT, color: INDIGO_DEEP }}><CurIcon className="h-6 w-6" /></Box>
-              <Typography variant="inherit" component="h3" className="font-head text-2xl font-black mt-4" style={{ color: NAVY }}>{cur.cardTitle}</Typography>
+            <Box className="p-5 md:p-6 flex flex-col">
+              <Box className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: TINT, color: INDIGO_DEEP }}><CurIcon className="h-5 w-5" /></Box>
+              <Typography variant="inherit" component="h3" className="font-head text-xl md:text-2xl font-black mt-3" style={{ color: NAVY }}>{cur.cardTitle}</Typography>
               {cur.desc.map((d: string, k: number) => (
-                <Typography key={k} variant="inherit" component="p" className="mt-2.5 text-[13.5px] leading-relaxed text-slate-600">{d}</Typography>
+                <Typography key={k} variant="inherit" component="p" className="mt-1.5 text-[13px] leading-snug text-slate-600">{d}</Typography>
               ))}
-              <Box component="ul" className="mt-4 grid gap-2">
+              <Box component="ul" className="mt-3 grid gap-1.5">
                 {cur.points?.map((p: string) => (
-                  <Box component="li" key={p} className="flex items-start gap-2 text-[13px] text-slate-700">
+                  <Box component="li" key={p} className="flex items-start gap-2 text-[12.5px] leading-snug text-slate-700">
                     <Box className="h-4 w-4 rounded-full flex items-center justify-center mt-0.5 shrink-0" style={{ background: TINT, color: INDIGO_DEEP }}><Check className="h-3 w-3" /></Box>{p}
                   </Box>
                 ))}
               </Box>
-              <Box className="mt-auto pt-6 flex flex-wrap gap-3">
-                <Button className="h-11 px-5 rounded-full font-semibold text-sm text-white shadow-lg shadow-indigo-600/20" style={{ background: grad }}>{cur.primary} <ArrowRight className="h-4 w-4 ml-2" /></Button>
-                {cur.secondary && (<Button variant="outline" className="h-11 px-5 rounded-full font-semibold text-sm border-indigo-200 text-indigo-700 hover:bg-indigo-50 bg-transparent">{cur.secondary}</Button>)}
+              <Box className="mt-4 flex flex-wrap gap-2.5">
+                <Button className="h-10 px-4 rounded-full font-semibold text-[13px] text-white shadow-lg shadow-indigo-600/20" style={{ background: grad }}>{cur.primary} <ArrowRight className="h-4 w-4 ml-2" /></Button>
+                {cur.secondary && (<Button variant="outline" className="h-10 px-4 rounded-full font-semibold text-[13px] border-indigo-200 text-indigo-700 hover:bg-indigo-50 bg-transparent">{cur.secondary}</Button>)}
               </Box>
             </Box>
-            <Box className="relative min-h-[340px] hidden md:block">
+            <Box className="relative hidden md:block">
               <Box component="img" src={cur.img} alt={cur.cardTitle} className="absolute inset-0 w-full h-full object-cover" />
               <Box className="absolute inset-0" style={{ background: 'linear-gradient(160deg, transparent 55%, rgba(30,27,75,0.28))' }} />
             </Box>
