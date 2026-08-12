@@ -78,7 +78,7 @@ function Hero() {
           </Typography>
 
           <Typography variant="inherit" component="p" className="reveal-2 mt-4 font-head text-xl md:text-2xl font-bold" style={{ color: INDIGO }}>
-            From early career discovery to the right course &amp; university.
+            Where every student discovers, enrols and thrives.
           </Typography>
           <Typography variant="inherit" component="p" className="reveal-3 mt-5 text-[17px] max-w-xl leading-relaxed text-slate-600">
             One institutional OS unifying AI career discovery, 2,50,000+ global courses and 0% EMI fee collection — end-to-end support powered by technology and expert guidance.
