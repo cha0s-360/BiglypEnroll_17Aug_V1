@@ -20,7 +20,7 @@ import {
   FileCheck2, Radar, ChevronDown, Zap, Eye,
 } from "lucide-react";
 
-const HERO_IMG = "https://images.unsplash.com/photo-1719559519182-698f9bfc4e2f?crop=entropy&cs=srgb&fm=jpg&q=80&w=1200";
+const HERO_IMG = "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=1200";
 
 const fade = {
   hidden: { opacity: 0, y: 20 },

@@ -21,9 +21,16 @@ const NAVY = '#0B1B4B';
 const SKY = '#3B82F6';
 const TINT = '#EFF6FF';
 
-const HERO_IMG = 'https://images.pexels.com/photos/6238120/pexels-photo-6238120.jpeg?auto=compress&cs=tinysrgb&w=1100';
-const LEARN_IMG = 'https://images.unsplash.com/photo-1583037825390-a23eee53f6ef?auto=format&fit=crop&q=80&w=900';
-const FEE_IMG = 'https://images.pexels.com/photos/5538000/pexels-photo-5538000.jpeg?auto=compress&cs=tinysrgb&w=1000';
+const IMG_GROUP = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=1200';
+const IMG_CAMPUS = 'https://images.unsplash.com/photo-1524069290683-0457abfe42c3?auto=format&fit=crop&q=80&w=1100';
+const IMG_LAPTOP = 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80&w=1000';
+const IMG_SCHOOL = 'https://images.unsplash.com/photo-1642140027867-e5983a32119c?auto=format&fit=crop&q=80&w=1100';
+const IMG_FAMILY = 'https://images.unsplash.com/photo-1659352787906-f809a3b9e86e?auto=format&fit=crop&q=80&w=1100';
+const IMG_COUNSEL = 'https://images.unsplash.com/photo-1573497620053-ea5300f94f21?auto=format&fit=crop&q=80&w=1100';
+
+const HERO_IMG = IMG_GROUP;
+const LEARN_IMG = IMG_LAPTOP;
+const FEE_IMG = IMG_FAMILY;
 
 const fade = { hidden: { opacity: 0, y: 22 }, show: (i = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.06, duration: 0.5 } }) };
 const grad = `linear-gradient(135deg, ${SKY}, ${BLUE_DEEP})`;
@@ -54,9 +61,10 @@ function HomeNav() {
 /* =================== HERO =================== */
 function Hero() {
   return (
-    <Box component="section" className="relative overflow-hidden bg-white">
-      <Box className="absolute -top-24 -right-24 h-96 w-96 rounded-full blur-3xl opacity-40" style={{ background: 'radial-gradient(circle, #93C5FD, transparent 70%)' }} />
-      <Box className="absolute top-40 -left-24 h-80 w-80 rounded-full blur-3xl opacity-40" style={{ background: 'radial-gradient(circle, #BFDBFE, transparent 70%)' }} />
+    <Box component="section" className="relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #E7F0FF 0%, #F4F8FF 58%, #ffffff 100%)' }}>
+      <Box className="absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(#c3d5fe 1px, transparent 1px)', backgroundSize: '26px 26px' }} />
+      <Box className="absolute -top-24 -right-24 h-96 w-96 rounded-full blur-3xl opacity-50" style={{ background: 'radial-gradient(circle, #93C5FD, transparent 70%)' }} />
+      <Box className="absolute top-40 -left-24 h-80 w-80 rounded-full blur-3xl opacity-50" style={{ background: 'radial-gradient(circle, #A5B4FC, transparent 70%)' }} />
       <Box className="relative max-w-7xl mx-auto px-5 pt-14 pb-16 grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
         <motion.div initial="hidden" animate="show" variants={fade}>
           <Box component="span" className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest" style={{ background: TINT, color: BLUE_DEEP }}>
@@ -75,6 +83,20 @@ function Hero() {
           <motion.div custom={4} variants={fade} className="mt-8 flex flex-wrap gap-3">
             <Box component="a" href="#journey"><Button className="h-12 px-6 rounded-full font-semibold text-sm text-white shadow-xl shadow-blue-600/25" style={{ background: grad }}>Take Assessment <ArrowRight className="h-4 w-4 ml-2" /></Button></Box>
             <Box component="a" href="#platform"><Button variant="outline" className="h-12 px-6 rounded-full font-semibold text-sm border-blue-200 text-blue-700 hover:bg-blue-50 bg-transparent"><PlayCircle className="h-4 w-4 mr-2" /> Explore Platform</Button></Box>
+          </motion.div>
+          <motion.div custom={5} variants={fade} className="mt-8 flex items-center gap-4">
+            <Box className="flex -space-x-3">
+              {[IMG_LAPTOP, IMG_COUNSEL, IMG_CAMPUS, IMG_FAMILY].map((src, k) => (
+                <Box key={k} component="img" src={src} alt="Biglyp student" className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-md" />
+              ))}
+            </Box>
+            <Box>
+              <Box className="flex items-center gap-1">
+                {[0, 1, 2, 3, 4].map((s) => <Star key={s} className="h-3.5 w-3.5" style={{ color: '#F59E0B', fill: '#F59E0B' }} />)}
+                <Typography variant="inherit" component="span" className="ml-1 text-[13px] font-bold" style={{ color: NAVY }}>4.9/5</Typography>
+              </Box>
+              <Typography variant="inherit" component="p" className="text-[12px] text-slate-500">Loved by 50 Lakh+ students &amp; parents</Typography>
+            </Box>
           </motion.div>
         </motion.div>
         <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.2 }} className="relative">
@@ -430,19 +452,19 @@ export default function Homepage() {
       {/* Platform anchor + 3 dedicated engine sections */}
       <Box id="platform">
         <ProductSection index={1} theme="light" reverse={false} icon={GraduationCap} accent={BLUE_DEEP}
-          tag="For Institutions" title="BiglypEnroll" tagline="The all-in-one OS for modern institutions." href="/biglypenroll" img={LEARN_IMG}
+          tag="For Institutions" title="BiglypEnroll" tagline="The all-in-one OS for modern institutions." href="/biglypenroll" img={IMG_CAMPUS}
           desc="Run admissions and fee collection from a single console — bridging career readiness and payments into one operating system trusted by schools, colleges and skilling institutes."
           points={['Admissions & enrolment, end-to-end', 'Career-readiness + fee-collection engines', 'Plug into your ERP or launch a white-labeled portal', 'ISO 27001 · DPDP · RBI-regulated']}
           stats={[{ v: '6,500+', l: 'Institutions' }, { v: '50 Lakh+', l: 'Students' }, { v: '₹4,200 Cr+', l: 'Fees processed' }]} />
 
         <ProductSection index={2} theme="dark" reverse={true} icon={Brain} accent="#93C5FD"
-          tag="For Students" title="Biglyp Career Hub" tagline="Discover the right career. Then the right university." href="/career-hub" img={HERO_IMG}
+          tag="For Students" title="Biglyp Career Hub" tagline="Discover the right career. Then the right university." href="/career-hub" img={IMG_COUNSEL}
           desc="AI-driven 4-dimensional psychometrics paired with a live index of 2,50,000+ courses across 42 countries — built for counsellors, loved by students."
           points={['4-D psychometrics: Aptitude · Interest · EQ · Personality', '2,50,000+ courses across 42 countries', 'Personalised career & university matches', 'Counsellor dashboards, workflows & reports']}
           stats={[{ v: '2.5L+', l: 'Courses' }, { v: '42', l: 'Countries' }, { v: '60+', l: 'Traits mapped' }]} />
 
         <ProductSection index={3} theme="tint" reverse={false} icon={Wallet} accent="#0EA5E9"
-          tag="For Parents" title="Biglyp Fee Collection" tagline="Fees upfront. EMIs for parents. Reconciled live." href="/fee-collection" img={FEE_IMG}
+          tag="For Parents" title="Biglyp Fee Collection" tagline="Fees upfront. EMIs for parents. Reconciled live." href="/fee-collection" img={IMG_SCHOOL}
           desc="India's most advanced fee payment platform for schools, colleges and skilling institutes — 8+ payment rails, 0% EMIs for parents and live analytics, with schools paid 100% upfront."
           points={['8+ payment rails (UPI, cards, netbanking, NACH…)', '0% EMIs for parents · 100% upfront to schools', 'Automated reconciliation & live dashboards', 'RBI-regulated NBFC lending partners']}
           stats={[{ v: '8+', l: 'Payment rails' }, { v: '0%', l: 'EMI interest' }, { v: '100%', l: 'Upfront' }]} />
