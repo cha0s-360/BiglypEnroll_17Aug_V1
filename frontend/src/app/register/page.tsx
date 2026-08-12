@@ -23,7 +23,7 @@ const ROLE_OPTS = [
   { v: 'counsellor', l: 'Counsellor' },
 ];
 
-const HERO_IMG = 'https://images.unsplash.com/photo-1659352787906-f809a3b9e86e?auto=format&fit=crop&q=80&w=1000';
+const HERO_IMG = 'https://images.unsplash.com/photo-1719559519182-698f9bfc4e2f?crop=entropy&cs=srgb&fm=jpg&q=80&w=900';
 
 export default function Register() {
   const { register } = useAuth();

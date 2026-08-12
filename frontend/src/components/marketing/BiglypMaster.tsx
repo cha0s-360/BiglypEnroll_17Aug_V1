@@ -16,7 +16,7 @@ import {
   Building2, Fingerprint, HeartHandshake, BarChart3, Rocket, Zap, Award, PlayCircle,
 } from 'lucide-react';
 
-const HERO_IMG = 'https://images.unsplash.com/photo-1642140027867-e5983a32119c?auto=format&fit=crop&q=80&w=1200';
+const HERO_IMG = 'https://images.unsplash.com/photo-1719559519182-698f9bfc4e2f?crop=entropy&cs=srgb&fm=jpg&q=80&w=1200';
 
 const fade = {
   hidden: { opacity: 0, y: 20 },
