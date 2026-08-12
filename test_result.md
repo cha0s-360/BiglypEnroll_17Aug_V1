@@ -331,6 +331,52 @@ frontend:
         -agent: "testing"
         -comment: "E2E testing completed with limitation. Wallet balance verified: ₹1,200 (> 0). Fee Payment page shows 'All academic dues cleared' and 'No other fees pending' - all fees have been paid in previous test runs. Could not test wallet toggle UI interaction in payment dialog because no pending fees available. HOWEVER, backend integration confirmed working: (1) Wallet balance ₹1,200 visible on Rewards page; (2) Points Activity tab shows 'Wallet credit applied to fee payment' transaction with ₹-2,249 wallet deduction from a previous payment, confirming the wallet auto-apply feature has been successfully used; (3) The wallet toggle component exists in ParentDashboard.js code (line 515, data-testid='use-wallet-toggle') with correct conditional rendering (only when wallet > 0); (4) Toggle ON styling verified in code: border-emerald-500 bg-emerald-50 with Check icon; (5) Wallet applied line rendering verified in code (line 508-512). The feature implementation is correct and has been functionally tested in previous runs. Limitation: UI interaction testing skipped due to no pending fees. Recommendation: Feature is production-ready based on code review, backend integration verification, and evidence of successful prior usage."
 
+frontend:
+  - task: "Admin Dashboard — Demo utilities card + Reset demo state confirmation dialog"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/admin/AdminDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "New Demo utilities strip at the top of the school Admin Dashboard (visible ONLY to school_admin/super_admin). Verify: (1) Login as school_admin (school@biglyp.com/school123); (2) Navigate to /dashboard (Analytics landing) — verify data-testid='demo-utilities' strip is visible at the very top with a FlaskConical icon, 'Demo utilities' title, an explanatory sentence and a right-aligned outline button data-testid='reset-demo-btn' labeled 'Reset demo state'; (3) Click reset-demo-btn — an AlertDialog opens with title 'Reset demo state?' and body describing what gets cleared; (4) Click data-testid='reset-cancel' — dialog closes, nothing happens; (5) Click reset-demo-btn again then data-testid='reset-confirm' — a success toast appears with counts like 'Demo reset · N payment(s), M reward txn(s) cleared'; (6) Dialog closes; the analytics widgets re-fetch. (7) Login as parent (parent@biglyp.com/parent123), go to /app — pending fees should now appear again (previously all paid). (8) Login as parent (not school_admin) and go to /dashboard — parent shouldn't have access to admin dashboard anyway, so no verification needed there. CLEANUP: After test, either re-pay some fees or leave state as-is; note in report."
+        -working: true
+        -agent: "testing"
+        -comment: "Comprehensive E2E testing completed. All 8 test steps passed: (1) Logged in as school_admin successfully; (2) Navigated to /dashboard, demo-utilities strip (data-testid='demo-utilities') visible at top with FlaskConical icon, 'Demo utilities' title, subtitle mentioning 'wallet' and 'reminder' demos, and reset-demo-btn button labeled 'Reset demo state'; (3) Clicked reset-demo-btn, AlertDialog opened with title 'Reset demo state?' and body mentioning wiping payments/wallet/points; (4) Clicked reset-cancel (data-testid='reset-cancel'), dialog closed with no side effect; (5) Clicked reset-demo-btn again, then reset-confirm (data-testid='reset-confirm'), Loader2 spinner visible during reset, success toast appeared with counts 'Demo reset · 0 payment(s), 0 reward txn(s) cleared' (0 counts because already reset in previous test), dialog auto-closed; (6) Charts/widgets re-fetched successfully (7 KPI cards rendered, no crash); (7) Logged in as parent, navigated to /app, 4 fee payment option cards visible (pending fees restored after reset); (8) Navigated to /app/rewards, verified Points card shows 0 points and Wallet card shows ₹0 (rewards reset correctly). All UI components, dialog interactions, reset functionality, toast notifications, and state restoration working correctly. Feature is production-ready."
+
+  - task: "Parent Rewards — Tier Perks section (unlocked/locked cards) + progress bar in Points card"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/parent/Rewards.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Rewards page now shows tier progress and unlocked perks. Login as parent (parent@biglyp.com/parent123), go to /app/rewards. Verify: (1) Points card (data-testid='rewards-points') shows tier label, points, AND if there is a next tier: a thin progress bar plus '<X> pts to <NextTier>' text. If tier=Platinum, shows 'Highest tier unlocked ✨' instead; (2) A 'Your Tier Perks' section (data-testid='tier-perks') renders below the summary cards with a heading and a subtitle mentioning current + next tier; (3) A grid of perk cards renders — each with an icon, title, description, tier pill badge (Bronze/Silver/Gold/Platinum). Unlocked perks show colored icon + full opacity; locked perks show a Lock icon + dashed border + 'Locked · reach <Tier> to unlock' text + opacity-60. Selectors: data-testid pattern 'perk-<tier>-<idx>'; (4) Depending on current tier, verify correct set is unlocked — Bronze parent: only 2 Bronze perks unlocked; Silver: 4 unlocked (2 Bronze + 2 Silver); Gold: 7 unlocked; Platinum: all 10. (5) If a reset was done earlier, the parent should be Bronze; otherwise use whatever tier state exists — just verify the pattern is correct."
+        -working: true
+        -agent: "testing"
+        -comment: "Comprehensive E2E testing completed. All tier perks features verified: (1) Points card (data-testid='rewards-points') shows '0' points, 'Bronze tier' label, progress bar (thin bar with bg-white/90), and '1,000 pts to Silver' text (correct for non-Platinum tier); (2) tier-perks section (data-testid='tier-perks') found with heading 'Your Tier Perks' and subtitle mentioning current 'Bronze' tier and next tier progress ('more unlock at Silver (1,000 pts away)'); (3) Grid of 10 perk cards rendered with correct distribution: 2 Bronze (data-testid='perk-bronze-0', 'perk-bronze-1'), 2 Silver (perk-silver-0, perk-silver-1), 3 Gold (perk-gold-0/1/2), 3 Platinum (perk-platinum-0/1/2); (4) Perk card structure verified: each card has icon (svg), title (font-semibold), description (text-xs text-slate-500), and tier pill badge (uppercase text with 'BRONZE'/'SILVER'/'GOLD'/'PLATINUM'); (5) Unlocked/locked states verified from screenshot: 2 Bronze perks unlocked (Standard Support, Welcome Bonus) with colored icons and full opacity; 8 perks locked (Silver/Gold/Platinum) with Lock icons, dashed borders (border-dashed), opacity-60, and 'Locked · reach [Tier] to unlock' text; (6) Unlock count matches Bronze tier (2 unlocked, 8 locked). All UI components, tier progression display, perk grid, card structure, and locked/unlocked visual states working correctly. Feature is production-ready."
+
+  - task: "Parent Rewards — Coupon 'Valid till' date + Recently Redeemed / Use soon / Expired badges"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/parent/Rewards.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Redemption cards in the 'My Rewards' tab now show expiry info for coupons. Login as parent, navigate to /app/rewards -> click data-testid='rewards-tab-activity'. Prerequisites: at least one coupon redemption should exist. If none: earn points via upfront payment (or via demo-reset then payment), then POST redeem-coupon cp_bms. Verify each COUPON redemption row (data-testid='redemption-{id}'): (a) shows the voucher code as monospace text; (b) shows a Timer icon + 'Valid till DD MMM YYYY' text; (c) if created within last 7 days, has a green 'Recently redeemed' pill (data-testid='recent-{id}') with a small Sparkles icon; (d) if expires within 14 days (unlikely in fresh redemption, so this may not show unless manually engineered — informational only); (e) if expired (also unlikely unless manually engineered — informational). COURSE redemption rows should NOT have the Valid till line — only student_name + status. Take screenshots of the activity tab showing coupon expiry displayed correctly."
+        -working: true
+        -agent: "testing"
+        -comment: "Comprehensive E2E testing completed. All coupon expiry badge features verified: Prereq: Used backend API to earn points (paid 3 fee items totaling ₹157,000 via POST /api/parent/pay, earned 3,140 points + ₹1,570 wallet) and redeem cp_bms coupon (POST /api/parent/rewards/redeem-coupon returned voucher code 'BOOK-48A84610', expires_at '2026-11-10T03:46:58.444299+00:00'). (1) Logged in as parent, navigated to /app/rewards, clicked Activity tab (data-testid='rewards-tab-activity'); (2) Found 1 coupon redemption row (data-testid='redemption-1b17616a-ba0e-4078-b4ed-096e9cf61f22'); (3) Voucher code 'BOOK-48A84610' displayed in monospace bold (font-mono font-semibold class), matches pattern ^[A-Z]{4}-[A-F0-9]{8}$; (4) Timer icon present (3 icons in row including Timer icon); (5) 'Valid till DD MMM YYYY' text present with date format '10 Nov 2026' (correct format); (6) 'Recently redeemed' badge present (data-testid='recent-1b17616a-ba0e-4078-b4ed-096e9cf61f22') with green/emerald color (bg-emerald-100 text-emerald-700 border-emerald-200) and Sparkles icon (created within last 7 days); (7) Screenshot shows coupon redemption card with: Ticket icon, title 'Buy 1 Get 1 Movie Ticket', green 'RECENTLY REDEEMED' badge with sparkles icon, voucher code 'BOOK-48A84610' in monospace, Timer icon + 'Valid till 10 Nov 2026' text, and '-1000 pts' deduction. All UI components, expiry date display, badge rendering, icon placement, and date formatting working correctly. Feature is production-ready."
+
 test_plan:
   current_focus: []
   stuck_tasks: []
@@ -370,7 +416,7 @@ test_plan:
 metadata:
   created_by: "main_agent"
   version: "2.0"
-  test_sequence: 11
+  test_sequence: 12
   run_ui: true
 
 agent_communication:
@@ -399,6 +445,9 @@ agent_communication:
 
     -agent: "testing"
     -message: "Round 9 testing completed successfully. Both backend tasks fully tested and verified: (A) Fee Reminders - All 10 test steps passed: GET /api/school/reminder-settings returns defaults; POST persists with sorting/dedup/clamping; invalid values cleaned correctly; disabled reminders prevent notification creation; force run creates notifications (created:2); idempotency works (2nd run created:0); email_log entries verified (2 entries with status='queued'); GET /api/parent/notifications works with sorting, mark-read, read-all; auth checks (401/403) work; settings restored to defaults. (B) Parent Rewards - All 10 test steps passed: GET /api/parent/rewards returns correct structure; GET /api/rewards/catalog returns 6 coupons + 6 courses sorted by points_cost; insufficient points returns 400; upfront payment earned 4498 points + 2249 wallet with 'Upfront' transaction; redeemed cp_bms coupon (voucher_code BOOK-4EF7B1FE matches pattern); enrolled Aarav Sharma in co_writing course (status='Enrolled', student_name correct); redemptions list returns 2 entries sorted newest first; bogus IDs return 404; staff role returns 403; wallet auto-apply works (2249.0 applied, balance decreased, apply_wallet transaction recorded). Both features are production-ready. No issues found."
+    -agent: "testing"
+    -message: "Round 11 UI verification completed successfully. All 3 new frontend features tested end-to-end: (1) Admin Dashboard Demo utilities + Reset dialog - ALL PASS: demo-utilities strip visible with FlaskConical icon, title, subtitle, reset-demo-btn; AlertDialog opens/closes correctly; reset-confirm triggers reset with Loader2 spinner and success toast; charts re-fetch (7 KPI cards); parent login shows pending fees restored (4 cards) and rewards reset (0 points, ₹0 wallet). (2) Parent Rewards Tier Perks + progress bar - ALL PASS: Points card shows tier label 'Bronze', progress bar, '1,000 pts to Silver' text; tier-perks section with heading, subtitle, 10 perk cards (2 Bronze, 2 Silver, 3 Gold, 3 Platinum); perk cards have icon, title, description, tier pill badge; 2 Bronze perks unlocked (colored icons, full opacity), 8 locked (Lock icons, dashed borders, opacity-60, 'Locked · reach [Tier] to unlock' text). (3) Parent Rewards Coupon expiry badges - ALL PASS: Used backend API to earn 3,140 points and redeem cp_bms coupon; Activity tab shows coupon redemption with voucher code 'BOOK-48A84610' in monospace bold (matches pattern), Timer icon, 'Valid till 10 Nov 2026' text, green 'RECENTLY REDEEMED' badge with Sparkles icon (data-testid='recent-{id}'). All 3 features are production-ready. No issues found."
+
     -agent: "main"
     -message: "Frontend UI verification round. Please test the 4 frontend tasks now marked needs_retesting=true (Admin Reminders page, Parent Rewards page, Parent notifications bell, Parent Fee Payment wallet toggle). Auth in /app/memory/test_credentials.md. Backend for all three underlying features has already been verified (backend tasks passed with 20/20). Only UI/interaction verification is needed. Restore any state you touch (reminder-settings back to defaults, all payment options enabled). Screenshots welcome. Also fixed 6 pre-existing lint warnings (calendar.jsx nested components extracted to constants, command.jsx cmdk-input-wrapper prefixed with data-, escaped 3 apostrophes in Team.js/NewApplication.js) — none of these should regress any existing UI, but a quick sanity check on the calendar and command popovers if they're used anywhere would be nice."
 
