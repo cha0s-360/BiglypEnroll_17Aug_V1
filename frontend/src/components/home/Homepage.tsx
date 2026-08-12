@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Box from '@mui/material/Box';
@@ -27,7 +27,6 @@ const HERO_IMG = 'https://images.pexels.com/photos/6238120/pexels-photo-6238120.
 const LEARN_IMG = 'https://images.unsplash.com/photo-1583037825390-a23eee53f6ef?auto=format&fit=crop&q=80&w=900';
 const FEE_IMG = 'https://images.pexels.com/photos/5538000/pexels-photo-5538000.jpeg?auto=compress&cs=tinysrgb&w=1000';
 
-const fade = { hidden: { opacity: 0, y: 22 }, show: (i = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.06, duration: 0.5 } }) };
 const grad = `linear-gradient(135deg, ${VIOLET}, ${INDIGO_DEEP})`;
 const darkGrad = `linear-gradient(150deg, ${NAVY} 0%, ${INDIGO_DEEP} 100%)`;
 
@@ -57,9 +56,9 @@ function HomeNav() {
 /* =================== HERO (more prominent) =================== */
 function Hero() {
   return (
-    <Box component="section" className="relative overflow-hidden" style={{ background: `linear-gradient(180deg, #F5F3FF 0%, #FFFFFF 60%)` }}>
+    <Box component="section" className="relative overflow-hidden" style={{ background: `linear-gradient(165deg, #DED9F7 0%, #EBE8FB 48%, #FBFAFF 100%)` }}>
       {/* ambient blobs + grid */}
-      <Box className="absolute -top-32 -right-24 h-[28rem] w-[28rem] rounded-full blur-3xl opacity-50" style={{ background: 'radial-gradient(circle, #C7D2FE, transparent 70%)' }} />
+      <Box className="absolute -top-32 -right-24 h-[28rem] w-[28rem] rounded-full blur-3xl opacity-60" style={{ background: 'radial-gradient(circle, #C7D2FE, transparent 70%)' }} />
       <Box className="absolute top-52 -left-28 h-96 w-96 rounded-full blur-3xl opacity-50" style={{ background: 'radial-gradient(circle, #DDD6FE, transparent 70%)' }} />
       <Box className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: `radial-gradient(${INDIGO} 1px, transparent 1px)`, backgroundSize: '26px 26px' }} />
 
@@ -124,11 +123,37 @@ function Hero() {
   );
 }
 
-/* =================== STATS =================== */
+/* =================== STATS (animated counters) =================== */
+function CountUp({ end, suffix = '', duration = 1500 }: { end: number; suffix?: string; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [val, setVal] = useState(0);
+  const started = useRef(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !started.current) {
+        started.current = true;
+        const t0 = performance.now();
+        const tick = (now: number) => {
+          const p = Math.min((now - t0) / duration, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          setVal(Math.round(end * eased));
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }, { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [end, duration]);
+  return <span ref={ref} data-testid="stat-counter">{val.toLocaleString('en-IN')}{suffix}</span>;
+}
+
 const STATS = [
-  { icon: Globe, value: '42+', label: 'Countries', color: VIOLET },
-  { icon: Building2, value: '1,200+', label: 'Partner Universities', color: '#7C3AED' },
-  { icon: Award, value: '2,50,000+', label: 'Career Programs', color: '#F59E0B' },
+  { icon: Globe, end: 42, suffix: '+', label: 'Countries', color: VIOLET },
+  { icon: Building2, end: 1200, suffix: '+', label: 'Partner Universities', color: '#7C3AED' },
+  { icon: Award, end: 250000, suffix: '+', label: 'Career Programs', color: '#F59E0B' },
 ];
 function Stats() {
   return (
@@ -140,7 +165,7 @@ function Stats() {
             return (
               <Box key={s.label} className="flex items-center gap-4 justify-center sm:justify-start">
                 <Box className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: s.color + '18', color: s.color }}><Icon className="h-6 w-6" /></Box>
-                <Box><Typography variant="inherit" component="p" className="font-head text-2xl font-black" style={{ color: NAVY }}>{s.value}</Typography><Typography variant="inherit" component="p" className="text-[12px] font-medium text-slate-500">{s.label}</Typography></Box>
+                <Box><Typography variant="inherit" component="p" className="font-head text-2xl font-black" style={{ color: NAVY }}><CountUp end={s.end} suffix={s.suffix} /></Typography><Typography variant="inherit" component="p" className="text-[12px] font-medium text-slate-500">{s.label}</Typography></Box>
               </Box>
             );
           })}
@@ -161,7 +186,7 @@ function EnrollVisual() {
   ];
   const chart = [40, 68, 34, 82, 52, 92, 58, 78, 44, 72, 88];
   return (
-    <Box className="relative">
+    <Box className="mockup-hover relative">
       {/* Career hub — light card */}
       <Box className="rounded-3xl bg-white border border-indigo-100 p-5 shadow-[0_30px_60px_-30px_rgba(79,70,229,0.4)]">
         <Box className="flex items-center gap-3">
@@ -225,7 +250,7 @@ function EnrollVisual() {
 function CareerVisual() {
   const axes = ['APTITUDE', 'INTERESTS', 'PERSONALITY', 'VALUES', 'SKILLS'];
   const vals = [0.72, 0.9, 0.85, 0.55, 0.68];
-  const cx = 120, cy = 108, R = 76;
+  const cx = 120, cy = 110, R = 82;
   const pt = (i: number, f: number) => {
     const a = (-90 + i * 72) * Math.PI / 180;
     return [cx + Math.cos(a) * R * f, cy + Math.sin(a) * R * f];
@@ -238,54 +263,70 @@ function CareerVisual() {
     { n: 'McGill', c: 'B.Eng. Software', f: '#42', fee: '₹24L / yr' },
   ];
   return (
-    <Box className="relative">
+    <Box className="mockup-hover relative">
       {/* Radar profile card */}
-      <Box className="rounded-3xl bg-white border border-indigo-100 p-5 shadow-[0_30px_60px_-30px_rgba(79,70,229,0.4)]">
+      <Box className="rounded-[26px] bg-white p-6 shadow-[0_36px_70px_-34px_rgba(79,70,229,0.5)] ring-1 ring-indigo-100/70">
         <Box className="flex items-center justify-between">
-          <Box component="span" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-widest" style={{ background: '#FEF3C7', color: '#92400E' }}><Brain className="h-3 w-3" /> Psychometrics</Box>
-          <Typography variant="inherit" component="p" className="text-[9.5px] font-bold uppercase tracking-widest text-slate-400">Live scan</Typography>
+          <Box component="span" className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white" style={{ background: grad }}><Brain className="h-3.5 w-3.5" /> Psychometrics</Box>
+          <Box component="span" className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400"><Box className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live scan</Box>
         </Box>
-        <Typography variant="inherit" component="p" className="font-head font-black text-[18px] mt-3" style={{ color: NAVY }}>Ananya&apos;s profile</Typography>
-        <Typography variant="inherit" component="p" className="text-[11px] text-slate-500">Class 11 · Science stream</Typography>
-        <Box className="mt-2 flex justify-center">
-          <Box component="svg" viewBox="0 0 240 200" className="w-full max-w-[240px]">
-            {[0.4, 0.7, 1].map((f) => (<polygon key={f} points={ring(f)} fill="none" stroke="#E0E7FF" strokeWidth="1" />))}
-            {axes.map((_, i) => { const [x, y] = pt(i, 1); return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#E0E7FF" strokeWidth="1" />; })}
-            <polygon points={data} fill={INDIGO} fillOpacity="0.22" stroke={INDIGO} strokeWidth="2" />
-            {vals.map((v, i) => { const [x, y] = pt(i, v); return <circle key={i} cx={x} cy={y} r="3" fill={INDIGO_DEEP} />; })}
-            {axes.map((ax, i) => { const [x, y] = pt(i, 1.16); return <text key={ax} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="8" fontWeight="700" fill="#94A3B8">{ax}</text>; })}
+        <Box className="mt-4 flex items-end justify-between">
+          <Box>
+            <Typography variant="inherit" component="p" className="font-head font-black text-[20px] leading-none" style={{ color: NAVY }}>Ananya&apos;s profile</Typography>
+            <Typography variant="inherit" component="p" className="text-[12px] text-slate-500 mt-1">Class 11 · Science stream</Typography>
+          </Box>
+          <Box className="text-right">
+            <Typography variant="inherit" component="p" className="font-head font-black text-[22px] leading-none" style={{ color: INDIGO }}>72</Typography>
+            <Typography variant="inherit" component="p" className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mt-0.5">Readiness</Typography>
           </Box>
         </Box>
-        <Box className="mt-1 rounded-2xl bg-indigo-50/50 border border-indigo-50 p-3">
-          <Typography variant="inherit" component="p" className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Top recommendation</Typography>
-          <Box className="flex items-center justify-between mt-0.5">
-            <Typography variant="inherit" component="p" className="font-head font-bold text-[13px]" style={{ color: NAVY }}>Design &amp; Product Engineering</Typography>
-            <Typography variant="inherit" component="p" className="text-[11px] font-bold" style={{ color: '#10B981' }}>92% fit</Typography>
+        <Box className="mt-1 flex justify-center">
+          <Box component="svg" viewBox="0 0 240 210" className="w-full max-w-[260px]">
+            <defs>
+              <linearGradient id="radarFill" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor={VIOLET} stopOpacity="0.45" />
+                <stop offset="100%" stopColor={INDIGO_DEEP} stopOpacity="0.28" />
+              </linearGradient>
+            </defs>
+            {[0.4, 0.7, 1].map((f) => (<polygon key={f} points={ring(f)} fill="none" stroke="#E9E7FB" strokeWidth="1" />))}
+            {axes.map((_, i) => { const [x, y] = pt(i, 1); return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#E9E7FB" strokeWidth="1" />; })}
+            <motion.g initial={{ opacity: 0, scale: 0.15 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }} style={{ transformOrigin: `${cx}px ${cy}px`, transformBox: 'view-box' as any }}>
+              <polygon points={data} fill="url(#radarFill)" stroke={INDIGO} strokeWidth="2.5" strokeLinejoin="round" />
+              {vals.map((v, i) => { const [x, y] = pt(i, v); return <circle key={i} cx={x} cy={y} r="3.5" fill="#fff" stroke={INDIGO_DEEP} strokeWidth="2" />; })}
+            </motion.g>
+            {axes.map((ax, i) => { const [x, y] = pt(i, 1.18); return <text key={ax} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="8.5" fontWeight="700" fill="#94A3B8">{ax}</text>; })}
           </Box>
+        </Box>
+        <Box className="mt-2 rounded-2xl p-3.5 flex items-center justify-between gap-3" style={{ background: TINT }}>
+          <Box className="min-w-0">
+            <Typography variant="inherit" component="p" className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Top recommendation</Typography>
+            <Typography variant="inherit" component="p" className="font-head font-bold text-[13.5px] mt-0.5 truncate" style={{ color: NAVY }}>Design &amp; Product Engineering</Typography>
+          </Box>
+          <Box component="span" className="rounded-full px-2.5 py-1 text-[11px] font-bold text-white shrink-0" style={{ background: '#10B981' }}>92% fit</Box>
         </Box>
       </Box>
 
       {/* Course discovery card */}
-      <Box className="mt-4 rounded-3xl bg-white border border-indigo-100 p-5 shadow-[0_30px_60px_-30px_rgba(79,70,229,0.4)]">
+      <Box className="mt-4 rounded-[26px] bg-white p-6 shadow-[0_36px_70px_-34px_rgba(79,70,229,0.5)] ring-1 ring-indigo-100/70">
         <Box className="flex items-center justify-between">
-          <Box component="span" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-widest text-white" style={{ background: grad }}><Globe className="h-3 w-3" /> Course discovery</Box>
-          <Typography variant="inherit" component="p" className="text-[9.5px] font-bold uppercase tracking-widest text-slate-400">2.5L+ programs</Typography>
+          <Box component="span" className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest" style={{ background: TINT, color: INDIGO_DEEP }}><Globe className="h-3.5 w-3.5" /> Course discovery</Box>
+          <Typography variant="inherit" component="p" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">2.5L+ programs</Typography>
         </Box>
-        <Box className="mt-3 flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2">
-          <Search className="h-3.5 w-3.5 text-slate-400" />
-          <Typography variant="inherit" component="p" className="text-[11.5px] text-slate-500">Computer Science · Canada · 2026 intake</Typography>
+        <Box className="mt-3.5 flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200/70 px-3.5 py-2.5">
+          <Search className="h-4 w-4 text-slate-400" />
+          <Typography variant="inherit" component="p" className="text-[12px] text-slate-500">Computer Science · Canada · 2026 intake</Typography>
         </Box>
         <Box className="mt-3 grid gap-2">
           {unis.map((u) => (
-            <Box key={u.n} className="flex items-center gap-3 rounded-xl border border-slate-100 p-2.5">
-              <Box className="h-8 w-8 rounded-lg flex items-center justify-center text-[13px] shrink-0" style={{ background: TINT }}>🇨🇦</Box>
+            <Box key={u.n} className="flex items-center gap-3 rounded-2xl border border-slate-100 p-2.5 transition-colors hover:border-indigo-200 hover:bg-indigo-50/40">
+              <Box className="h-9 w-9 rounded-xl flex items-center justify-center text-[14px] shrink-0" style={{ background: TINT }}>🇨🇦</Box>
               <Box className="min-w-0 flex-1">
-                <Typography variant="inherit" component="p" className="font-head font-bold text-[12.5px] truncate" style={{ color: NAVY }}>{u.n}</Typography>
-                <Typography variant="inherit" component="p" className="text-[10.5px] text-slate-500 truncate">{u.c}</Typography>
+                <Typography variant="inherit" component="p" className="font-head font-bold text-[13px] truncate" style={{ color: NAVY }}>{u.n}</Typography>
+                <Typography variant="inherit" component="p" className="text-[11px] text-slate-500 truncate">{u.c}</Typography>
               </Box>
               <Box className="text-right shrink-0">
                 <Typography variant="inherit" component="p" className="text-[10px] font-bold" style={{ color: INDIGO }}>{u.f}</Typography>
-                <Typography variant="inherit" component="p" className="text-[10.5px] font-semibold text-slate-600">{u.fee}</Typography>
+                <Typography variant="inherit" component="p" className="text-[11.5px] font-semibold text-slate-700">{u.fee}</Typography>
               </Box>
             </Box>
           ))}
@@ -315,17 +356,17 @@ function FeeVisual() {
   const Col = ({ title, items, accent }: any) => (
     <Box className="rounded-2xl bg-white border border-indigo-100 p-4">
       <Box className="flex justify-center">
-        <Box component="span" className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest" style={{ background: accent + '16', color: accent }}>{title}</Box>
+        <Box component="span" className="rounded-full px-3.5 py-1.5 text-[12px] font-extrabold uppercase tracking-widest" style={{ background: accent + '18', color: accent }}>{title}</Box>
       </Box>
-      <Box className="mt-3 grid gap-3">
+      <Box className="mt-3.5 grid gap-3.5">
         {items.map((it: any) => {
           const Icon = it.icon;
           return (
             <Box key={it.t} className="flex items-start gap-2.5">
-              <Box className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: accent + '14', color: accent }}><Icon className="h-3.5 w-3.5" /></Box>
+              <Box className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: accent + '16', color: accent }}><Icon className="h-4 w-4" /></Box>
               <Box>
-                <Typography variant="inherit" component="p" className="font-head font-bold text-[11.5px] leading-tight" style={{ color: NAVY }}>{it.t}</Typography>
-                <Typography variant="inherit" component="p" className="text-[10px] text-slate-500 leading-snug mt-0.5">{it.d}</Typography>
+                <Typography variant="inherit" component="p" className="font-head font-extrabold text-[13.5px] leading-tight" style={{ color: NAVY }}>{it.t}</Typography>
+                <Typography variant="inherit" component="p" className="text-[11.5px] text-slate-500 leading-snug mt-0.5">{it.d}</Typography>
               </Box>
             </Box>
           );
@@ -334,7 +375,7 @@ function FeeVisual() {
     </Box>
   );
   return (
-    <Box className="relative rounded-3xl p-5 shadow-[0_30px_60px_-30px_rgba(79,70,229,0.4)]" style={{ background: grad }}>
+    <Box className="mockup-hover relative rounded-3xl p-5 shadow-[0_36px_70px_-34px_rgba(79,70,229,0.5)]" style={{ background: grad }}>
       <Box className="grid grid-cols-2 gap-3">
         <Col title="Parents" items={parents} accent={INDIGO_DEEP} />
         <Col title="Institutions" items={inst} accent={'#0EA5E9'} />
@@ -343,10 +384,10 @@ function FeeVisual() {
         {pay.map((p) => {
           const Icon = p.icon;
           return (
-            <Box key={p.t} className="rounded-2xl bg-white p-3 text-center">
-              <Box className="mx-auto h-9 w-9 rounded-xl flex items-center justify-center" style={{ background: p.c + '16', color: p.c }}><Icon className="h-4 w-4" /></Box>
-              <Typography variant="inherit" component="p" className="font-head font-bold text-[11.5px] mt-2" style={{ color: NAVY }}>{p.t}</Typography>
-              <Typography variant="inherit" component="p" className="text-[9.5px] text-slate-500 mt-0.5">{p.d}</Typography>
+            <Box key={p.t} className="rounded-2xl bg-white p-3.5 text-center">
+              <Box className="mx-auto h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: p.c + '18', color: p.c }}><Icon className="h-[18px] w-[18px]" /></Box>
+              <Typography variant="inherit" component="p" className="font-head font-extrabold text-[13.5px] mt-2" style={{ color: NAVY }}>{p.t}</Typography>
+              <Typography variant="inherit" component="p" className="text-[11px] text-slate-500 mt-0.5">{p.d}</Typography>
             </Box>
           );
         })}
@@ -428,7 +469,7 @@ function TabbedSection({ id, eyebrow, title, subtitle, tabs, footer, bg }: any) 
 }
 
 /* =================== PRODUCT SECTION (mockup visuals) =================== */
-function ProductSection({ theme = 'light', reverse = false, index, icon, tag, title, tagline, desc, points, href, accent, visual }: any) {
+function ProductSection({ theme = 'light', reverse = false, index, icon, tag, title, tagline, desc, points, href, accent, visual, note }: any) {
   const Icon = icon;
   const dark = theme === 'dark';
   const bg = dark ? darkGrad : theme === 'tint' ? TINT : '#ffffff';
@@ -466,6 +507,9 @@ function ProductSection({ theme = 'light', reverse = false, index, icon, tag, ti
               </Button>
             </Link>
           </Box>
+          {note && (
+            <Typography variant="inherit" component="p" data-testid="fee-emi-footnote" className="mt-4 text-[12.5px] italic" style={{ color: dark ? 'rgba(255,255,255,0.6)' : '#94A3B8' }}>{note}</Typography>
+          )}
         </Box>
       </Box>
     </Box>
@@ -662,7 +706,8 @@ export default function Homepage() {
           tag="For Parents" title="Biglyp Fee Collection" tagline="Fees upfront. EMIs for parents. Reconciled live." href="/fee-collection"
           visual={<FeeVisual />}
           desc="India's most advanced fee payment platform for schools, colleges and skilling institutes — 8+ payment rails, 0% EMIs for parents and live analytics, with schools paid 100% upfront."
-          points={['8+ payment rails (UPI, cards, netbanking, NACH…)', '0% EMIs for parents · 100% upfront to schools', 'Automated reconciliation & live dashboards', 'RBI-regulated NBFC lending partners']} />
+          points={['8+ payment rails (UPI, cards, netbanking, NACH…)', '0% EMIs* for parents · 100% upfront to schools', 'Automated reconciliation & live dashboards', 'RBI-regulated NBFC lending partners']}
+          note="* 0% EMI subject to partnership." />
       </Box>
 
       <DarkCta />

@@ -73,3 +73,11 @@ GrayQuest-inspired school fee-financing credit platform at `/credit` (staff + cr
 - Hero made more prominent: larger headline (up to 68px) with violet italic accent + yellow underline, subhead, description, dual CTAs, and a trust row (avatars + rating + "6,500+ institutions").
 - Hero entrance switched from framer-motion to CSS `float-up` reveal classes (reveal-1..5) in globals.css for paint-based, hydration-independent reliability.
 - File: /app/frontend/src/components/home/Homepage.tsx. Verified visually (hero + all 3 sections render correctly).
+
+## Update (2026-06b) — Homepage interactions + polish
+- Interactive Radar: Career Hub psychometrics radar (SVG) now scale-animates in on scroll (framer motion.g, whileInView, transformBox view-box).
+- Live counters: hero Stats (42+/1,200+/2,50,000+) count up from zero via IntersectionObserver + rAF (CountUp component, en-IN formatting).
+- Mockup hover: `.mockup-hover` class (globals.css) adds lift + indigo glow to all 3 product mockups.
+- Section CTAs already wired via <Link href> to /biglypenroll, /career-hub, /fee-collection (routes exist).
+- Hero background darkened to a deeper lavender wash; Career Hub mockup made sleeker (gradient pill, live-scan dot, readiness=72 stat, larger radar, softer ring shadows); Fee Collection mockup fonts enlarged/bolder.
+- Added footnote "* 0% EMI subject to partnership." under the Fee Collection CTA (ProductSection `note` prop) + `*` on the "0% EMIs*" bullet.

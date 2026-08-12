@@ -96,6 +96,9 @@
 .reveal-4 { animation: float-up 0.6s ease 0.26s both; }
 .reveal-5 { animation: float-up 0.6s ease 0.34s both; }
 
+.mockup-hover { transition: transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease, filter 0.4s ease; will-change: transform; }
+.mockup-hover:hover { transform: translateY(-10px); filter: drop-shadow(0 34px 55px rgba(79,70,229,0.32)); }
+
 /* MUI + Tailwind interop fixes (unlayered => always win). Keep the hidden
    native <input> of MUI Select invisible so its value never shows through. */
 .MuiSelect-nativeInput {
