@@ -33,9 +33,12 @@ export function MarketingNav() {
           style={{ color: TEXT }}
           onMouseLeave={() => setOpen(false)}
         >
+          <Link href="/" className="font-semibold py-6 hover:opacity-70 transition-opacity" data-testid="nav-homepage">
+            Homepage
+          </Link>
           <Box className="relative" onMouseEnter={() => setOpen(true)}>
             <Link
-              href="/"
+              href="/biglypenroll"
               className="flex items-center gap-1 font-bold py-6"
               style={{ color: INDIGO }}
               data-testid="nav-biglypenroll"

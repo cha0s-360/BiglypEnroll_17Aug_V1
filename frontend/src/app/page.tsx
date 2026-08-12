@@ -1,5 +1,5 @@
-import BiglypMaster from '@/components/marketing/BiglypMaster';
+import Homepage from '@/components/home/Homepage';
 
 export default function Home() {
-  return <BiglypMaster />;
+  return <Homepage />;
 }
