@@ -43,7 +43,7 @@ function Hero() {
         background: `radial-gradient(circle at 15% 20%, #BFDBFE66 0%, transparent 45%), radial-gradient(circle at 85% 80%, ${INDIGO}22 0%, transparent 45%)`,
       }} />
 
-      <Box className="relative max-w-7xl mx-auto px-6 pt-14 pb-24">
+      <Box className="relative max-w-7xl mx-auto px-6 pt-8 pb-12">
         {/* Overline row */}
         <Box className="flex flex-wrap items-center justify-between gap-3">
           <Box component="span" className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: NAVY }}>
@@ -55,9 +55,9 @@ function Hero() {
         </Box>
 
         {/* Big editorial headline — centered magazine cover style */}
-        <motion.div initial="hidden" animate="show" variants={fade} className="mt-10 text-center max-w-5xl mx-auto">
+        <motion.div initial="hidden" animate="show" variants={fade} className="mt-6 text-center max-w-5xl mx-auto">
           <motion.h1 custom={1} variants={fade}
-            className="font-head text-[44px] md:text-[70px] lg:text-[96px] leading-[0.92] font-black tracking-tight"
+            className="font-head text-[34px] md:text-[52px] lg:text-[64px] leading-[0.95] font-black tracking-tight"
             style={{ color: NAVY }}>
             Discover the{" "}
             <Box component="span" className="relative inline-block">
@@ -67,24 +67,24 @@ function Hero() {
             career.{" "}
             <Box component="span" className="relative inline-block">
               <Box component="span" className="relative z-10">Then the</Box>
-              <Box component="span" className="absolute inset-x-0 bottom-2 h-3" style={{ background: "#FBBF24", opacity: 0.75, zIndex: 0 }} />
+              <Box component="span" className="absolute inset-x-0 bottom-1 h-2.5" style={{ background: "#FBBF24", opacity: 0.75, zIndex: 0 }} />
             </Box>{" "}
             right{" "}
-            <Box component="span" className="underline decoration-[6px] underline-offset-[10px]" style={{ textDecorationColor: INDIGO }}>university</Box>.
+            <Box component="span" className="underline decoration-[5px] underline-offset-[8px]" style={{ textDecorationColor: INDIGO }}>university</Box>.
           </motion.h1>
           <motion.p custom={2} variants={fade}
-            className="mt-6 max-w-2xl mx-auto text-[16px] md:text-[17px] leading-relaxed" style={{ color: SUBTLE }}>
+            className="mt-4 max-w-2xl mx-auto text-[14px] md:text-[15px] leading-relaxed" style={{ color: SUBTLE }}>
             AI-driven 4-dimensional psychometrics paired with a live index of <b style={{ color: NAVY }}>2,50,000+ courses</b> across <b style={{ color: NAVY }}>42 countries</b> — built for counsellors, loved by students.
           </motion.p>
-          <motion.div custom={3} variants={fade} className="mt-8 inline-flex items-center gap-3 flex-wrap justify-center">
+          <motion.div custom={3} variants={fade} className="mt-5 inline-flex items-center gap-3 flex-wrap justify-center">
             <Box component="a" href="#demo">
-              <Button className="h-12 px-6 rounded-full font-bold text-white text-[13px] tracking-wide shadow-lg"
+              <Button className="h-11 px-5 rounded-full font-bold text-white text-[13px] tracking-wide shadow-lg"
                 style={{ background: NAVY }}>
                 See it in action <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </Box>
             <Box component="a" href="#pillars">
-              <Button variant="outline" className="h-12 px-6 rounded-full font-bold text-[13px] border-2 bg-white"
+              <Button variant="outline" className="h-11 px-5 rounded-full font-bold text-[13px] border-2 bg-white"
                 style={{ borderColor: NAVY, color: NAVY }}>
                 Explore capabilities
               </Button>
@@ -93,10 +93,10 @@ function Hero() {
         </motion.div>
 
         {/* Mosaic — 3 asymmetric editorial cards */}
-        <Box className="mt-14 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
+        <Box className="mt-8 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4">
           {/* Card 1: Psychometric radar (tall) */}
           <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.1 }}
-            className="md:col-span-5 md:row-span-2 rounded-3xl bg-white border border-slate-200 p-6 relative overflow-hidden"
+            className="md:col-span-5 md:row-span-2 rounded-3xl bg-white border border-slate-200 p-4 md:p-5 relative overflow-hidden"
             style={{ boxShadow: "0 30px 60px -35px rgba(15,26,91,0.35)" }}>
             <Box className="flex items-center justify-between">
               <Box component="span" className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 text-amber-800 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest">
@@ -104,13 +104,13 @@ function Hero() {
               </Box>
               <Box component="span" className="text-[10px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>Live scan</Box>
             </Box>
-            <Typography variant="inherit" component="h3" className="font-head mt-4 text-2xl font-black tracking-tight" style={{ color: NAVY }}>
+            <Typography variant="inherit" component="h3" className="font-head mt-3 text-xl md:text-2xl font-black tracking-tight" style={{ color: NAVY }}>
               Ananya&apos;s profile
             </Typography>
-            <Typography variant="inherit" component="p" className="text-[12px] mt-1" style={{ color: SUBTLE }}>Class 11 · Science stream</Typography>
+            <Typography variant="inherit" component="p" className="text-[12px] mt-0.5" style={{ color: SUBTLE }}>Class 11 · Science stream</Typography>
 
             {/* Radar visual — simple polygon rings */}
-            <Box className="mt-5 relative h-56 flex items-center justify-center">
+            <Box className="mt-3 relative h-40 md:h-44 flex items-center justify-center">
               <svg viewBox="-110 -110 220 220" className="h-full">
                 {[100, 75, 50, 25].map((r) => (
                   <polygon key={r}
@@ -133,7 +133,7 @@ function Hero() {
               </svg>
               {["Aptitude","Interests","Personality","Values","Skills"].map((l, i) => {
                 const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
-                const R = 118;
+                const R = 96;
                 const style = { left: `calc(50% + ${Math.cos(a) * R}px)`, top: `calc(50% + ${Math.sin(a) * R}px)` };
                 return (
                   <Box component="span" key={l} className="absolute text-[10px] font-bold uppercase tracking-widest -translate-x-1/2 -translate-y-1/2"
@@ -142,18 +142,18 @@ function Hero() {
               })}
             </Box>
 
-            <Box className="mt-2 rounded-xl bg-slate-50 border border-slate-100 p-3">
-              <Typography variant="inherit" component="p" className="text-[11px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>Top recommendation</Typography>
-              <Typography variant="inherit" component="p" className="font-head text-[15px] font-black tracking-tight mt-0.5" style={{ color: NAVY }}>
+            <Box className="mt-2 rounded-xl bg-slate-50 border border-slate-100 p-2.5">
+              <Typography variant="inherit" component="p" className="text-[10.5px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>Top recommendation</Typography>
+              <Typography variant="inherit" component="p" className="font-head text-[14px] font-black tracking-tight mt-0.5" style={{ color: NAVY }}>
                 Design &amp; Product Engineering
               </Typography>
-              <Typography variant="inherit" component="p" className="text-[11.5px] mt-0.5" style={{ color: SUBTLE }}>92% fit · 14 matching programs</Typography>
+              <Typography variant="inherit" component="p" className="text-[11px] mt-0.5" style={{ color: SUBTLE }}>92% fit · 14 matching programs</Typography>
             </Box>
           </motion.div>
 
           {/* Card 2: Course search */}
           <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.2 }}
-            className="md:col-span-7 rounded-3xl bg-white border border-slate-200 p-6 relative overflow-hidden">
+            className="md:col-span-7 rounded-3xl bg-white border border-slate-200 p-4 md:p-5 relative overflow-hidden">
             <Box className="flex items-center justify-between">
               <Box component="span" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white"
                 style={{ background: INDIGO }}>
@@ -162,31 +162,31 @@ function Hero() {
               <Box component="span" className="text-[10px] uppercase tracking-widest font-bold" style={{ color: SUBTLE }}>2.5L+ programs</Box>
             </Box>
 
-            <Box className="mt-4 flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2">
+            <Box className="mt-3 flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5">
               <Search className="h-4 w-4 text-slate-400" />
-              <Box component="span" className="text-[13px] text-slate-500">Computer Science · Canada · 2026 intake</Box>
+              <Box component="span" className="text-[12.5px] text-slate-500">Computer Science · Canada · 2026 intake</Box>
             </Box>
-            <Box className="mt-3 flex flex-wrap gap-1.5">
+            <Box className="mt-2 flex flex-wrap gap-1.5">
               {["🇨🇦 Canada", "IELTS 7.0", "≤ ₹25L tuition", "Sep 2026", "QS Top 200"].map((c) => (
-                <Box component="span" key={c} className="rounded-full text-[10.5px] font-semibold px-2 py-1"
+                <Box component="span" key={c} className="rounded-full text-[10.5px] font-semibold px-2 py-0.5"
                   style={{ background: INDIGO_TINT, color: INDIGO }}>{c}</Box>
               ))}
             </Box>
-            <Box className="mt-4 grid sm:grid-cols-3 gap-2">
+            <Box className="mt-3 grid sm:grid-cols-3 gap-2">
               {[
                 { n: "U of Toronto", p: "B.Sc. Computer Science", fee: "₹32L / yr", rank: "#21", flag: "🇨🇦" },
                 { n: "UBC Vancouver", p: "B.Sc. Data Science", fee: "₹28L / yr", rank: "#38", flag: "🇨🇦" },
                 { n: "McGill", p: "B.Eng. Software", fee: "₹24L / yr", rank: "#42", flag: "🇨🇦" },
               ].map((r) => (
-                <Box key={r.n} className="rounded-xl border border-slate-100 p-3">
+                <Box key={r.n} className="rounded-xl border border-slate-100 p-2.5">
                   <Box className="flex items-center justify-between">
-                    <Box className="h-8 w-8 rounded-lg flex items-center justify-center text-lg"
+                    <Box className="h-7 w-7 rounded-lg flex items-center justify-center text-base"
                       style={{ background: INDIGO_TINT }}>{r.flag}</Box>
                     <Box component="span" className="text-[10px] font-bold" style={{ color: INDIGO }}>{r.rank}</Box>
                   </Box>
-                  <Typography variant="inherit" component="p" className="mt-2 text-[12px] font-head font-black truncate" style={{ color: NAVY }}>{r.n}</Typography>
+                  <Typography variant="inherit" component="p" className="mt-1.5 text-[12px] font-head font-black truncate" style={{ color: NAVY }}>{r.n}</Typography>
                   <Typography variant="inherit" component="p" className="text-[10.5px] text-slate-500 truncate">{r.p}</Typography>
-                  <Typography variant="inherit" component="p" className="mt-1 text-[11px] font-bold" style={{ color: NAVY }}>{r.fee}</Typography>
+                  <Typography variant="inherit" component="p" className="mt-0.5 text-[11px] font-bold" style={{ color: NAVY }}>{r.fee}</Typography>
                 </Box>
               ))}
             </Box>
@@ -194,14 +194,14 @@ function Hero() {
 
           {/* Card 3: Readiness meter */}
           <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.3 }}
-            className="md:col-span-4 rounded-3xl p-6 relative overflow-hidden text-white"
+            className="md:col-span-4 rounded-3xl p-4 md:p-5 relative overflow-hidden text-white"
             style={{ background: `linear-gradient(160deg, ${NAVY} 0%, ${INDIGO_DEEP} 100%)` }}>
             <Box component="span" className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest">
               <Radar className="h-3 w-3" /> Readiness Radar
             </Box>
-            <Typography variant="inherit" component="p" className="mt-4 font-head text-[42px] leading-none font-black tracking-tight">72<span className="text-lg align-top">/100</Box></Typography>
-            <Typography variant="inherit" component="p" className="text-[12px] text-white/80 mt-1">Application readiness score</Typography>
-            <Box className="mt-4 space-y-2">
+            <Typography variant="inherit" component="p" className="mt-3 font-head text-[36px] leading-none font-black tracking-tight">72<Box component="span" className="text-base align-top ml-0.5 opacity-80">/100</Box></Typography>
+            <Typography variant="inherit" component="p" className="text-[11.5px] text-white/80 mt-0.5">Application readiness score</Typography>
+            <Box className="mt-3 space-y-1.5">
               {[
                 { k: "Grades", v: 88 },
                 { k: "SoP", v: 60 },
@@ -221,13 +221,13 @@ function Hero() {
 
           {/* Card 4: Counsellor summary */}
           <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.4 }}
-            className="md:col-span-3 rounded-3xl bg-white border border-slate-200 p-5 relative overflow-hidden">
+            className="md:col-span-3 rounded-3xl bg-white border border-slate-200 p-4 relative overflow-hidden">
             <Box component="span" className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest">
               <ShieldCheck className="h-3 w-3" /> Counsellor
             </Box>
-            <Typography variant="inherit" component="p" className="mt-3 font-head text-lg font-black tracking-tight" style={{ color: NAVY }}>28 students</Typography>
+            <Typography variant="inherit" component="p" className="mt-2 font-head text-lg font-black tracking-tight" style={{ color: NAVY }}>28 students</Typography>
             <Typography variant="inherit" component="p" className="text-[11.5px]" style={{ color: SUBTLE }}>on track this quarter</Typography>
-            <Box className="mt-3 flex -space-x-2">
+            <Box className="mt-2.5 flex -space-x-2">
               {["#F59E0B", "#EC4899", "#10B981", "#38BDF8", "#5548D1"].map((c) => (
                 <Box component="span" key={c} className="h-7 w-7 rounded-full border-2 border-white" style={{ background: c }} />
               ))}

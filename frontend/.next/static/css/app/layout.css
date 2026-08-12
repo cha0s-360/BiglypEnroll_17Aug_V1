@@ -716,6 +716,9 @@
   .-ml-4 {
     margin-left: calc(var(--spacing) * -4);
   }
+  .ml-0\.5 {
+    margin-left: calc(var(--spacing) * 0.5);
+  }
   .ml-1 {
     margin-left: var(--spacing);
   }
@@ -2290,6 +2293,9 @@
   .pt-6 {
     padding-top: calc(var(--spacing) * 6);
   }
+  .pt-8 {
+    padding-top: calc(var(--spacing) * 8);
+  }
   .pt-12 {
     padding-top: calc(var(--spacing) * 12);
   }
@@ -2331,6 +2337,9 @@
   }
   .pb-5 {
     padding-bottom: calc(var(--spacing) * 5);
+  }
+  .pb-12 {
+    padding-bottom: calc(var(--spacing) * 12);
   }
   .pb-14 {
     padding-bottom: calc(var(--spacing) * 14);
@@ -2479,6 +2488,12 @@
   }
   .text-\[22px\] {
     font-size: 22px;
+  }
+  .text-\[34px\] {
+    font-size: 34px;
+  }
+  .text-\[36px\] {
+    font-size: 36px;
   }
   .text-\[42px\] {
     font-size: 42px;
@@ -2834,11 +2849,17 @@
   .decoration-4 {
     text-decoration-thickness: 4px;
   }
+  .decoration-\[5px\] {
+    text-decoration-thickness: 5px;
+  }
   .decoration-\[6px\] {
     text-decoration-thickness: 6px;
   }
   .underline-offset-4 {
     text-underline-offset: 4px;
+  }
+  .underline-offset-\[8px\] {
+    text-underline-offset: 8px;
   }
   .underline-offset-\[10px\] {
     text-underline-offset: 10px;
@@ -2863,6 +2884,9 @@
   }
   .opacity-70 {
     opacity: 70%;
+  }
+  .opacity-80 {
+    opacity: 80%;
   }
   .opacity-90 {
     opacity: 90%;
@@ -3870,6 +3894,9 @@
     .md\:inline-flex {
       display: inline-flex;
     }
+    .md\:h-44 {
+      height: calc(var(--spacing) * 44);
+    }
     .md\:w-\[var\(--radix-navigation-menu-viewport-width\)\] {
       width: var(--radix-navigation-menu-viewport-width);
     }
@@ -3911,6 +3938,9 @@
     }
     .md\:gap-6 {
       gap: calc(var(--spacing) * 6);
+    }
+    .md\:p-5 {
+      padding: calc(var(--spacing) * 5);
     }
     .md\:p-6 {
       padding: calc(var(--spacing) * 6);
@@ -3964,6 +3994,9 @@
       font-size: var(--text-sm);
       line-height: var(--tw-leading, var(--text-sm--line-height));
     }
+    .md\:text-\[15px\] {
+      font-size: 15px;
+    }
     .md\:text-\[17px\] {
       font-size: 17px;
     }
@@ -3972,6 +4005,9 @@
     }
     .md\:text-\[28px\] {
       font-size: 28px;
+    }
+    .md\:text-\[52px\] {
+      font-size: 52px;
     }
     .md\:text-\[70px\] {
       font-size: 70px;
@@ -4054,6 +4090,9 @@
     }
     .lg\:text-\[52px\] {
       font-size: 52px;
+    }
+    .lg\:text-\[64px\] {
+      font-size: 64px;
     }
     .lg\:text-\[68px\] {
       font-size: 68px;
