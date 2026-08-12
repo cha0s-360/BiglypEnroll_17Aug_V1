@@ -12,93 +12,121 @@ import {
   ArrowRight, Sparkles, ChevronDown, Star, Check, GraduationCap, Wallet,
   Brain, Search, FileCheck2, BookOpenCheck, Award, Landmark, Calculator, ShieldCheck,
   Gauge, LineChart, Globe, Building2, Rocket, Mail, PlayCircle, Quote,
+  Users, TrendingUp, Bell, CreditCard, QrCode, Zap, Layers,
 } from 'lucide-react';
 
-/* ---- Blue palette (white + blue, Gen-Z) ---- */
-const BLUE = '#2563EB';
-const BLUE_DEEP = '#1D4ED8';
-const NAVY = '#0B1B4B';
-const SKY = '#3B82F6';
-const TINT = '#EFF6FF';
+/* ---- Indigo / violet palette (aligned with reference mockups) ---- */
+const INDIGO = '#4F46E5';
+const INDIGO_DEEP = '#4338CA';
+const VIOLET = '#6366F1';
+const NAVY = '#1E1B4B';
+const YELLOW = '#FBBF24';
+const TINT = '#EEF2FF';
 
 const HERO_IMG = 'https://images.pexels.com/photos/6238120/pexels-photo-6238120.jpeg?auto=compress&cs=tinysrgb&w=1100';
 const LEARN_IMG = 'https://images.unsplash.com/photo-1583037825390-a23eee53f6ef?auto=format&fit=crop&q=80&w=900';
 const FEE_IMG = 'https://images.pexels.com/photos/5538000/pexels-photo-5538000.jpeg?auto=compress&cs=tinysrgb&w=1000';
 
 const fade = { hidden: { opacity: 0, y: 22 }, show: (i = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.06, duration: 0.5 } }) };
-const grad = `linear-gradient(135deg, ${SKY}, ${BLUE_DEEP})`;
+const grad = `linear-gradient(135deg, ${VIOLET}, ${INDIGO_DEEP})`;
+const darkGrad = `linear-gradient(150deg, ${NAVY} 0%, ${INDIGO_DEEP} 100%)`;
 
 /* =================== NAV =================== */
 function HomeNav() {
   const NAV = [{ label: 'Homepage', href: '/', active: true }, { label: 'BiglypEnroll', href: '/biglypenroll', active: false }];
   return (
-    <Box component="header" className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-blue-100">
+    <Box component="header" className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-indigo-100">
       <Box className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2"><Logo className="h-7" /></Link>
         <Box component="nav" className="hidden md:flex items-center gap-1">
           {NAV.map((n) => (
             <Link key={n.label} href={n.href} data-testid={`homenav-${n.label.toLowerCase()}`}
-              className={`px-4 py-2 rounded-full text-[13.5px] font-semibold transition-colors ${n.active ? 'text-white' : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50'}`}
+              className={`px-4 py-2 rounded-full text-[13.5px] font-semibold transition-colors ${n.active ? 'text-white' : 'text-slate-600 hover:text-indigo-700 hover:bg-indigo-50'}`}
               style={n.active ? { background: grad } : undefined}>{n.label}</Link>
           ))}
         </Box>
         <Box className="flex items-center gap-2.5">
-          <Link href="/login"><Button variant="outline" className="h-9 px-5 rounded-full text-sm font-semibold border-blue-200 text-blue-700 hover:bg-blue-50">Sign in</Button></Link>
-          <Box component="a" href="#platform"><Button className="h-9 px-5 rounded-full text-sm font-semibold text-white shadow-lg shadow-blue-600/25" style={{ background: grad }}>Become a partner</Button></Box>
+          <Link href="/login"><Button variant="outline" className="h-9 px-5 rounded-full text-sm font-semibold border-indigo-200 text-indigo-700 hover:bg-indigo-50">Sign in</Button></Link>
+          <Box component="a" href="#platform"><Button className="h-9 px-5 rounded-full text-sm font-semibold text-white shadow-lg shadow-indigo-600/25" style={{ background: grad }}>Become a partner</Button></Box>
         </Box>
       </Box>
     </Box>
   );
 }
 
-/* =================== HERO =================== */
+/* =================== HERO (more prominent) =================== */
 function Hero() {
   return (
-    <Box component="section" className="relative overflow-hidden bg-white">
-      <Box className="absolute -top-24 -right-24 h-96 w-96 rounded-full blur-3xl opacity-40" style={{ background: 'radial-gradient(circle, #93C5FD, transparent 70%)' }} />
-      <Box className="absolute top-40 -left-24 h-80 w-80 rounded-full blur-3xl opacity-40" style={{ background: 'radial-gradient(circle, #BFDBFE, transparent 70%)' }} />
-      <Box className="relative max-w-7xl mx-auto px-5 pt-14 pb-16 grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
-        <motion.div initial="hidden" animate="show" variants={fade}>
-          <Box component="span" className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest" style={{ background: TINT, color: BLUE_DEEP }}>
+    <Box component="section" className="relative overflow-hidden" style={{ background: `linear-gradient(180deg, #F5F3FF 0%, #FFFFFF 60%)` }}>
+      {/* ambient blobs + grid */}
+      <Box className="absolute -top-32 -right-24 h-[28rem] w-[28rem] rounded-full blur-3xl opacity-50" style={{ background: 'radial-gradient(circle, #C7D2FE, transparent 70%)' }} />
+      <Box className="absolute top-52 -left-28 h-96 w-96 rounded-full blur-3xl opacity-50" style={{ background: 'radial-gradient(circle, #DDD6FE, transparent 70%)' }} />
+      <Box className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: `radial-gradient(${INDIGO} 1px, transparent 1px)`, backgroundSize: '26px 26px' }} />
+
+      <Box className="relative max-w-7xl mx-auto px-5 pt-20 pb-20 grid lg:grid-cols-[1.08fr_0.92fr] gap-14 items-center">
+        <Box>
+          <Box component="span" className="reveal inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-widest" style={{ background: 'white', color: INDIGO_DEEP, border: '1px solid #C7D2FE', boxShadow: '0 8px 24px -12px rgba(79,70,229,0.4)' }}>
             <Sparkles className="h-3.5 w-3.5" /> Biglyp · Student Success Platform
           </Box>
-          <motion.h1 custom={1} variants={fade} className="font-head mt-5 text-4xl md:text-5xl lg:text-[54px] font-black tracking-tight leading-[1.05]" style={{ color: NAVY }}>
+
+          <Typography variant="inherit" component="h1" className="reveal-1 font-head mt-6 text-5xl md:text-6xl lg:text-[68px] font-black tracking-tight leading-[1.02]" style={{ color: NAVY }}>
             Building{' '}
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(120deg, ${SKY}, ${BLUE_DEEP})` }}>Future-Ready</span>{' '}Students
-          </motion.h1>
-          <motion.p custom={2} variants={fade} className="mt-2 font-head text-xl md:text-2xl font-bold" style={{ color: BLUE }}>
-            from Early Career Discovery to the Right Course & University
-          </motion.p>
-          <motion.p custom={3} variants={fade} className="mt-4 text-[16px] max-w-xl leading-relaxed text-slate-600">
-            From career discovery to university enrollment — we provide end-to-end support with cutting-edge technology and expert guidance.
-          </motion.p>
-          <motion.div custom={4} variants={fade} className="mt-8 flex flex-wrap gap-3">
-            <Box component="a" href="#journey"><Button className="h-12 px-6 rounded-full font-semibold text-sm text-white shadow-xl shadow-blue-600/25" style={{ background: grad }}>Take Assessment <ArrowRight className="h-4 w-4 ml-2" /></Button></Box>
-            <Box component="a" href="#platform"><Button variant="outline" className="h-12 px-6 rounded-full font-semibold text-sm border-blue-200 text-blue-700 hover:bg-blue-50 bg-transparent"><PlayCircle className="h-4 w-4 mr-2" /> Explore Platform</Button></Box>
-          </motion.div>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.2 }} className="relative">
-          <Box className="relative rounded-[28px] overflow-hidden shadow-2xl aspect-[4/3]" style={{ boxShadow: '0 40px 80px -30px rgba(37,99,235,0.45)' }}>
-            <Box component="img" src={HERO_IMG} alt="Future-ready students" className="w-full h-full object-cover" />
-            <Box className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 45%, rgba(11,27,75,0.35))' }} />
+            <span className="italic bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(120deg, ${VIOLET}, ${INDIGO_DEEP})` }}>future-ready</span>{' '}
+            <span className="relative inline-block">
+              students
+              <Box component="span" className="absolute left-0 -bottom-1 h-3 w-full -z-0 rounded-sm" style={{ background: YELLOW, opacity: 0.55 }} />
+            </span>
+          </Typography>
+
+          <Typography variant="inherit" component="p" className="reveal-2 mt-4 font-head text-xl md:text-2xl font-bold" style={{ color: INDIGO }}>
+            From early career discovery to the right course &amp; university.
+          </Typography>
+          <Typography variant="inherit" component="p" className="reveal-3 mt-5 text-[17px] max-w-xl leading-relaxed text-slate-600">
+            One institutional OS unifying AI career discovery, 2,50,000+ global courses and 0% EMI fee collection — end-to-end support powered by technology and expert guidance.
+          </Typography>
+
+          <Box className="reveal-4 mt-9 flex flex-wrap gap-3">
+            <Box component="a" href="#journey"><Button className="h-13 px-7 py-3.5 rounded-full font-semibold text-[15px] text-white shadow-xl shadow-indigo-600/30" style={{ background: grad }}>Take Assessment <ArrowRight className="h-4 w-4 ml-2" /></Button></Box>
+            <Box component="a" href="#platform"><Button variant="outline" className="h-13 px-7 py-3.5 rounded-full font-semibold text-[15px] border-indigo-200 text-indigo-700 hover:bg-indigo-50 bg-transparent"><PlayCircle className="h-4 w-4 mr-2" /> Explore Platform</Button></Box>
           </Box>
-          <Box className="hidden sm:flex absolute -left-5 top-10 rounded-2xl bg-white shadow-xl p-3 pr-4 items-center gap-3" style={{ boxShadow: '0 20px 40px -15px rgba(37,99,235,0.3)' }}>
-            <Box className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: TINT, color: BLUE_DEEP }}><Brain className="h-5 w-5" /></Box>
+
+          {/* trust row */}
+          <Box className="reveal-5 mt-9 flex items-center gap-5 flex-wrap">
+            <Box className="flex -space-x-2.5">
+              {['#4F46E5', '#6366F1', '#0EA5E9', '#F59E0B', '#EC4899'].map((c, i) => (
+                <Box key={i} className="h-9 w-9 rounded-full ring-2 ring-white flex items-center justify-center text-white font-head font-bold text-xs" style={{ background: c }}>{String.fromCharCode(65 + i)}</Box>
+              ))}
+            </Box>
+            <Box>
+              <Box className="flex items-center gap-1">{[0, 1, 2, 3, 4].map((s) => <Star key={s} className="h-3.5 w-3.5" style={{ color: YELLOW, fill: YELLOW }} />)}</Box>
+              <Typography variant="inherit" component="p" className="text-[12.5px] text-slate-500 mt-0.5">Trusted by <b style={{ color: NAVY }}>6,500+ institutions</b> &amp; 50 Lakh+ students</Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Hero visual */}
+        <Box className="reveal-2 relative">
+          <Box className="relative rounded-[30px] overflow-hidden shadow-2xl aspect-[4/3]" style={{ boxShadow: '0 50px 90px -30px rgba(79,70,229,0.5)' }}>
+            <Box component="img" src={HERO_IMG} alt="Future-ready students" className="w-full h-full object-cover" />
+            <Box className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 40%, rgba(30,27,75,0.4))' }} />
+          </Box>
+          <Box className="hidden sm:flex absolute -left-6 top-12 rounded-2xl bg-white shadow-xl p-3 pr-4 items-center gap-3" style={{ boxShadow: '0 20px 40px -15px rgba(79,70,229,0.35)' }}>
+            <Box className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: TINT, color: INDIGO_DEEP }}><Brain className="h-5 w-5" /></Box>
             <Box><Typography variant="inherit" component="p" className="text-[10px] uppercase tracking-widest font-bold text-slate-400">AI Psychometrics</Typography><Typography variant="inherit" component="p" className="text-sm font-head font-bold" style={{ color: NAVY }}>60+ traits mapped</Typography></Box>
           </Box>
-          <Box className="hidden sm:flex absolute -right-4 bottom-8 rounded-2xl bg-white shadow-xl p-3 pr-4 items-center gap-3" style={{ boxShadow: '0 20px 40px -15px rgba(37,99,235,0.3)' }}>
+          <Box className="hidden sm:flex absolute -right-4 bottom-10 rounded-2xl bg-white shadow-xl p-3 pr-4 items-center gap-3" style={{ boxShadow: '0 20px 40px -15px rgba(79,70,229,0.35)' }}>
             <Box className="h-10 w-10 rounded-xl flex items-center justify-center bg-emerald-50 text-emerald-600"><Globe className="h-5 w-5" /></Box>
             <Box><Typography variant="inherit" component="p" className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Study abroad</Typography><Typography variant="inherit" component="p" className="text-sm font-head font-bold" style={{ color: NAVY }}>42 countries</Typography></Box>
           </Box>
-        </motion.div>
+        </Box>
       </Box>
     </Box>
   );
 }
 
-/* =================== STATS (with numbers) =================== */
+/* =================== STATS =================== */
 const STATS = [
-  { icon: Globe, value: '42+', label: 'Countries', color: SKY },
+  { icon: Globe, value: '42+', label: 'Countries', color: VIOLET },
   { icon: Building2, value: '1,200+', label: 'Partner Universities', color: '#7C3AED' },
   { icon: Award, value: '2,50,000+', label: 'Career Programs', color: '#F59E0B' },
 ];
@@ -106,7 +134,7 @@ function Stats() {
   return (
     <Box component="section" className="bg-white">
       <Box className="max-w-6xl mx-auto px-5 -mt-2 pb-16">
-        <Box className="rounded-3xl border border-blue-100 shadow-[0_20px_50px_-30px_rgba(37,99,235,0.4)] px-6 py-6 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white">
+        <Box className="rounded-3xl border border-indigo-100 shadow-[0_20px_50px_-30px_rgba(79,70,229,0.4)] px-6 py-6 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white">
           {STATS.map((s) => {
             const Icon = s.icon;
             return (
@@ -122,7 +150,212 @@ function Stats() {
   );
 }
 
-/* =================== TABBED FEATURE SECTION (compact + aligned) =================== */
+/* =================== PRODUCT MOCKUP VISUALS =================== */
+/* -- 01 · BiglypEnroll: dual-engine dashboard -- */
+function EnrollVisual() {
+  const bars = [
+    { l: 'APTITUDE', v: 82, c: INDIGO },
+    { l: 'INTEREST', v: 74, c: '#F59E0B' },
+    { l: 'EQ', v: 91, c: '#10B981' },
+    { l: 'STYLE', v: 68, c: '#EC4899' },
+  ];
+  const chart = [40, 68, 34, 82, 52, 92, 58, 78, 44, 72, 88];
+  return (
+    <Box className="relative">
+      {/* Career hub — light card */}
+      <Box className="rounded-3xl bg-white border border-indigo-100 p-5 shadow-[0_30px_60px_-30px_rgba(79,70,229,0.4)]">
+        <Box className="flex items-center gap-3">
+          <Box className="h-10 w-10 rounded-2xl flex items-center justify-center" style={{ background: TINT, color: INDIGO_DEEP }}><GraduationCap className="h-5 w-5" /></Box>
+          <Box>
+            <Typography variant="inherit" component="p" className="text-[10px] font-bold uppercase tracking-widest" style={{ color: INDIGO }}>Sub-product · 01</Typography>
+            <Typography variant="inherit" component="p" className="font-head font-black text-[15px]" style={{ color: NAVY }}>Biglyp Career Hub</Typography>
+          </Box>
+        </Box>
+        <Box className="mt-4 rounded-2xl border border-indigo-50 bg-indigo-50/40 p-3.5">
+          <Box className="flex items-center justify-between">
+            <Typography variant="inherit" component="p" className="text-[9.5px] font-bold uppercase tracking-widest text-slate-500">Psychometric report</Typography>
+            <Typography variant="inherit" component="p" className="text-[9.5px] font-medium text-slate-400">Class 10 · Aarav Sharma</Typography>
+          </Box>
+          <Box className="mt-3 grid grid-cols-4 gap-2.5">
+            {bars.map((b) => (
+              <Box key={b.l} className="text-center">
+                <Typography variant="inherit" component="p" className="text-[8.5px] font-bold uppercase tracking-wider text-slate-400">{b.l}</Typography>
+                <Typography variant="inherit" component="p" className="font-head font-black text-[15px] mt-0.5" style={{ color: b.c }}>{b.v}%</Typography>
+                <Box className="mt-1.5 h-1.5 rounded-full bg-slate-100 overflow-hidden"><Box className="h-full rounded-full" style={{ width: `${b.v}%`, background: b.c }} /></Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Fee collection — dark card offset */}
+      <Box className="mt-4 rounded-3xl p-5 text-white shadow-[0_30px_60px_-28px_rgba(30,27,75,0.6)]" style={{ background: darkGrad }}>
+        <Box className="flex items-center gap-3">
+          <Box className="h-10 w-10 rounded-2xl flex items-center justify-center bg-white/12"><Wallet className="h-5 w-5" /></Box>
+          <Box>
+            <Typography variant="inherit" component="p" className="text-[10px] font-bold uppercase tracking-widest text-indigo-200">Sub-product · 02</Typography>
+            <Typography variant="inherit" component="p" className="font-head font-black text-[15px]">Biglyp Fee Collection</Typography>
+          </Box>
+        </Box>
+        <Box className="mt-4 rounded-2xl bg-white/8 border border-white/10 p-3.5">
+          <Box className="flex items-center justify-between">
+            <Typography variant="inherit" component="p" className="text-[9.5px] font-bold uppercase tracking-widest text-white/60">Live dashboard</Typography>
+            <Typography variant="inherit" component="p" className="text-[9.5px] font-medium text-white/50">AY 2025-26</Typography>
+          </Box>
+          <Box className="mt-3 grid grid-cols-3 gap-2">
+            {[{ l: 'COLLECTED', v: '₹18.4L', c: '#A5B4FC' }, { l: 'DUE', v: '₹2.6L', c: YELLOW }, { l: 'ON EMI', v: '142', c: '#fff' }].map((s) => (
+              <Box key={s.l}>
+                <Typography variant="inherit" component="p" className="text-[8.5px] font-bold uppercase tracking-wider text-white/50">{s.l}</Typography>
+                <Typography variant="inherit" component="p" className="font-head font-black text-[17px]" style={{ color: s.c }}>{s.v}</Typography>
+              </Box>
+            ))}
+          </Box>
+          <Box className="mt-3.5 flex items-end justify-between gap-1 h-14">
+            {chart.map((h, i) => (
+              <Box key={i} className="flex-1 rounded-t-md" style={{ height: `${h}%`, background: i % 3 === 0 ? YELLOW : i % 3 === 1 ? '#818CF8' : '#4F46E5' }} />
+            ))}
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+/* -- 02 · Career Hub: psychometrics radar + discovery -- */
+function CareerVisual() {
+  const axes = ['APTITUDE', 'INTERESTS', 'PERSONALITY', 'VALUES', 'SKILLS'];
+  const vals = [0.72, 0.9, 0.85, 0.55, 0.68];
+  const cx = 120, cy = 108, R = 76;
+  const pt = (i: number, f: number) => {
+    const a = (-90 + i * 72) * Math.PI / 180;
+    return [cx + Math.cos(a) * R * f, cy + Math.sin(a) * R * f];
+  };
+  const ring = (f: number) => axes.map((_, i) => pt(i, f).join(',')).join(' ');
+  const data = vals.map((v, i) => pt(i, v).join(',')).join(' ');
+  const unis = [
+    { n: 'U of Toronto', c: 'B.Sc. Computer Science', f: '#21', fee: '₹32L / yr' },
+    { n: 'UBC Vancouver', c: 'B.Sc. Data Science', f: '#38', fee: '₹28L / yr' },
+    { n: 'McGill', c: 'B.Eng. Software', f: '#42', fee: '₹24L / yr' },
+  ];
+  return (
+    <Box className="relative">
+      {/* Radar profile card */}
+      <Box className="rounded-3xl bg-white border border-indigo-100 p-5 shadow-[0_30px_60px_-30px_rgba(79,70,229,0.4)]">
+        <Box className="flex items-center justify-between">
+          <Box component="span" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-widest" style={{ background: '#FEF3C7', color: '#92400E' }}><Brain className="h-3 w-3" /> Psychometrics</Box>
+          <Typography variant="inherit" component="p" className="text-[9.5px] font-bold uppercase tracking-widest text-slate-400">Live scan</Typography>
+        </Box>
+        <Typography variant="inherit" component="p" className="font-head font-black text-[18px] mt-3" style={{ color: NAVY }}>Ananya&apos;s profile</Typography>
+        <Typography variant="inherit" component="p" className="text-[11px] text-slate-500">Class 11 · Science stream</Typography>
+        <Box className="mt-2 flex justify-center">
+          <Box component="svg" viewBox="0 0 240 200" className="w-full max-w-[240px]">
+            {[0.4, 0.7, 1].map((f) => (<polygon key={f} points={ring(f)} fill="none" stroke="#E0E7FF" strokeWidth="1" />))}
+            {axes.map((_, i) => { const [x, y] = pt(i, 1); return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#E0E7FF" strokeWidth="1" />; })}
+            <polygon points={data} fill={INDIGO} fillOpacity="0.22" stroke={INDIGO} strokeWidth="2" />
+            {vals.map((v, i) => { const [x, y] = pt(i, v); return <circle key={i} cx={x} cy={y} r="3" fill={INDIGO_DEEP} />; })}
+            {axes.map((ax, i) => { const [x, y] = pt(i, 1.16); return <text key={ax} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="8" fontWeight="700" fill="#94A3B8">{ax}</text>; })}
+          </Box>
+        </Box>
+        <Box className="mt-1 rounded-2xl bg-indigo-50/50 border border-indigo-50 p-3">
+          <Typography variant="inherit" component="p" className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Top recommendation</Typography>
+          <Box className="flex items-center justify-between mt-0.5">
+            <Typography variant="inherit" component="p" className="font-head font-bold text-[13px]" style={{ color: NAVY }}>Design &amp; Product Engineering</Typography>
+            <Typography variant="inherit" component="p" className="text-[11px] font-bold" style={{ color: '#10B981' }}>92% fit</Typography>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Course discovery card */}
+      <Box className="mt-4 rounded-3xl bg-white border border-indigo-100 p-5 shadow-[0_30px_60px_-30px_rgba(79,70,229,0.4)]">
+        <Box className="flex items-center justify-between">
+          <Box component="span" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-widest text-white" style={{ background: grad }}><Globe className="h-3 w-3" /> Course discovery</Box>
+          <Typography variant="inherit" component="p" className="text-[9.5px] font-bold uppercase tracking-widest text-slate-400">2.5L+ programs</Typography>
+        </Box>
+        <Box className="mt-3 flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2">
+          <Search className="h-3.5 w-3.5 text-slate-400" />
+          <Typography variant="inherit" component="p" className="text-[11.5px] text-slate-500">Computer Science · Canada · 2026 intake</Typography>
+        </Box>
+        <Box className="mt-3 grid gap-2">
+          {unis.map((u) => (
+            <Box key={u.n} className="flex items-center gap-3 rounded-xl border border-slate-100 p-2.5">
+              <Box className="h-8 w-8 rounded-lg flex items-center justify-center text-[13px] shrink-0" style={{ background: TINT }}>🇨🇦</Box>
+              <Box className="min-w-0 flex-1">
+                <Typography variant="inherit" component="p" className="font-head font-bold text-[12.5px] truncate" style={{ color: NAVY }}>{u.n}</Typography>
+                <Typography variant="inherit" component="p" className="text-[10.5px] text-slate-500 truncate">{u.c}</Typography>
+              </Box>
+              <Box className="text-right shrink-0">
+                <Typography variant="inherit" component="p" className="text-[10px] font-bold" style={{ color: INDIGO }}>{u.f}</Typography>
+                <Typography variant="inherit" component="p" className="text-[10.5px] font-semibold text-slate-600">{u.fee}</Typography>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+/* -- 03 · Fee Collection: parents / institutions + payment options -- */
+function FeeVisual() {
+  const parents = [
+    { icon: CreditCard, t: 'Easy Monthly Payments', d: 'Split fees into affordable installments.' },
+    { icon: Landmark, t: 'Auto Debit', d: 'Deducted on time — no late fees.' },
+    { icon: Bell, t: 'Smart Reminders', d: 'Track payments, stay updated always.' },
+  ];
+  const inst = [
+    { icon: Wallet, t: 'Better Cash Flow', d: 'Full year fees upfront, single payment.' },
+    { icon: Users, t: 'Hassle-Free', d: 'Eliminate follow-ups & manual chasing.' },
+    { icon: TrendingUp, t: 'Higher Conversions', d: 'Flexible options improve admissions.' },
+  ];
+  const pay = [
+    { icon: Zap, t: 'Auto-Collect', d: 'Recurring NACH / UPI', c: INDIGO },
+    { icon: QrCode, t: 'Instant', d: 'QR & payment links', c: '#0EA5E9' },
+    { icon: Layers, t: '0% EMI', d: 'No-cost financing', c: '#F59E0B' },
+  ];
+  const Col = ({ title, items, accent }: any) => (
+    <Box className="rounded-2xl bg-white border border-indigo-100 p-4">
+      <Box className="flex justify-center">
+        <Box component="span" className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest" style={{ background: accent + '16', color: accent }}>{title}</Box>
+      </Box>
+      <Box className="mt-3 grid gap-3">
+        {items.map((it: any) => {
+          const Icon = it.icon;
+          return (
+            <Box key={it.t} className="flex items-start gap-2.5">
+              <Box className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: accent + '14', color: accent }}><Icon className="h-3.5 w-3.5" /></Box>
+              <Box>
+                <Typography variant="inherit" component="p" className="font-head font-bold text-[11.5px] leading-tight" style={{ color: NAVY }}>{it.t}</Typography>
+                <Typography variant="inherit" component="p" className="text-[10px] text-slate-500 leading-snug mt-0.5">{it.d}</Typography>
+              </Box>
+            </Box>
+          );
+        })}
+      </Box>
+    </Box>
+  );
+  return (
+    <Box className="relative rounded-3xl p-5 shadow-[0_30px_60px_-30px_rgba(79,70,229,0.4)]" style={{ background: grad }}>
+      <Box className="grid grid-cols-2 gap-3">
+        <Col title="Parents" items={parents} accent={INDIGO_DEEP} />
+        <Col title="Institutions" items={inst} accent={'#0EA5E9'} />
+      </Box>
+      <Box className="mt-3 grid grid-cols-3 gap-3">
+        {pay.map((p) => {
+          const Icon = p.icon;
+          return (
+            <Box key={p.t} className="rounded-2xl bg-white p-3 text-center">
+              <Box className="mx-auto h-9 w-9 rounded-xl flex items-center justify-center" style={{ background: p.c + '16', color: p.c }}><Icon className="h-4 w-4" /></Box>
+              <Typography variant="inherit" component="p" className="font-head font-bold text-[11.5px] mt-2" style={{ color: NAVY }}>{p.t}</Typography>
+              <Typography variant="inherit" component="p" className="text-[9.5px] text-slate-500 mt-0.5">{p.d}</Typography>
+            </Box>
+          );
+        })}
+      </Box>
+    </Box>
+  );
+}
+
+/* =================== TABBED FEATURE SECTION =================== */
 function TabbedSection({ id, eyebrow, title, subtitle, tabs, footer, bg }: any) {
   const [active, setActive] = useState(0);
   const cur = tabs[active];
@@ -132,7 +365,7 @@ function TabbedSection({ id, eyebrow, title, subtitle, tabs, footer, bg }: any) 
       <Box className="max-w-7xl mx-auto px-5">
         <Box className="text-center max-w-3xl mx-auto">
           {eyebrow && (
-            <Box component="span" className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest bg-white" style={{ color: BLUE_DEEP, border: '1px solid #DBEAFE' }}>
+            <Box component="span" className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest bg-white" style={{ color: INDIGO_DEEP, border: '1px solid #C7D2FE' }}>
               <Sparkles className="h-3.5 w-3.5" /> {eyebrow}
             </Box>
           )}
@@ -141,27 +374,25 @@ function TabbedSection({ id, eyebrow, title, subtitle, tabs, footer, bg }: any) 
         </Box>
 
         <Box className="mt-10 grid lg:grid-cols-[300px_1fr] gap-6 items-stretch">
-          {/* Tab list */}
           <Box className="flex lg:flex-col gap-2 overflow-x-auto pb-1">
             {tabs.map((t: any, i: number) => {
               const Icon = t.icon;
               const on = i === active;
               return (
                 <Box component="button" key={t.label} onClick={() => setActive(i)} data-testid={`tab-${id}-${i}`}
-                  className={`shrink-0 lg:w-full text-left flex items-center gap-3 px-4 py-3 rounded-2xl text-[13.5px] font-semibold transition-all border ${on ? 'text-white border-transparent shadow-lg shadow-blue-600/20' : 'bg-white text-slate-600 border-blue-100 hover:border-blue-300'}`}
+                  className={`shrink-0 lg:w-full text-left flex items-center gap-3 px-4 py-3 rounded-2xl text-[13.5px] font-semibold transition-all border ${on ? 'text-white border-transparent shadow-lg shadow-indigo-600/20' : 'bg-white text-slate-600 border-indigo-100 hover:border-indigo-300'}`}
                   style={on ? { background: grad } : undefined}>
-                  <Box className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: on ? 'rgba(255,255,255,0.2)' : TINT, color: on ? '#fff' : BLUE_DEEP }}><Icon className="h-4 w-4" /></Box>
+                  <Box className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: on ? 'rgba(255,255,255,0.2)' : TINT, color: on ? '#fff' : INDIGO_DEEP }}><Icon className="h-4 w-4" /></Box>
                   {t.label}
                 </Box>
               );
             })}
           </Box>
 
-          {/* Active card */}
           <motion.div key={active} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
-            className="rounded-3xl bg-white border border-blue-100 overflow-hidden shadow-[0_24px_60px_-30px_rgba(37,99,235,0.4)] grid md:grid-cols-2 items-stretch">
+            className="rounded-3xl bg-white border border-indigo-100 overflow-hidden shadow-[0_24px_60px_-30px_rgba(79,70,229,0.4)] grid md:grid-cols-2 items-stretch">
             <Box className="p-6 md:p-8 flex flex-col">
-              <Box className="h-12 w-12 rounded-2xl flex items-center justify-center" style={{ background: TINT, color: BLUE_DEEP }}><CurIcon className="h-6 w-6" /></Box>
+              <Box className="h-12 w-12 rounded-2xl flex items-center justify-center" style={{ background: TINT, color: INDIGO_DEEP }}><CurIcon className="h-6 w-6" /></Box>
               <Typography variant="inherit" component="h3" className="font-head text-2xl font-black mt-4" style={{ color: NAVY }}>{cur.cardTitle}</Typography>
               {cur.desc.map((d: string, k: number) => (
                 <Typography key={k} variant="inherit" component="p" className="mt-2.5 text-[13.5px] leading-relaxed text-slate-600">{d}</Typography>
@@ -169,18 +400,18 @@ function TabbedSection({ id, eyebrow, title, subtitle, tabs, footer, bg }: any) 
               <Box component="ul" className="mt-4 grid gap-2">
                 {cur.points?.map((p: string) => (
                   <Box component="li" key={p} className="flex items-start gap-2 text-[13px] text-slate-700">
-                    <Box className="h-4 w-4 rounded-full flex items-center justify-center mt-0.5 shrink-0" style={{ background: TINT, color: BLUE_DEEP }}><Check className="h-3 w-3" /></Box>{p}
+                    <Box className="h-4 w-4 rounded-full flex items-center justify-center mt-0.5 shrink-0" style={{ background: TINT, color: INDIGO_DEEP }}><Check className="h-3 w-3" /></Box>{p}
                   </Box>
                 ))}
               </Box>
               <Box className="mt-auto pt-6 flex flex-wrap gap-3">
-                <Button className="h-11 px-5 rounded-full font-semibold text-sm text-white shadow-lg shadow-blue-600/20" style={{ background: grad }}>{cur.primary} <ArrowRight className="h-4 w-4 ml-2" /></Button>
-                {cur.secondary && (<Button variant="outline" className="h-11 px-5 rounded-full font-semibold text-sm border-blue-200 text-blue-700 hover:bg-blue-50 bg-transparent">{cur.secondary}</Button>)}
+                <Button className="h-11 px-5 rounded-full font-semibold text-sm text-white shadow-lg shadow-indigo-600/20" style={{ background: grad }}>{cur.primary} <ArrowRight className="h-4 w-4 ml-2" /></Button>
+                {cur.secondary && (<Button variant="outline" className="h-11 px-5 rounded-full font-semibold text-sm border-indigo-200 text-indigo-700 hover:bg-indigo-50 bg-transparent">{cur.secondary}</Button>)}
               </Box>
             </Box>
             <Box className="relative min-h-[340px] hidden md:block">
               <Box component="img" src={cur.img} alt={cur.cardTitle} className="absolute inset-0 w-full h-full object-cover" />
-              <Box className="absolute inset-0" style={{ background: 'linear-gradient(160deg, transparent 55%, rgba(11,27,75,0.28))' }} />
+              <Box className="absolute inset-0" style={{ background: 'linear-gradient(160deg, transparent 55%, rgba(30,27,75,0.28))' }} />
             </Box>
           </motion.div>
         </Box>
@@ -188,7 +419,7 @@ function TabbedSection({ id, eyebrow, title, subtitle, tabs, footer, bg }: any) 
         {footer && (
           <Box className="mt-10 text-center">
             <Typography variant="inherit" component="p" className="text-[14px] text-slate-600">{footer.text}</Typography>
-            <Box className="mt-4"><Button className="h-11 px-7 rounded-full font-semibold text-sm text-white shadow-lg shadow-blue-600/20" style={{ background: grad }}>{footer.cta}</Button></Box>
+            <Box className="mt-4"><Button className="h-11 px-7 rounded-full font-semibold text-sm text-white shadow-lg shadow-indigo-600/20" style={{ background: grad }}>{footer.cta}</Button></Box>
           </Box>
         )}
       </Box>
@@ -196,35 +427,21 @@ function TabbedSection({ id, eyebrow, title, subtitle, tabs, footer, bg }: any) 
   );
 }
 
-/* =================== PRODUCT SECTION (one per engine, alternating + dark) =================== */
-function ProductSection({ theme = 'light', reverse = false, index, icon, tag, title, tagline, desc, points, stats, img, href, accent }: any) {
+/* =================== PRODUCT SECTION (mockup visuals) =================== */
+function ProductSection({ theme = 'light', reverse = false, index, icon, tag, title, tagline, desc, points, href, accent, visual }: any) {
   const Icon = icon;
   const dark = theme === 'dark';
-  const bg = dark ? `linear-gradient(150deg, ${NAVY} 0%, ${BLUE_DEEP} 100%)` : theme === 'tint' ? TINT : '#ffffff';
+  const bg = dark ? darkGrad : theme === 'tint' ? TINT : '#ffffff';
   const titleColor = dark ? '#fff' : NAVY;
   const bodyColor = dark ? 'rgba(255,255,255,0.82)' : '#475569';
   const chipBg = dark ? 'rgba(255,255,255,0.12)' : TINT;
-  const chipText = dark ? '#fff' : BLUE_DEEP;
+  const chipText = dark ? '#fff' : INDIGO_DEEP;
   return (
     <Box component="section" className="py-20 relative overflow-hidden" style={{ background: bg }}>
-      {dark && <Box className="absolute -top-24 -right-24 h-96 w-96 rounded-full blur-3xl opacity-30" style={{ background: 'radial-gradient(circle, #3B82F6, transparent 70%)' }} />}
+      {dark && <Box className="absolute -top-24 -right-24 h-96 w-96 rounded-full blur-3xl opacity-30" style={{ background: 'radial-gradient(circle, #6366F1, transparent 70%)' }} />}
       <Box className="relative max-w-7xl mx-auto px-5 grid lg:grid-cols-2 gap-12 items-center">
-        {/* Media */}
-        <Box className={`relative ${reverse ? 'lg:order-2' : ''}`}>
-          <Box className="relative rounded-[26px] overflow-hidden shadow-2xl aspect-[5/4]" style={{ boxShadow: dark ? '0 40px 80px -30px rgba(0,0,0,0.6)' : '0 40px 80px -34px rgba(37,99,235,0.4)' }}>
-            <Box component="img" src={img} alt={title} className="w-full h-full object-cover" />
-            <Box className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 45%, rgba(11,27,75,0.4))' }} />
-          </Box>
-          {/* Floating stats strip */}
-          <Box className="absolute -bottom-6 left-4 right-4 rounded-2xl bg-white shadow-xl px-5 py-3 grid grid-cols-3 gap-2" style={{ boxShadow: '0 24px 48px -20px rgba(11,27,75,0.35)' }}>
-            {stats.map((s: any) => (
-              <Box key={s.l} className="text-center">
-                <Typography variant="inherit" component="p" className="font-head font-black text-lg" style={{ color: accent }}>{s.v}</Typography>
-                <Typography variant="inherit" component="p" className="text-[10.5px] font-medium text-slate-500 leading-tight">{s.l}</Typography>
-              </Box>
-            ))}
-          </Box>
-        </Box>
+        {/* Media / mockup */}
+        <Box className={`relative ${reverse ? 'lg:order-2' : ''}`}>{visual}</Box>
         {/* Copy */}
         <Box className={reverse ? 'lg:order-1' : ''}>
           <Box className="flex items-center gap-3">
@@ -233,7 +450,7 @@ function ProductSection({ theme = 'light', reverse = false, index, icon, tag, ti
             <Box component="span" className="ml-auto text-[11px] font-bold" style={{ color: dark ? 'rgba(255,255,255,0.4)' : '#94A3B8' }}>0{index} / 03</Box>
           </Box>
           <Typography variant="inherit" component="h2" className="font-head mt-5 text-3xl md:text-4xl font-black tracking-tight leading-tight" style={{ color: titleColor }}>{title}</Typography>
-          <Typography variant="inherit" component="p" className="mt-1.5 font-head text-lg font-bold" style={{ color: dark ? '#93C5FD' : accent }}>{tagline}</Typography>
+          <Typography variant="inherit" component="p" className="mt-1.5 font-head text-lg font-bold" style={{ color: dark ? '#A5B4FC' : accent }}>{tagline}</Typography>
           <Typography variant="inherit" component="p" className="mt-4 text-[14.5px] leading-relaxed" style={{ color: bodyColor }}>{desc}</Typography>
           <Box component="ul" className="mt-6 grid sm:grid-cols-2 gap-2.5">
             {points.map((p: string) => (
@@ -244,7 +461,7 @@ function ProductSection({ theme = 'light', reverse = false, index, icon, tag, ti
           </Box>
           <Box className="mt-7">
             <Link href={href}>
-              <Button className="h-11 px-6 rounded-full font-semibold text-sm text-white shadow-lg" style={{ background: dark ? '#fff' : grad, color: dark ? NAVY : '#fff', boxShadow: '0 10px 30px -8px rgba(37,99,235,0.4)' }}>
+              <Button className="h-11 px-6 rounded-full font-semibold text-sm text-white shadow-lg" style={{ background: dark ? '#fff' : grad, color: dark ? NAVY : '#fff', boxShadow: '0 10px 30px -8px rgba(79,70,229,0.4)' }}>
                 Explore {title} <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </Link>
@@ -258,8 +475,8 @@ function ProductSection({ theme = 'light', reverse = false, index, icon, tag, ti
 /* =================== DARK CTA BAND =================== */
 function DarkCta() {
   return (
-    <Box component="section" className="relative overflow-hidden" style={{ background: `linear-gradient(120deg, ${NAVY}, ${BLUE_DEEP})` }}>
-      <Box className="absolute -top-20 -left-16 h-72 w-72 rounded-full blur-3xl opacity-30" style={{ background: 'radial-gradient(circle, #3B82F6, transparent 70%)' }} />
+    <Box component="section" className="relative overflow-hidden" style={{ background: darkGrad }}>
+      <Box className="absolute -top-20 -left-16 h-72 w-72 rounded-full blur-3xl opacity-30" style={{ background: 'radial-gradient(circle, #6366F1, transparent 70%)' }} />
       <Box className="relative max-w-4xl mx-auto px-5 py-16 text-center text-white">
         <Box component="span" className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest bg-white/12"><Rocket className="h-3.5 w-3.5" /> Start today</Box>
         <Typography variant="inherit" component="h2" className="font-head mt-4 text-3xl md:text-4xl font-black tracking-tight">Ready to build a future-ready journey?</Typography>
@@ -275,7 +492,7 @@ function DarkCta() {
 
 /* =================== TESTIMONIALS =================== */
 const REVIEWS = [
-  { name: 'Saransh Waghela', role: 'Student', tag: 'DiscoverU', color: SKY, text: 'This assessment was very helpful to identify and acknowledge my career goals, and gave insight about my weakness and strengths. I really liked the way everything was so organized and direct. Everything written in the report — about my strengths and weaknesses — was exactly the obstacles I was facing to organize, plan, and simplify my goals.' },
+  { name: 'Saransh Waghela', role: 'Student', tag: 'DiscoverU', color: VIOLET, text: 'This assessment was very helpful to identify and acknowledge my career goals, and gave insight about my weakness and strengths. I really liked the way everything was so organized and direct. Everything written in the report — about my strengths and weaknesses — was exactly the obstacles I was facing to organize, plan, and simplify my goals.' },
   { name: 'Divakar Shetty', role: 'Father of Ageithya · Creative Consultant', tag: 'Explored', color: '#7C3AED', text: 'As parents, we were a little skeptical before taking the psychometric assessment for our son. But when we received the report (DiscoverU), we were pleasantly surprised by how accurately it described him. Many observations about his interests, learning style, strengths and personality matched what we see at home. It also highlighted a few areas we hadn\u2019t thought about before — a very useful experience that gave us greater confidence in understanding his potential and future direction.' },
   { name: 'Ritika Menon', role: 'Student', tag: 'Discovery', color: '#EC4899', text: 'Biglyp made my study-abroad journey feel simple. From shortlisting the right universities to sorting out my education loan, everything was in one place — with guidance at every single step.' },
 ];
@@ -290,15 +507,15 @@ function Testimonials() {
         <Box className="mt-12 grid md:grid-cols-3 gap-5">
           {REVIEWS.map((r, i) => (
             <motion.div key={r.name} initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-              className="rounded-3xl bg-white border border-blue-100 p-6 shadow-[0_20px_50px_-34px_rgba(37,99,235,0.45)] flex flex-col">
+              className="rounded-3xl bg-white border border-indigo-100 p-6 shadow-[0_20px_50px_-34px_rgba(79,70,229,0.45)] flex flex-col">
               <Box className="flex items-center justify-between">
                 <Quote className="h-8 w-8" style={{ color: r.color, opacity: 0.35 }} />
                 <Box component="span" className="text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1" style={{ background: r.color + '16', color: r.color }}>{r.tag}</Box>
               </Box>
-              <Box className="flex gap-0.5 mt-3">{[0, 1, 2, 3, 4].map((s) => <Star key={s} className="h-4 w-4" style={{ color: '#F59E0B', fill: '#F59E0B' }} />)}</Box>
+              <Box className="flex gap-0.5 mt-3">{[0, 1, 2, 3, 4].map((s) => <Star key={s} className="h-4 w-4" style={{ color: YELLOW, fill: YELLOW }} />)}</Box>
               <Typography variant="inherit" component="p" className="mt-3 text-[13.5px] leading-relaxed text-slate-600 flex-1">{r.text}</Typography>
-              <Box className="mt-5 flex items-center gap-3 pt-4 border-t border-blue-50">
-                <Box className="h-11 w-11 rounded-full flex items-center justify-center font-head font-black text-white" style={{ background: `linear-gradient(135deg, ${r.color}, ${BLUE_DEEP})` }}>{r.name[0]}</Box>
+              <Box className="mt-5 flex items-center gap-3 pt-4 border-t border-indigo-50">
+                <Box className="h-11 w-11 rounded-full flex items-center justify-center font-head font-black text-white" style={{ background: `linear-gradient(135deg, ${r.color}, ${INDIGO_DEEP})` }}>{r.name[0]}</Box>
                 <Box><Typography variant="inherit" component="p" className="font-head font-bold text-[14px]" style={{ color: NAVY }}>{r.name}</Typography><Typography variant="inherit" component="p" className="text-[11.5px] text-slate-500">{r.role}</Typography></Box>
               </Box>
             </motion.div>
@@ -328,10 +545,10 @@ function Faq() {
           {FAQS.map((f, i) => {
             const on = open === i;
             return (
-              <Box key={f.q} className="rounded-2xl border border-blue-100 bg-white overflow-hidden transition-shadow" style={on ? { boxShadow: '0 20px 40px -28px rgba(37,99,235,0.4)' } : undefined}>
+              <Box key={f.q} className="rounded-2xl border border-indigo-100 bg-white overflow-hidden transition-shadow" style={on ? { boxShadow: '0 20px 40px -28px rgba(79,70,229,0.4)' } : undefined}>
                 <Box component="button" onClick={() => setOpen(on ? null : i)} data-testid={`faq-${i}`} className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left">
                   <Typography variant="inherit" component="span" className="font-head font-bold text-[15px]" style={{ color: NAVY }}>{f.q}</Typography>
-                  <Box className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 transition-transform" style={{ background: TINT, color: BLUE_DEEP, transform: on ? 'rotate(180deg)' : 'none' }}><ChevronDown className="h-4 w-4" /></Box>
+                  <Box className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 transition-transform" style={{ background: TINT, color: INDIGO_DEEP, transform: on ? 'rotate(180deg)' : 'none' }}><ChevronDown className="h-4 w-4" /></Box>
                 </Box>
                 {on && <Typography variant="inherit" component="p" className="px-5 pb-5 -mt-1 text-[13.5px] leading-relaxed text-slate-600">{f.a}</Typography>}
               </Box>
@@ -346,7 +563,7 @@ function Faq() {
 /* =================== FOOTER =================== */
 function HomeFooter() {
   return (
-    <Box component="footer" style={{ background: `linear-gradient(160deg, ${NAVY}, ${BLUE_DEEP})` }} className="text-white">
+    <Box component="footer" style={{ background: darkGrad }} className="text-white">
       <Box className="max-w-7xl mx-auto px-5 py-14 grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <Box>
           <Logo className="h-7 grayscale invert brightness-200" />
@@ -355,7 +572,7 @@ function HomeFooter() {
             <Typography variant="inherit" component="p" className="text-[11px] uppercase tracking-widest font-bold text-white/70">Subscribe to our newsletter</Typography>
             <Box component="form" className="mt-2 flex items-center gap-2 max-w-sm">
               <Input placeholder="Enter your email address" className="bg-white/10 border-white/15 text-white placeholder:text-white/50 rounded-full h-10 text-sm" />
-              <Button type="button" className="h-10 rounded-full px-4 text-sm font-semibold text-white" style={{ background: SKY }}>Subscribe</Button>
+              <Button type="button" className="h-10 rounded-full px-4 text-sm font-semibold text-white" style={{ background: VIOLET }}>Subscribe</Button>
             </Box>
           </Box>
         </Box>
@@ -427,25 +644,25 @@ export default function Homepage() {
         ]}
       />
 
-      {/* Platform anchor + 3 dedicated engine sections */}
+      {/* Platform anchor + 3 dedicated engine sections with custom mockups */}
       <Box id="platform">
-        <ProductSection index={1} theme="light" reverse={false} icon={GraduationCap} accent={BLUE_DEEP}
-          tag="For Institutions" title="BiglypEnroll" tagline="The all-in-one OS for modern institutions." href="/biglypenroll" img={LEARN_IMG}
-          desc="Run admissions and fee collection from a single console — bridging career readiness and payments into one operating system trusted by schools, colleges and skilling institutes."
-          points={['Admissions & enrolment, end-to-end', 'Career-readiness + fee-collection engines', 'Plug into your ERP or launch a white-labeled portal', 'ISO 27001 · DPDP · RBI-regulated']}
-          stats={[{ v: '6,500+', l: 'Institutions' }, { v: '50 Lakh+', l: 'Students' }, { v: '₹4,200 Cr+', l: 'Fees processed' }]} />
+        <ProductSection index={1} theme="light" reverse={false} icon={GraduationCap} accent={INDIGO_DEEP}
+          tag="For Institutions" title="BiglypEnroll" tagline="Two powerful engines. One institutional platform." href="/biglypenroll"
+          visual={<EnrollVisual />}
+          desc="Career readiness and fee collection — the two things every parent cares about most — unified into a single OS for your institution, trusted by schools, colleges and skilling institutes."
+          points={['Admissions & enrolment, end-to-end', 'Career-readiness + fee-collection engines', 'Plug into your ERP or launch a white-labeled portal', 'ISO 27001 · DPDP · RBI-regulated']} />
 
-        <ProductSection index={2} theme="dark" reverse={true} icon={Brain} accent="#93C5FD"
-          tag="For Students" title="Biglyp Career Hub" tagline="Discover the right career. Then the right university." href="/career-hub" img={HERO_IMG}
+        <ProductSection index={2} theme="dark" reverse={true} icon={Brain} accent="#A5B4FC"
+          tag="For Students" title="Biglyp Career Hub" tagline="Discover the right career. Then the right university." href="/career-hub"
+          visual={<CareerVisual />}
           desc="AI-driven 4-dimensional psychometrics paired with a live index of 2,50,000+ courses across 42 countries — built for counsellors, loved by students."
-          points={['4-D psychometrics: Aptitude · Interest · EQ · Personality', '2,50,000+ courses across 42 countries', 'Personalised career & university matches', 'Counsellor dashboards, workflows & reports']}
-          stats={[{ v: '2.5L+', l: 'Courses' }, { v: '42', l: 'Countries' }, { v: '60+', l: 'Traits mapped' }]} />
+          points={['4-D psychometrics: Aptitude · Interest · EQ · Personality', '2,50,000+ courses across 42 countries', 'Personalised career & university matches', 'Counsellor dashboards, workflows & reports']} />
 
-        <ProductSection index={3} theme="tint" reverse={false} icon={Wallet} accent="#0EA5E9"
-          tag="For Parents" title="Biglyp Fee Collection" tagline="Fees upfront. EMIs for parents. Reconciled live." href="/fee-collection" img={FEE_IMG}
+        <ProductSection index={3} theme="tint" reverse={false} icon={Wallet} accent="#4F46E5"
+          tag="For Parents" title="Biglyp Fee Collection" tagline="Fees upfront. EMIs for parents. Reconciled live." href="/fee-collection"
+          visual={<FeeVisual />}
           desc="India's most advanced fee payment platform for schools, colleges and skilling institutes — 8+ payment rails, 0% EMIs for parents and live analytics, with schools paid 100% upfront."
-          points={['8+ payment rails (UPI, cards, netbanking, NACH…)', '0% EMIs for parents · 100% upfront to schools', 'Automated reconciliation & live dashboards', 'RBI-regulated NBFC lending partners']}
-          stats={[{ v: '8+', l: 'Payment rails' }, { v: '0%', l: 'EMI interest' }, { v: '100%', l: 'Upfront' }]} />
+          points={['8+ payment rails (UPI, cards, netbanking, NACH…)', '0% EMIs for parents · 100% upfront to schools', 'Automated reconciliation & live dashboards', 'RBI-regulated NBFC lending partners']} />
       </Box>
 
       <DarkCta />

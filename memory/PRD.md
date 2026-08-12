@@ -63,3 +63,13 @@ GrayQuest-inspired school fee-financing credit platform at `/credit` (staff + cr
 - School Setup gained a **Fee Collection** step: toggle 3 parent payment options (A=0% EMI, B=Auto-Debit quarterly/half-yearly, C=Pay full upfront). At least one must stay enabled (enforced client + server via normalize_payment_options). Stored as `payment_options {emi, auto_debit, full}` on the school doc; exposed via GET /api/parent/fees.
 - Parent Fee Payment screen: top quick-pick replaced by prominent **Option A/B/C** cards (wizard-style, with highlight badges). Only school-enabled options render. "Choose how to pay" (Quarterly/Half-Yearly) now shows only when Option B is selected.
 - Financing wizard Step 1: removed the EMI-vs-lumpsum (Option A/B) chooser; it's now a clean 0% EMI setup.
+
+## Update (2026-06) — Homepage product-section mockups + prominent hero
+- Homepage (/) redesigned in **indigo/violet + yellow** palette (aligned to user reference mockups), harmonized across nav, buttons, tabs, testimonials, FAQ, footer.
+- 3 product sections now use **custom-built UI mockups** (not stock photos), inspired by user references:
+  - BiglypEnroll: dual-engine dashboard (Career Hub psychometric card + Fee Collection live dashboard with bar chart).
+  - Biglyp Career Hub: psychometrics radar/profile card (SVG pentagon) + course-discovery result card.
+  - Biglyp Fee Collection: Parents/Institutions benefit cards + payment-option cards (Auto-Collect/Instant/0% EMI).
+- Hero made more prominent: larger headline (up to 68px) with violet italic accent + yellow underline, subhead, description, dual CTAs, and a trust row (avatars + rating + "6,500+ institutions").
+- Hero entrance switched from framer-motion to CSS `float-up` reveal classes (reveal-1..5) in globals.css for paint-based, hydration-independent reliability.
+- File: /app/frontend/src/components/home/Homepage.tsx. Verified visually (hero + all 3 sections render correctly).
