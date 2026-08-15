@@ -12,7 +12,7 @@ import {
   ArrowRight, Sparkles, ChevronDown, Star, Check, GraduationCap, Wallet,
   Brain, Search, FileCheck2, BookOpenCheck, Award, Landmark, Calculator, ShieldCheck,
   Gauge, LineChart, Globe, Building2, Rocket, Mail, PlayCircle, Quote,
-  Users, TrendingUp, Bell, CreditCard, QrCode, Zap, Layers, X,
+  Users, TrendingUp, Bell, CreditCard, QrCode, Zap, Layers, X, Radar,
 } from 'lucide-react';
 
 /* ---- Indigo / violet palette (aligned with reference mockups) ---- */
