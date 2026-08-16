@@ -84,6 +84,7 @@ export default function ParentDashboard() {
 
   const academicPending = pending.filter((i) => !isAddon(i.name));
   const otherPending = pending.filter((i) => isAddon(i.name));
+  const pendingGrandTotal = pending.reduce((a, i) => a + i.amount, 0);
 
   // "Other fees" that are quarterly can be clubbed with tuition and paid on the academic plan
   const clubbedItems = otherPending.filter((i) => clubbed.includes(i.fee_head_id));
@@ -231,23 +232,55 @@ export default function ParentDashboard() {
 
   return (
     <ParentLayout>
-      {/* page heading + child selector */}
-      <Box className="flex flex-wrap items-end justify-between gap-4 mb-6">
-        <Box>
-          <Typography variant="inherit" component="p" className="text-xs tracking-[0.2em] uppercase text-[#5548D1] font-semibold">Fee Payment</Typography>
-          <Typography variant="inherit" component="h1" className="font-head text-3xl font-black tracking-tight text-brand-navy mt-1">
-            {child ? `${child.name.split(" ")[0]}'s Fees` : "Fee Payment"}
-          </Typography>
-          {child && <Typography variant="inherit" component="p" className="text-sm text-slate-500 mt-1">{child.grade} · {feeData?.academic_year}</Typography>}
+      {/* ===== Hero band: greeting + totals + child selector ===== */}
+      <Box className="relative overflow-hidden rounded-3xl hero-gradient text-white mb-6 reveal">
+        <Box className="absolute inset-0 hero-dots opacity-60 pointer-events-none" />
+        <Box className="absolute -top-24 -right-16 h-72 w-72 rounded-full bg-[#7C6FF5]/30 blur-3xl pointer-events-none" />
+        <Box className="relative z-10 p-6 md:p-8 flex flex-wrap items-end justify-between gap-6">
+          <Box className="min-w-0">
+            <Box className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-3 py-1 text-[10px] uppercase tracking-[0.22em] font-bold text-white/80">
+              <Sparkles className="h-3 w-3" /> Fee Payment
+            </Box>
+            <Typography variant="inherit" component="h1" className="font-head text-3xl md:text-4xl font-black tracking-tight mt-3">
+              {child ? `${child.name.split(" ")[0]}'s Fees` : "Fee Payment"}
+            </Typography>
+            {child && (
+              <Box className="mt-2 flex items-center gap-2 flex-wrap">
+                <Box component="span" className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white/90">
+                  <GraduationCap className="h-3.5 w-3.5" /> {child.grade}
+                </Box>
+                <Box component="span" className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white/90">
+                  AY {feeData?.academic_year}
+                </Box>
+                {wallet > 0 && (
+                  <Box component="span" className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/20 border border-emerald-300/20 px-2.5 py-1 text-xs font-bold text-emerald-200">
+                    <Wallet className="h-3.5 w-3.5" /> {inr(wallet)} cashback wallet
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Box>
+
+          <Box className="flex items-end gap-6 md:gap-10 flex-wrap">
+            {child && pendingGrandTotal > 0 && (
+              <Box>
+                <Typography variant="inherit" component="p" className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/60">Total pending</Typography>
+                <Typography variant="inherit" component="p" className="font-head text-3xl md:text-[34px] font-black tracking-tight mt-0.5">{inr(pendingGrandTotal)}</Typography>
+                <Typography variant="inherit" component="p" className="text-xs text-white/70 mt-1 flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" /> Due {dueDate}
+                </Typography>
+              </Box>
+            )}
+            {children.length > 1 && (
+              <Select value={activeChild || ""} onValueChange={setActiveChild}>
+                <SelectTrigger className="w-56 h-10 rounded-xl bg-white/10 border-white/20 text-white font-semibold backdrop-blur hover:bg-white/15 transition-colors [&>svg]:text-white/70" data-testid="child-select"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name} · {c.grade}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+          </Box>
         </Box>
-        {children.length > 1 && (
-          <Select value={activeChild || ""} onValueChange={setActiveChild}>
-            <SelectTrigger className="w-56 rounded-lg" data-testid="child-select"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name} · {c.grade}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        )}
       </Box>
 
       {/* Payment-option selector (Option A / B / C — school-configurable) */}
@@ -266,27 +299,37 @@ export default function ParentDashboard() {
                 key={o.key}
                 data-testid={`option-${o.key}`}
                 onClick={() => setSelectedOption(o.key)}
-                className={`relative text-left rounded-2xl border-2 p-5 transition-all ${
+                className={`card-lift reveal-${idx + 1} relative text-left rounded-2xl border-2 p-5 ${
                   active
-                    ? "border-[#5548D1] bg-[#EEF0FF] shadow-[0_10px_30px_-12px_rgba(85,72,209,0.5)]"
-                    : "border-border bg-white hover:border-[#5548D1]/50 hover:shadow-md"
+                    ? "border-[#5548D1] bg-gradient-to-br from-[#EEF0FF] to-white soft-shadow-lg"
+                    : "border-transparent bg-white soft-shadow hover:border-[#5548D1]/30"
                 }`}
               >
-                {/* highlight badge (always visible, like the reference) */}
-                <Box className="flex items-start justify-between gap-2">
-                  <Typography variant="inherit" component="p" className="text-[11px] uppercase tracking-[0.18em] font-bold text-[#5548D1]">Option {displayLetter}</Typography>
-                  <Box component="span" className={`shrink-0 rounded-full text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 leading-tight ${badgeTone}`}>
+                {/* selected check */}
+                <Box component="span" className={`absolute top-4 right-4 h-6 w-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  active ? "bg-[#5548D1] text-white scale-100 opacity-100" : "bg-slate-100 text-transparent scale-75 opacity-0"
+                }`}>
+                  <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                </Box>
+
+                <Box className="flex items-center gap-2">
+                  <Box component="span" className={`h-7 w-7 rounded-lg flex items-center justify-center text-[11px] font-black transition-colors ${
+                    active ? "bg-[#5548D1] text-white" : "bg-[#EEF0FF] text-[#5548D1]"
+                  }`}>
+                    {displayLetter}
+                  </Box>
+                  <Box component="span" className={`rounded-full text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 leading-tight ${badgeTone}`}>
                     {o.badge.text}
                   </Box>
                 </Box>
 
-                <Typography variant="inherit" component="p" className="font-head text-[19px] font-black tracking-tight leading-snug text-brand-navy mt-2">
+                <Typography variant="inherit" component="p" className="font-head text-[19px] font-black tracking-tight leading-snug text-brand-navy mt-3">
                   {o.title}
                 </Typography>
                 <Typography variant="inherit" component="p" className="text-[12.5px] text-slate-500 mt-1">{o.subtitle}</Typography>
 
                 <Box className="mt-4 flex items-baseline gap-1.5">
-                  <Box component="span" className={`font-head text-3xl font-black tracking-tight ${o.primary ? "text-[#5548D1]" : "text-brand-navy"}`}>
+                  <Box component="span" className={`font-head text-3xl font-black tracking-tight ${o.primary || active ? "text-[#5548D1]" : "text-brand-navy"}`}>
                     {inr(o.amount)}
                   </Box>
                   <Box component="span" className="text-xs font-semibold text-slate-400">{o.unit}</Box>
@@ -309,11 +352,18 @@ export default function ParentDashboard() {
         <Box className="space-y-10">
           {/* ============ Section 1: Academic Fee Dues (compact) ============ */}
           <Box component="section">
-            <Typography variant="inherit" component="h2" className="font-head text-xl font-bold text-brand-navy">Academic Fee Dues</Typography>
-            <Typography variant="inherit" component="p" className="text-sm text-slate-500 mt-0.5">Your core tuition &amp; academic charges for the year.</Typography>
+            <Box className="flex items-center gap-2.5">
+              <Box className="h-8 w-8 rounded-xl bg-[#EEF0FF] text-[#5548D1] flex items-center justify-center">
+                <GraduationCap className="h-4 w-4" />
+              </Box>
+              <Box>
+                <Typography variant="inherit" component="h2" className="font-head text-xl font-bold text-brand-navy leading-tight">Academic Fee Dues</Typography>
+                <Typography variant="inherit" component="p" className="text-sm text-slate-500">Your core tuition &amp; academic charges for the year.</Typography>
+              </Box>
+            </Box>
 
             {academicTotal > 0 ? (
-              <Box className="mt-4 bg-white border border-border rounded-2xl p-5 md:p-6 hard-shadow-sm" data-testid="academic-card">
+              <Box className="reveal-2 mt-4 bg-white border border-border/70 rounded-2xl p-5 md:p-6 soft-shadow" data-testid="academic-card">
                 {/* total + due date */}
                 <Box className="flex flex-wrap items-start justify-between gap-3">
                   <Box>
@@ -329,15 +379,15 @@ export default function ParentDashboard() {
                 </Box>
 
                 {/* breakup */}
-                <Box className="mt-4 rounded-xl border border-border divide-y divide-border" data-testid="academic-breakup">
+                <Box className="mt-4 rounded-xl border border-border/80 divide-y divide-border/70 overflow-hidden" data-testid="academic-breakup">
                   {academicItems.map((i) => (
-                    <Box key={i.fee_head_id} className="flex items-center justify-between px-3.5 py-2 text-sm">
+                    <Box key={i.fee_head_id} className="row-hover flex items-center justify-between px-4 py-2.5 text-sm">
                       <Box component="span" className="text-slate-600 flex items-center gap-2">
                         {i.name}
                         {clubbed.includes(i.fee_head_id) && <Box component="span" className="text-[10px] font-semibold text-[#5548D1] bg-[#EEF0FF] rounded-full px-1.5 py-0.5">clubbed</Box>}
                         {isOneTime(i.frequency) && <Box component="span" className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded-full px-1.5 py-0.5">one-time</Box>}
                       </Box>
-                      <Box component="span" className="font-semibold text-brand-navy">{inr(i.amount)}</Box>
+                      <Box component="span" className="font-bold text-brand-navy tabular-nums">{inr(i.amount)}</Box>
                     </Box>
                   ))}
                 </Box>
@@ -389,7 +439,7 @@ export default function ParentDashboard() {
                 )}
 
                 <Button onClick={proceedAcademic} disabled={!selectedOption} data-testid="proceed-breakdown-btn"
-                  className="mt-5 h-11 px-6 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] text-white font-semibold">
+                  className="mt-5 h-11 px-6 rounded-xl bg-gradient-to-r from-[#5548D1] to-[#6E5FEA] hover:from-[#3F35A8] hover:to-[#5548D1] text-white font-semibold shadow-[0_10px_24px_-10px_rgba(85,72,209,0.7)] transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0">
                   {selectedOption === "a" ? "Start 0% EMI Application" : selectedOption === "c" ? "Pay Full Amount" : "Set Up Auto-Debit Plan"}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
@@ -413,9 +463,14 @@ export default function ParentDashboard() {
           {/* ============ Section 2: Other Fees ============ */}
           <Box component="section">
             <Box className="flex flex-wrap items-end justify-between gap-3">
-              <Box>
-                <Typography variant="inherit" component="h2" className="font-head text-xl font-bold text-brand-navy">Other Fees</Typography>
-                <Typography variant="inherit" component="p" className="text-sm text-slate-500 mt-0.5">Transport, activities &amp; one-time collections. Quarterly items can be clubbed with tuition.</Typography>
+              <Box className="flex items-center gap-2.5">
+                <Box className="h-8 w-8 rounded-xl bg-[#EEF0FF] text-[#5548D1] flex items-center justify-center">
+                  <Wallet className="h-4 w-4" />
+                </Box>
+                <Box>
+                  <Typography variant="inherit" component="h2" className="font-head text-xl font-bold text-brand-navy leading-tight">Other Fees</Typography>
+                  <Typography variant="inherit" component="p" className="text-sm text-slate-500">Transport, activities &amp; one-time collections. Quarterly items can be clubbed with tuition.</Typography>
+                </Box>
               </Box>
               {otherPending.length > 0 && (
                 <Box component="span" className="inline-flex items-center gap-1.5 rounded-full bg-[#EEF0FF] text-[#5548D1] px-2.5 py-1 text-[11px] font-bold">
@@ -425,15 +480,15 @@ export default function ParentDashboard() {
             </Box>
 
             {otherPending.length > 0 ? (
-              <Box className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                {otherPending.map((i) => {
+              <Box className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {otherPending.map((i, idx) => {
                   const { Icon, tint, fg } = addonMeta(i.name);
                   const quarterly = isQuarterly(i.frequency);
                   const oneTime = isOneTime(i.frequency);
                   const isClubbed = clubbed.includes(i.fee_head_id);
                   return (
                     <Box key={i.fee_head_id}
-                      className={`relative bg-white border rounded-xl p-3.5 flex flex-col ${isClubbed ? "border-[#5548D1] ring-1 ring-[#5548D1]/30" : "border-border"}`}
+                      className={`card-lift reveal-${Math.min(idx + 1, 5)} relative bg-white rounded-2xl p-4 flex flex-col soft-shadow border-2 ${isClubbed ? "border-[#5548D1]" : "border-transparent"}`}
                       data-testid={`addon-${i.fee_head_id}`}>
                       <Box className="flex items-start gap-2.5">
                         <Box className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0"
@@ -469,7 +524,7 @@ export default function ParentDashboard() {
 
                       {!isClubbed && (
                         <Button onClick={() => startPay([i.fee_head_id])} data-testid={`pay-upfront-${i.fee_head_id}`}
-                          className="mt-2.5 h-8 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] text-white font-semibold text-[11.5px] px-3 self-start">
+                          className="mt-2.5 h-8 rounded-lg bg-[#5548D1] hover:bg-[#3F35A8] text-white font-semibold text-[11.5px] px-3 self-start transition-all duration-300 hover:-translate-y-0.5 shadow-[0_6px_14px_-8px_rgba(85,72,209,0.7)]">
                           Pay Upfront <ArrowRight className="h-3 w-3 ml-1" />
                         </Button>
                       )}

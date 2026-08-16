@@ -90,3 +90,10 @@ GrayQuest-inspired school fee-financing credit platform at `/credit` (staff + cr
 - Section CTAs confirmed wired to /biglypenroll, /career-hub, /fee-collection (all 200).
 - Verified by testing agent (iteration_4.json): frontend 100%, no blocking issues.
 - PENDING user decision: hero tagline choice (options a–e presented); not yet applied to copy.
+
+## Parent Portal UI Revamp (2026-08-16)
+Frontend-only modernisation of the post-login parent portal (white + blue palette retained):
+- New design utilities in globals.css (soft layered shadows, card-lift, hero-gradient, glass bars, gradient nav pill)
+- ParentLayout: sectioned sidebar (Explore/Payments/Account) with gradient active pill + "Soon" chips, user mini-card w/ logout, glass sticky topbar with personalised greeting, refined notifications, gradient-underline sub-tabs
+- ParentDashboard: gradient hero band (child, grade/AY, wallet chip, total pending, due date, child selector), sharpened Option A/B/C cards (selected check, hover lift, stagger reveal), polished dues card, gradient CTAs, elevated Other Fees cards
+- All logic, API calls and data-testids preserved (parent-logout now in sidebar card; parent-logout-mobile added for mobile topbar)
