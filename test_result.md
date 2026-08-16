@@ -440,6 +440,22 @@ frontend:
         -agent: "testing"
         -comment: "Comprehensive E2E testing completed. OVERALL: ✅ PASS - Sidebar navigation updates working correctly. Test results: (1) Sidebar items: ✅ All 9 sidebar items found in correct order (Dashboard, Psychometry, Career goals, Admissions, Other services, Fee Payment, Rewards, Settings, Support). (2) Dashboard navigation: ✅ Dashboard item (data-testid='snav-dashboard') is highlighted when on /app/discover (active state with bg-brand-tint and text-brand-blue classes). (3) Psychometry navigation: ✅ Clicking Psychometry sidebar item navigates to /app/psychometry successfully. (4) Career goals navigation: ✅ Clicking Career goals sidebar item navigates to /app/programs successfully. (5) Fee sub-tab bar visibility: ✅ Correctly visible on /app (all 4 sub-tabs found: Pay Fees, Payment History, Active Financing Schedule, Rewards). (6) Fee sub-tab bar NOT visible: ✅ Correctly NOT visible on /app/discover, /app/psychometry, /app/programs. (7) Program Discovery: ✅ Page loads successfully at /app/programs with heading 'Explore over 2,50,000+ Programs' found. Screenshot: program_discovery.png (shows Program Discovery page working correctly). Feature is production-ready."
 
+frontend:
+  - task: "Performance bug fix - switch from 'next dev' to 'next start' production build"
+    implemented: true
+    working: true
+    file: "frontend/package.json"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "User reported 'delay when clicking any button — takes a lot of time for the next screen to open'. Fix applied: switched from `next dev` to production build (`next start`). Needs comprehensive performance testing across all navigation flows."
+        -working: true
+        -agent: "testing"
+        -comment: "Comprehensive performance testing completed. OVERALL VERDICT: ✅ PASS - Performance bug fix SUCCESSFUL (14/17 tests passed). Test results: (1) Login page load: 0.31s (✅ excellent, well under 2s threshold); (2) Login to dashboard: 0.76s (✅ excellent, under 1.5s); (3) Sidebar navigation ALL EXCELLENT: Dashboard 0.07s, Psychometry 0.06s, Programs 0.53s, Fees 0.22s, Rewards 0.55s (all ✅ under 1.5s threshold); (4) Fee sub-tabs ALL FAST: Payment History 0.54s, Active Financing 0.53s, Pay Fees 0.22s (all ✅ under 1.5s threshold); (5) Psychometry flow: Start attempt 0.15s (✅ instant), View report 1.10s (✅ under 2s); (6) ✅ No console errors detected; (7) ✅ No HTTP 500 responses detected. Minor observations (not critical): Option B/A selection measured at 0.52s each (includes 500ms test wait, actual selection likely <20ms instant); Question navigation 1.33s (includes 1000ms test wait, actual navigation ~330ms acceptable). CONCLUSION: The user's complaint about 'delay when clicking any button — takes a lot of time for the next screen to open' has been RESOLVED. All navigation is now fast and responsive. Production build performance is excellent across all tested flows."
+
 test_plan:
   current_focus: []
   stuck_tasks: []
@@ -543,3 +559,9 @@ agent_communication:
 
     -agent: "main"
     -message: "PSYCHOMETRY MOCK BUILT (per user PDFs): (1) lib/psychometry.ts — 80-question bank (4 categories x 20), likert scale, 12 radar params, clusters, grade->assessment mapping (6-8 DiscoverU / 9-10 ExploreX / 11-12 DecidePro), localStorage results. (2) /app/psychometry/attempt (AssessmentAttempt.tsx) — focus-mode question flow w/ progress bar, category rail, prev/next/finish, demo auto-fill, animated report-waiting screen (12s) then redirect. (3) /app/psychometry/reports (PsychometryReports.tsx) — congrats banner, personalized summary report (identity, category score bars, recharts radar, career clusters, skill tiles, parent guidance), Download Report (real PDF), emoji feedback (mock), past-assessment list w/ Download + Email (email mocked toast). (4) Landing page now grade-aware and buttons wired. (5) Backend psychometry.py PDF endpoint tested 7/7 PASS by testing agent (auth, roles, filename ExploreX_report_Aarav_Sharma.pdf, 404 bogus id; malformed id returns 500 — pre-existing _resolve_student behavior, acceptable). Full E2E screenshot-verified: landing -> attempt -> autofill -> finish -> waiting -> reports -> PDF download + feedback toast."
+
+    -agent: "main"
+    -message: "PERF BUG FIX (user: 'delay when we click any button'): Root cause — supervisor's `yarn start` ran `next dev`, so every route was compiled on-demand at first visit (1-4.5s+ per navigation, no Link prefetching). Fix: produced an optimized production build (`next build`, with dev server STOPPED to avoid .next corruption — first attempt while dev ran produced 500s) and switched package.json `start` to `next start -H 0.0.0.0 -p 3000` (dev mode still available via `yarn dev`/`start:dev`). After fix: server responses 4-25ms, client navigations 0.16-0.35s measured via Playwright. IMPORTANT FOR FUTURE AGENTS: frontend now serves a PRODUCTION build — after editing frontend code run `sudo supervisorctl stop frontend && cd /app/frontend && yarn build && sudo supervisorctl start frontend` (hot reload is OFF)."
+
+    -agent: "testing"
+    -message: "Performance bug fix testing completed. The production build (`next start`) has successfully resolved the user's complaint about button click delays. All navigation flows tested (login, sidebar navigation, sub-tabs, psychometry flow) are now fast and responsive with timings well under thresholds. 14/17 tests passed; 3 minor timing observations are test artifacts (includes wait timeouts) and not real performance issues. No console errors or HTTP 500 responses detected. The app is production-ready with excellent performance."
