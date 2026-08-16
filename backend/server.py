@@ -1202,6 +1202,14 @@ async def on_start():
     app.include_router(bundle["router"])
     await seed_extras(db)
 
+    # psychometry report PDF endpoint
+    from psychometry import create_psychometry_router
+    psy = create_psychometry_router(db, {
+        "get_current_user": get_current_user,
+        "resolve_student": _resolve_student,
+    })
+    app.include_router(psy["router"])
+
     # daily auto-reminder job (respects each school's reminder_settings)
     try:
         from apscheduler.schedulers.asyncio import AsyncIOScheduler

@@ -1,5 +1,7 @@
 {
   "/app/discover/page": "app/app/discover/page.js",
+  "/app/psychometry/page": "app/app/psychometry/page.js",
   "/login/page": "app/login/page.js",
-  "/app/psychometry/page": "app/app/psychometry/page.js"
+  "/app/psychometry/attempt/page": "app/app/psychometry/attempt/page.js",
+  "/app/psychometry/reports/page": "app/app/psychometry/reports/page.js"
 }

@@ -2,11 +2,15 @@
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ParentLayout } from '@/components/ParentLayout';
 import { Button } from '@/components/ui/button';
+import api from '@/lib/api';
 import {
   Brain, Eye, Sparkles, BookOpen, Play,
 } from 'lucide-react';
+import { assessmentForGrade, loadResults, BASE_ATTEMPTS_USED, MAX_ATTEMPTS } from '@/lib/psychometry';
 
 const INDIGO = '#5548D1';
 const NAVY = '#1E1B4B';
@@ -40,6 +44,19 @@ function DetailRow({ label, value }: any) {
 }
 
 export default function PsychometryAssessment() {
+  const router = useRouter();
+  const [child, setChild] = useState<any>(null);
+  const [localCount, setLocalCount] = useState(0);
+
+  useEffect(() => {
+    api.get('/parent/children').then(({ data }) => { if (data[0]) setChild(data[0]); }).catch(() => {});
+    setLocalCount(loadResults().length);
+  }, []);
+
+  const meta = useMemo(() => assessmentForGrade(child?.grade || 'Class 10'), [child]);
+  const used = BASE_ATTEMPTS_USED + localCount;
+  const attemptNo = 12 + localCount;
+
   return (
     <ParentLayout>
       <Box className="max-w-6xl mx-auto" data-testid="psychometry-assessment">
@@ -58,11 +75,11 @@ export default function PsychometryAssessment() {
           <Box className="rounded-2xl border border-border/70 bg-white soft-shadow p-5 md:p-6 reveal-1" data-testid="assessment-card">
             {/* DiscoverU header row */}
             <Box className="flex items-center gap-2.5 flex-wrap">
-              <Box component="span" className="text-[26px] leading-none" aria-hidden>🪴</Box>
-              <Typography variant="inherit" component="h2" className="font-head text-[21px] font-black tracking-tight" style={{ color: NAVY }}>DiscoverU</Typography>
+              <Box component="span" className="text-[26px] leading-none" aria-hidden>{meta.emoji}</Box>
+              <Typography variant="inherit" component="h2" className="font-head text-[21px] font-black tracking-tight" style={{ color: NAVY }}>{meta.name}</Typography>
               <Box component="span" className="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white"
                 style={{ background: '#10B981' }}>
-                Classes 6–8
+                {meta.classes}
               </Box>
             </Box>
             <Typography variant="inherit" component="p" className="mt-1 text-[12px]" style={{ color: '#94A3B8' }}>
@@ -85,12 +102,12 @@ export default function PsychometryAssessment() {
 
             {/* Actions */}
             <Box className="mt-5 flex flex-wrap gap-2.5 items-center">
-              <Button data-testid="start-attempt"
+              <Button data-testid="start-attempt" onClick={() => router.push('/app/psychometry/attempt')}
                 className="h-10 px-5 rounded-full font-bold text-white text-[13px] flex items-center gap-2 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_22px_-10px_rgba(16,185,129,0.7)]"
                 style={{ background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)' }}>
-                <Play className="h-3.5 w-3.5" fill="#fff" /> Start Attempt 12
+                <Play className="h-3.5 w-3.5" fill="#fff" /> Start Attempt {attemptNo}
               </Button>
-              <Button data-testid="view-report"
+              <Button data-testid="view-report" onClick={() => router.push('/app/psychometry/reports')}
                 className="h-10 px-5 rounded-full font-bold text-white text-[13px] transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_22px_-10px_rgba(85,72,209,0.7)]"
                 style={{ background: 'linear-gradient(135deg, #5548D1 0%, #6D28D9 100%)' }}>
                 Report
@@ -111,7 +128,7 @@ export default function PsychometryAssessment() {
                 <DetailRow label="Questions" value="80" />
                 <DetailRow label="Categories" value="4" />
                 <DetailRow label="Duration" value="~ 15 minutes" />
-                <DetailRow label="Attempts" value="2/10 Available" />
+                <DetailRow label="Attempts" value={`${used}/${MAX_ATTEMPTS} Available`} />
               </Box>
             </Box>
 

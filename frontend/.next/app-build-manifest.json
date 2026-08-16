@@ -20,6 +20,16 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/app/psychometry/page.js"
+    ],
+    "/app/psychometry/attempt/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/app/psychometry/attempt/page.js"
+    ],
+    "/app/psychometry/reports/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/app/psychometry/reports/page.js"
     ]
   }
 }
